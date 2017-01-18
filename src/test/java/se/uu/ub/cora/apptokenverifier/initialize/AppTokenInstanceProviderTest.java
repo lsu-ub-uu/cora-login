@@ -30,23 +30,23 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.ApptokenStorage;
-import se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
 import se.uu.ub.cora.apptokenverifier.GatekeeperTokenProviderSpy;
-import se.uu.ub.cora.apptokenverifier.initialize.ApptokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
-public class ApptokenInstanceProviderTest {
+public class AppTokenInstanceProviderTest {
 	@Test
 	public void testPrivateConstructor() throws Exception {
-		Constructor<ApptokenInstanceProvider> constructor = ApptokenInstanceProvider.class
+		Constructor<AppTokenInstanceProvider> constructor = AppTokenInstanceProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 	}
 
 	@Test(expectedExceptions = InvocationTargetException.class)
 	public void testPrivateConstructorInvoke() throws Exception {
-		Constructor<ApptokenInstanceProvider> constructor = ApptokenInstanceProvider.class
+		Constructor<AppTokenInstanceProvider> constructor = AppTokenInstanceProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 		constructor.setAccessible(true);
@@ -57,16 +57,16 @@ public class ApptokenInstanceProviderTest {
 	public void testApptokenStorage() {
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		ApptokenStorage apptokenStorageSpy = new ApptokenStorageSpy(initInfo);
-		ApptokenInstanceProvider.setApptokenStorage(apptokenStorageSpy);
-		assertEquals(ApptokenInstanceProvider.getApptokenStorage(), apptokenStorageSpy);
+		AppTokenStorage apptokenStorageSpy = new AppTokenStorageSpy(initInfo);
+		AppTokenInstanceProvider.setApptokenStorage(apptokenStorageSpy);
+		assertEquals(AppTokenInstanceProvider.getApptokenStorage(), apptokenStorageSpy);
 	}
 
 	@Test
 	public void testGatekeeperTokenProvider() {
 		GatekeeperTokenProvider gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		ApptokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		assertEquals(ApptokenInstanceProvider.getGatekeeperTokenProvider(),
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		assertEquals(AppTokenInstanceProvider.getGatekeeperTokenProvider(),
 				gatekeeperTokenProvider);
 	}
 

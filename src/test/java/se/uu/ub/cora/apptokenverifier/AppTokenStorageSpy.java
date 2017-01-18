@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenverifier.ApptokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
 
-public class ApptokenStorageSpy implements ApptokenStorage {
+public class AppTokenStorageSpy implements AppTokenStorage {
 	private Map<String, String> initInfo;
 
-	public ApptokenStorageSpy(Map<String, String> initInfo) {
+	public AppTokenStorageSpy(Map<String, String> initInfo) {
 		this.initInfo = initInfo;
 	}
 

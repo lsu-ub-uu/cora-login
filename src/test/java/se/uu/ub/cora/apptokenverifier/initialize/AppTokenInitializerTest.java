@@ -29,16 +29,16 @@ import javax.servlet.ServletContextEvent;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
 
-public class ApptokenInitializerTest {
-	private ApptokenInitializer ApptokenInitializer;
+public class AppTokenInitializerTest {
+	private AppTokenInitializer ApptokenInitializer;
 	private ServletContext source;
 	private ServletContextEvent context;
 
 	@BeforeMethod
 	public void setUp() {
-		ApptokenInitializer = new ApptokenInitializer();
+		ApptokenInitializer = new AppTokenInitializer();
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
 
@@ -46,11 +46,11 @@ public class ApptokenInitializerTest {
 
 	@Test
 	public void testInitializeSystem() {
-		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		ApptokenInitializer.contextInitialized(context);
-		assertTrue(ApptokenInstanceProvider.getApptokenStorage() instanceof ApptokenStorageSpy);
+		assertTrue(AppTokenInstanceProvider.getApptokenStorage() instanceof AppTokenStorageSpy);
 	}
 
 	@Test(expectedExceptions = RuntimeException.class)
@@ -61,37 +61,37 @@ public class ApptokenInitializerTest {
 
 	@Test
 	public void testInitializeSystemInitInfoSetInDependencyProvider() {
-		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		ApptokenInitializer.contextInitialized(context);
 
-		ApptokenStorageSpy apptokenStorageSpy = (ApptokenStorageSpy) ApptokenInstanceProvider
+		AppTokenStorageSpy appTokenStorageSpy = (AppTokenStorageSpy) AppTokenInstanceProvider
 				.getApptokenStorage();
-		assertEquals(apptokenStorageSpy.getInitInfo().get("storageOnDiskBasePath"),
+		assertEquals(appTokenStorageSpy.getInitInfo().get("storageOnDiskBasePath"),
 				"/mnt/data/basicstorage");
 	}
 
 	@Test
 	public void testGatekeeperTokenProviderIsSet() {
-		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		ApptokenInitializer.contextInitialized(context);
-		assertNotNull(ApptokenInstanceProvider.getGatekeeperTokenProvider());
+		assertNotNull(AppTokenInstanceProvider.getGatekeeperTokenProvider());
 	}
 
 	@Test(expectedExceptions = RuntimeException.class)
 	public void testInitializeSystemWithoutGatekeeperURL() {
-		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
 		ApptokenInitializer.contextInitialized(context);
 	}
 
 	@Test
 	public void testDestroySystem() {
-		ApptokenInitializer ApptokenInitializer = new ApptokenInitializer();
+		AppTokenInitializer ApptokenInitializer = new AppTokenInitializer();
 		ApptokenInitializer.contextDestroyed(null);
 		// TODO: should we do something on destroy?
 	}

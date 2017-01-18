@@ -19,30 +19,30 @@
 
 package se.uu.ub.cora.apptokenverifier.initialize;
 
-import se.uu.ub.cora.apptokenverifier.ApptokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
-public final class ApptokenInstanceProvider {
+public final class AppTokenInstanceProvider {
 
-	private static ApptokenStorage apptokenStorage;
+	private static AppTokenStorage appTokenStorage;
 	private static GatekeeperTokenProvider gatekeeperTokenProvider;
 
-	private ApptokenInstanceProvider() {
+	private AppTokenInstanceProvider() {
 		// not called
 		throw new UnsupportedOperationException();
 	}
 
-	public static void setApptokenStorage(ApptokenStorage apptokenStorage) {
-		ApptokenInstanceProvider.apptokenStorage = apptokenStorage;
+	public static void setApptokenStorage(AppTokenStorage appTokenStorage) {
+		AppTokenInstanceProvider.appTokenStorage = appTokenStorage;
 
 	}
 
-	public static ApptokenStorage getApptokenStorage() {
-		return apptokenStorage;
+	public static AppTokenStorage getApptokenStorage() {
+		return appTokenStorage;
 	}
 
 	public static void setGatekeeperTokenProvider(GatekeeperTokenProvider gatekeeperTokenProvider) {
-		ApptokenInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
+		AppTokenInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
 
 	}
 

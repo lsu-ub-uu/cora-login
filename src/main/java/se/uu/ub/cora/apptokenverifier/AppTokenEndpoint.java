@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import se.uu.ub.cora.apptokenverifier.initialize.ApptokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
@@ -59,8 +59,8 @@ public class AppTokenEndpoint {
 	}
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
-		ApptokenStorage apptokenStorage = ApptokenInstanceProvider.getApptokenStorage();
-		List<String> tokenList = apptokenStorage.getApptokensForUser(userId);
+		AppTokenStorage appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
+		List<String> tokenList = appTokenStorage.getApptokensForUser(userId);
 		if (apptokenNotFoundInList(appToken, tokenList)) {
 			throw new NotFoundException();
 		}
@@ -71,7 +71,7 @@ public class AppTokenEndpoint {
 	}
 
 	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
-		GatekeeperTokenProvider gatekeeperTokenProvider = ApptokenInstanceProvider
+		GatekeeperTokenProvider gatekeeperTokenProvider = AppTokenInstanceProvider
 				.getGatekeeperTokenProvider();
 
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);

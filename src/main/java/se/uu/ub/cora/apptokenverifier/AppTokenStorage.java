@@ -21,7 +21,7 @@ package se.uu.ub.cora.apptokenverifier;
 
 import java.util.List;
 
-public interface ApptokenStorage {
+public interface AppTokenStorage {
 
 	List<String> getApptokensForUser(String userId);
 

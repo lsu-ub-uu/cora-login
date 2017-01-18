@@ -30,16 +30,16 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import se.uu.ub.cora.apptokenverifier.ApptokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 
 @WebListener
-public class ApptokenInitializer implements ServletContextListener {
+public class AppTokenInitializer implements ServletContextListener {
 	private ServletContext servletContext;
 	private HashMap<String, String> initInfo;
-	private ApptokenStorage apptokenStorage;
+	private AppTokenStorage appTokenStorage;
 
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
@@ -70,9 +70,9 @@ public class ApptokenInitializer implements ServletContextListener {
 	private void createAndSetApptokenStorage()
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException,
 			NoSuchMethodException, InvocationTargetException {
-		String userPickerProviderString = getInitParameter("apptokenStorageClassName");
+		String userPickerProviderString = getInitParameter("appTokenStorageClassName");
 		createInstanceOfApptokenStorageProviderClass(userPickerProviderString);
-		ApptokenInstanceProvider.setApptokenStorage(apptokenStorage);
+		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 	}
 
 	private String getInitParameter(String parameterName) {
@@ -87,13 +87,13 @@ public class ApptokenInitializer implements ServletContextListener {
 			NoSuchMethodException, InvocationTargetException {
 		Constructor<?> constructor = Class.forName(userPickerProviderString)
 				.getConstructor(Map.class);
-		apptokenStorage = (ApptokenStorage) constructor.newInstance(initInfo);
+		appTokenStorage = (AppTokenStorage) constructor.newInstance(initInfo);
 	}
 
 	private void createAndSetGatekeeperTokenProvider() {
 		String baseUrl = getInitParameter("gatekeeperURL");
 		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
-		ApptokenInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
 				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
 	}
 

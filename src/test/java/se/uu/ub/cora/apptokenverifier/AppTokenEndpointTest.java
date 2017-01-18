@@ -32,8 +32,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.apptokenverifier.AppTokenEndpoint;
-import se.uu.ub.cora.apptokenverifier.ApptokenStorage;
-import se.uu.ub.cora.apptokenverifier.initialize.ApptokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 
 public class AppTokenEndpointTest {
 	private Response response;
@@ -45,10 +45,10 @@ public class AppTokenEndpointTest {
 		// GatekeeperImp.INSTANCE.setUserPickerFactory(userPickerFactory);
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		ApptokenStorage apptokenStorage = new ApptokenStorageSpy(initInfo);
-		ApptokenInstanceProvider.setApptokenStorage(apptokenStorage);
+		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
+		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 		GatekeeperTokenProviderSpy gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		ApptokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class AppTokenEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		ApptokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 		UriInfo uriInfo = new TestUri();
 		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
 
