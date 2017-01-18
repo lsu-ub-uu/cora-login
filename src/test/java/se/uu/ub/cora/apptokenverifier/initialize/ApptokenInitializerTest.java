@@ -30,8 +30,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy;
-import se.uu.ub.cora.apptokenverifier.initialize.ApptokenInitializer;
-import se.uu.ub.cora.apptokenverifier.initialize.ApptokenInstanceProvider;
 
 public class ApptokenInitializerTest {
 	private ApptokenInitializer ApptokenInitializer;
@@ -49,7 +47,7 @@ public class ApptokenInitializerTest {
 	@Test
 	public void testInitializeSystem() {
 		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptoken.ApptokenStorageSpy");
+				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		ApptokenInitializer.contextInitialized(context);
 		assertTrue(ApptokenInstanceProvider.getApptokenStorage() instanceof ApptokenStorageSpy);
@@ -64,7 +62,7 @@ public class ApptokenInitializerTest {
 	@Test
 	public void testInitializeSystemInitInfoSetInDependencyProvider() {
 		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptoken.ApptokenStorageSpy");
+				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		ApptokenInitializer.contextInitialized(context);
@@ -78,7 +76,7 @@ public class ApptokenInitializerTest {
 	@Test
 	public void testGatekeeperTokenProviderIsSet() {
 		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptoken.ApptokenStorageSpy");
+				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		ApptokenInitializer.contextInitialized(context);
 		assertNotNull(ApptokenInstanceProvider.getGatekeeperTokenProvider());
@@ -87,7 +85,7 @@ public class ApptokenInitializerTest {
 	@Test(expectedExceptions = RuntimeException.class)
 	public void testInitializeSystemWithoutGatekeeperURL() {
 		source.setInitParameter("apptokenStorageClassName",
-				"se.uu.ub.cora.apptoken.ApptokenStorageSpy");
+				"se.uu.ub.cora.apptokenverifier.ApptokenStorageSpy");
 		ApptokenInitializer.contextInitialized(context);
 	}
 
