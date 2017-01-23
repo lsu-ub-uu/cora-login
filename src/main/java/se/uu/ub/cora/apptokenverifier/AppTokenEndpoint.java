@@ -60,7 +60,7 @@ public class AppTokenEndpoint {
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
 		AppTokenStorage appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
-		List<String> tokenList = appTokenStorage.getApptokensForUser(userId);
+		List<String> tokenList = appTokenStorage.getAppTokensForUserId(userId);
 		if (apptokenNotFoundInList(appToken, tokenList)) {
 			throw new NotFoundException();
 		}

@@ -37,7 +37,7 @@ public class AppTokenStorageSpy implements AppTokenStorage {
 	}
 
 	@Override
-	public List<String> getApptokensForUser(String userId) {
+	public List<String> getAppTokensForUserId(String userId) {
 		List<String> tokenList = new ArrayList<>();
 		if ("someUserId".equals(userId)) {
 			tokenList.add("someAppToken");

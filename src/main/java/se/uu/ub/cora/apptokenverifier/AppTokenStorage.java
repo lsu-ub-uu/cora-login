@@ -23,6 +23,6 @@ import java.util.List;
 
 public interface AppTokenStorage {
 
-	List<String> getApptokensForUser(String userId);
+	List<String> getAppTokensForUserId(String userId);
 
 }
