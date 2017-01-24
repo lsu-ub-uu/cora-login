@@ -25,6 +25,7 @@
 	<name>apptokenverifier</name>
 
 	<properties>
+		<apptokenstorage.version>0.1-SNAPSHOT</apptokenstorage.version>
 		<gatekeepertokenprovider.version>0.2-SNAPSHOT</gatekeepertokenprovider.version>
 		<javax.ws.rs.version>2.0.1</javax.ws.rs.version>
 		<jersey.version>2.25</jersey.version>
@@ -63,6 +64,12 @@
 	</repositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>apptokenstorage</artifactId>
+			<version>${apptokenstorage.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>gatekeepertokenprovider</artifactId>

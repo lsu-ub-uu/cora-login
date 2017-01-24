@@ -31,8 +31,7 @@ import javax.ws.rs.core.UriInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenEndpoint;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 
 public class AppTokenEndpointTest {

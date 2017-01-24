@@ -19,7 +19,7 @@
 
 package se.uu.ub.cora.apptokenverifier.initialize;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
 public final class AppTokenInstanceProvider {

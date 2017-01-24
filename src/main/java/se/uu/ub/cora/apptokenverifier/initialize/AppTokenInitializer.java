@@ -30,7 +30,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
@@ -47,7 +47,7 @@ public class AppTokenInitializer implements ServletContextListener {
 		try {
 			tryToInitialize();
 		} catch (Exception e) {
-			throw new RuntimeException("Error starting AppTokenVerifier: " + e.getMessage());
+			throw new RuntimeException("Error starting AppTokenVerifier: " + e);
 		}
 	}
 

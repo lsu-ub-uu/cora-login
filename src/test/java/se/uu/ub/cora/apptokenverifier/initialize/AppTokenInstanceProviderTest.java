@@ -30,10 +30,9 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
 import se.uu.ub.cora.apptokenverifier.GatekeeperTokenProviderSpy;
-import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
 public class AppTokenInstanceProviderTest {

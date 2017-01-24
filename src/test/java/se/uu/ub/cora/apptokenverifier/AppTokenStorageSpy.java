@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenStorage;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 
 public class AppTokenStorageSpy implements AppTokenStorage {
 	private Map<String, String> initInfo;

@@ -26,11 +26,13 @@ import java.util.List;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
@@ -44,7 +46,8 @@ public class AppTokenEndpoint {
 	}
 
 	@POST
-	public Response getAuthTokenForAppToken(String userId, String appToken) {
+	@Path("{userid}")
+	public Response getAuthTokenForAppToken(@PathParam("userid") String userId, String appToken) {
 		try {
 			return tryToGetAuthTokenForAppToken(userId, appToken);
 		} catch (Exception error) {
