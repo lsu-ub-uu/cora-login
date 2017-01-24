@@ -20,7 +20,7 @@
 
 	<artifactId>apptokenverifier</artifactId>
 	<version>0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 
 	<name>apptokenverifier</name>
 
@@ -67,6 +67,7 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>gatekeepertokenprovider</artifactId>
 			<version>${gatekeepertokenprovider.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -93,4 +94,7 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+	<build>
+		<finalName>apptokenverifier</finalName>
+	</build>
 </project>

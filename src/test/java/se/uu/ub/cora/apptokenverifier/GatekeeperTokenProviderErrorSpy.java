@@ -22,7 +22,7 @@ package se.uu.ub.cora.apptokenverifier;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
-import se.uu.ub.cora.spider.authentication.AuthenticationException;
+import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
 
 public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider {
 

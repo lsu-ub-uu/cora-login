@@ -47,7 +47,7 @@ public class AppTokenInitializer implements ServletContextListener {
 		try {
 			tryToInitialize();
 		} catch (Exception e) {
-			throw new RuntimeException("Error starting Gatekeeper: " + e.getMessage());
+			throw new RuntimeException("Error starting AppTokenVerifier: " + e.getMessage());
 		}
 	}
 
