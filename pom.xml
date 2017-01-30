@@ -19,14 +19,14 @@
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>apptokenverifier</name>
 
 	<properties>
-		<apptokenstorage.version>0.1-SNAPSHOT</apptokenstorage.version>
-		<gatekeepertokenprovider.version>0.2-SNAPSHOT</gatekeepertokenprovider.version>
+		<apptokenstorage.version>0.2-SNAPSHOT</apptokenstorage.version>
+		<gatekeepertokenprovider.version>0.3-SNAPSHOT</gatekeepertokenprovider.version>
 		<javax.ws.rs.version>2.0.1</javax.ws.rs.version>
 		<jersey.version>2.25</jersey.version>
 	</properties>
