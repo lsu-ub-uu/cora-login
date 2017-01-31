@@ -39,9 +39,6 @@ public class AppTokenEndpointTest {
 
 	@BeforeMethod
 	public void setup() {
-		// UserPickerFactorySpy userPickerFactory = new UserPickerFactorySpy();
-		// gatekeeper = new AuthenticatorImp(userPicker);
-		// GatekeeperImp.INSTANCE.setUserPickerFactory(userPickerFactory);
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
@@ -109,27 +106,4 @@ public class AppTokenEndpointTest {
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
-	// {
-	// "data": {
-	// "children": [
-	// {
-	// "name": "id",
-	// "value": "someId"
-	// },
-	// {
-	// "name": "validForNoSeconds",
-	// "value": "400"
-	// }
-	// ],
-	// "name": "authToken"
-	// },
-	// "actionLinks": {
-	// "delete": {
-	// "requestMethod": "DELETE",
-	// "rel": "delete",
-	// "url":
-	// "http://epc.ub.uu.se/apptoken/rest/apptoken/textSystemOne/idTextTextVarText"
-	// }
-	// }
-	// }
 }

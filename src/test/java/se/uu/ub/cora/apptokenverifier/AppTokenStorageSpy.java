@@ -19,8 +19,6 @@
 
 package se.uu.ub.cora.apptokenverifier;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
@@ -37,11 +35,13 @@ public class AppTokenStorageSpy implements AppTokenStorage {
 	}
 
 	@Override
-	public List<String> getAppTokensForUserId(String userId) {
-		List<String> tokenList = new ArrayList<>();
-		if ("someUserId".equals(userId)) {
-			tokenList.add("someAppToken");
+	public boolean userIdHasAppToken(String userId, String appToken) {
+		if ("someUserIdNotFound".equals(userId)) {
+			return false;
 		}
-		return tokenList;
+		if ("someAppTokenNotFound".equals(appToken)) {
+			return false;
+		}
+		return true;
 	}
 }

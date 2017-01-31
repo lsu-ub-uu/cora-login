@@ -21,7 +21,6 @@ package se.uu.ub.cora.apptokenverifier;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -63,14 +62,9 @@ public class AppTokenEndpoint {
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
 		AppTokenStorage appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
-		List<String> tokenList = appTokenStorage.getAppTokensForUserId(userId);
-		if (apptokenNotFoundInList(appToken, tokenList)) {
+		if (!appTokenStorage.userIdHasAppToken(userId, appToken)) {
 			throw new NotFoundException();
 		}
-	}
-
-	private boolean apptokenNotFoundInList(String appToken, List<String> tokenList) {
-		return !tokenList.stream().anyMatch(token -> token.equals(appToken));
 	}
 
 	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
