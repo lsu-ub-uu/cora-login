@@ -22,6 +22,7 @@ package se.uu.ub.cora.apptokenverifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -91,5 +92,23 @@ public class AppTokenEndpoint {
 
 	private Response buildResponse(Status status) {
 		return Response.status(status).build();
+	}
+
+	@DELETE
+	@Path("{userid}")
+	public Response removeAuthTokenForAppToken(@PathParam("userid") String userId,
+			String authToken) {
+		try {
+			return tryToRemoveAuthTokenForUser(userId, authToken);
+		} catch (Exception error) {
+			return buildResponse(Response.Status.NOT_FOUND);
+		}
+	}
+
+	private Response tryToRemoveAuthTokenForUser(String userId, String authToken) {
+		GatekeeperTokenProvider gatekeeperTokenProvider = AppTokenInstanceProvider
+				.getGatekeeperTokenProvider();
+		gatekeeperTokenProvider.removeAuthTokenForUser(userId, authToken);
+		return buildResponse(Status.OK);
 	}
 }

@@ -106,4 +106,32 @@ public class AppTokenEndpointTest {
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
+
+	@Test
+	public void testRemoveAuthTokenForUser() {
+		UriInfo uriInfo = new TestUri();
+		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
+
+		String userId = "someUserId";
+		String authToken = "someAuthToken";
+
+		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
+		assertResponseStatusIs(Response.Status.OK);
+	}
+
+	@Test
+	public void testRemoveAuthTokenForUserWrongToken() {
+		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		UriInfo uriInfo = new TestUri();
+		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
+
+		String userId = "someUserId";
+		String authToken = "someAuthTokenNotFound";
+
+		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
 }

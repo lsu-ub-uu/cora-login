@@ -30,4 +30,10 @@ public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 		return AuthToken.withIdAndValidForNoSeconds("someAuthToken", 278);
 	}
 
+	@Override
+	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

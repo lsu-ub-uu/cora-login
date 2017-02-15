@@ -31,4 +31,9 @@ public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider 
 		throw new AuthenticationException("authToken gives no authorization");
 	}
 
+	@Override
+	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
+		throw new AuthenticationException("authToken could not be removed");
+	}
+
 }
