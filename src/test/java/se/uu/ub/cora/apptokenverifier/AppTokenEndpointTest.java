@@ -57,10 +57,13 @@ public class AppTokenEndpointTest {
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
-		String expectedJsonToken = "{\"children\":["
+		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}"
-				+ "],\"name\":\"authToken\"}";
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}

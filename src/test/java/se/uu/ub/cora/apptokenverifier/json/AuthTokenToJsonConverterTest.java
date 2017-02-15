@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Uppsala University Library
+ * Copyright 2016, 2017 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -23,18 +23,21 @@ import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public class AuthTokenToJsonConverterTest {
 	@Test
 	public void testAuthTokenToJsonConverter() {
+		String url = "http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313";
 		AuthToken authToken = AuthToken.withIdAndValidForNoSeconds("someId", 599);
-		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken);
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 		String json = converter.convertAuthTokenToJson();
-		String expected = "{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"}"
-				+ "],\"name\":\"authToken\"}";
+		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"}]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313\"}}}";
 		assertEquals(json, expected);
 	}
 }

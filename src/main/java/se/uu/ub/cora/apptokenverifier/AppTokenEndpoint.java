@@ -42,7 +42,17 @@ import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 @Path("apptoken")
 public class AppTokenEndpoint {
 
+	private UriInfo uriInfo;
+	private String url;
+
 	public AppTokenEndpoint(@Context UriInfo uriInfo) {
+		this.uriInfo = uriInfo;
+		url = getBaseURLFromURI();
+	}
+
+	private String getBaseURLFromURI() {
+		String baseURI = uriInfo.getBaseUri().toString();
+		return baseURI + "apptoken/";
 	}
 
 	@POST
@@ -74,13 +84,13 @@ public class AppTokenEndpoint {
 
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
 		AuthToken authTokenForUserInfo = gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
-		String json = convertAuthTokenToJson(authTokenForUserInfo);
+		String json = convertAuthTokenToJson(authTokenForUserInfo, url + userId);
 		URI uri = new URI("apptoken/");
 		return Response.created(uri).entity(json).build();
 	}
 
-	private String convertAuthTokenToJson(AuthToken authTokenForUserInfo) {
-		return new AuthTokenToJsonConverter(authTokenForUserInfo).convertAuthTokenToJson();
+	private String convertAuthTokenToJson(AuthToken authTokenForUserInfo, String url) {
+		return new AuthTokenToJsonConverter(authTokenForUserInfo, url).convertAuthTokenToJson();
 	}
 
 	private Response handleError(Exception error) {

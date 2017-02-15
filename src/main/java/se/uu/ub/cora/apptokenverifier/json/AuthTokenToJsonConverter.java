@@ -30,20 +30,43 @@ public final class AuthTokenToJsonConverter {
 	private static final String CHILDREN = "children";
 	private AuthToken authToken;
 	private OrgJsonBuilderFactoryAdapter orgJsonBuilderFactoryAdapter = new OrgJsonBuilderFactoryAdapter();
+	private String url;
 
-	public AuthTokenToJsonConverter(AuthToken authToken) {
+	public AuthTokenToJsonConverter(AuthToken authToken, String url) {
 		this.authToken = authToken;
+		this.url = url;
 	}
 
 	public String convertAuthTokenToJson() {
-		JsonObjectBuilder userBuilder = createObjectBuilderWithName("authToken");
-		JsonArrayBuilder userChildren = returnAndAddChildrenToBuilder(userBuilder);
+		JsonObjectBuilder everythingBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		createAuthTokenBuilder(everythingBuilder);
+		createActionLinksBuilder(everythingBuilder);
+		return everythingBuilder.toJsonFormattedString();
+	}
+
+	private void createAuthTokenBuilder(JsonObjectBuilder everythingBuilder) {
+		JsonObjectBuilder authTokenBuilder = createObjectBuilderWithName("authToken");
+		everythingBuilder.addKeyJsonObjectBuilder("data", authTokenBuilder);
+		JsonArrayBuilder userChildren = returnAndAddChildrenToBuilder(authTokenBuilder);
 
 		addIdToJson(authToken, userChildren);
 
 		addValidForNoSecondsToJson(authToken, userChildren);
+	}
 
-		return userBuilder.toJsonFormattedString();
+	private void createActionLinksBuilder(JsonObjectBuilder everythingBuilder) {
+		JsonObjectBuilder actionLinksBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		everythingBuilder.addKeyJsonObjectBuilder("actionLinks", actionLinksBuilder);
+
+		createDeleteBuilder(actionLinksBuilder);
+	}
+
+	private void createDeleteBuilder(JsonObjectBuilder actionLinksBuilder) {
+		JsonObjectBuilder deleteBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		actionLinksBuilder.addKeyJsonObjectBuilder("delete", deleteBuilder);
+		deleteBuilder.addKeyString("requestMethod", "DELETE");
+		deleteBuilder.addKeyString("rel", "delete");
+		deleteBuilder.addKeyString("url", url);
 	}
 
 	private JsonObjectBuilder createObjectBuilderWithName(String name) {
