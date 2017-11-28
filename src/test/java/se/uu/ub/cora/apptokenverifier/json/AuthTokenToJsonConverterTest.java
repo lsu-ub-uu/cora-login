@@ -29,7 +29,8 @@ public class AuthTokenToJsonConverterTest {
 	@Test
 	public void testAuthTokenToJsonConverter() {
 		String url = "http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313";
-		AuthToken authToken = AuthToken.withIdAndValidForNoSeconds("someId", 599);
+		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorage("someId", 599,
+				"someIdInUserStorage");
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 		String json = converter.convertAuthTokenToJson();
 		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"

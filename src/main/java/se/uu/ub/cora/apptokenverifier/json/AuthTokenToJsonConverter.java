@@ -77,7 +77,7 @@ public final class AuthTokenToJsonConverter {
 
 	private void addIdToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
 		JsonObjectBuilder id = createObjectBuilderWithName("id");
-		id.addKeyString("value", authToken.id);
+		id.addKeyString("value", authToken.token);
 		userChildren.addJsonObjectBuilder(id);
 	}
 
