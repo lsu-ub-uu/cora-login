@@ -24,9 +24,9 @@ import static org.testng.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -36,6 +36,7 @@ import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 
 public class AppTokenEndpointTest {
 	private Response response;
+	private AppTokenEndpoint appTokenEndpoint;
 
 	@BeforeMethod
 	public void setup() {
@@ -45,13 +46,15 @@ public class AppTokenEndpointTest {
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 		GatekeeperTokenProviderSpy gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		// UriInfo uriInfo = new TestUri();
+		HttpServletRequest request = new TestHttpServletRequest();
+		appTokenEndpoint = new AppTokenEndpoint(request);
+		// recordEndpoint = new RecordEndpoint(request);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppToken() {
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
-
 		String userId = "someUserId";
 		String appToken = "someAppToken";
 
@@ -74,9 +77,6 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenUserIdNotFound() {
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
-
 		String userId = "someUserIdNotFound";
 		String appToken = "someAppToken";
 
@@ -86,9 +86,6 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenNotFound() {
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
-
 		String userId = "someUserId";
 		String appToken = "someAppTokenNotFound";
 
@@ -100,8 +97,6 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
 
 		String userId = "someUserId";
 		String appToken = "someAppToken";
@@ -112,9 +107,6 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
-
 		String userId = "someUserId";
 		String authToken = "someAuthToken";
 
@@ -126,9 +118,6 @@ public class AppTokenEndpointTest {
 	public void testRemoveAuthTokenForUserWrongToken() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-
-		UriInfo uriInfo = new TestUri();
-		AppTokenEndpoint appTokenEndpoint = new AppTokenEndpoint(uriInfo);
 
 		String userId = "someUserId";
 		String authToken = "someAuthTokenNotFound";

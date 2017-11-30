@@ -22,6 +22,7 @@ package se.uu.ub.cora.apptokenverifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -30,7 +31,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
@@ -42,17 +42,40 @@ import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 @Path("apptoken")
 public class AppTokenEndpoint {
 
-	private UriInfo uriInfo;
 	private String url;
+	private HttpServletRequest request;
 
-	public AppTokenEndpoint(@Context UriInfo uriInfo) {
-		this.uriInfo = uriInfo;
+	public AppTokenEndpoint(@Context HttpServletRequest request) {
+		this.request = request;
 		url = getBaseURLFromURI();
 	}
 
 	private String getBaseURLFromURI() {
-		String baseURI = uriInfo.getBaseUri().toString();
-		return baseURI + "apptoken/";
+		String baseURL = getBaseURLFromRequest();
+
+		baseURL = changeHttpToHttpsIfHeaderSaysSo(baseURL);
+
+		return baseURL;
+	}
+
+	private String getBaseURLFromRequest() {
+		String tempUrl = request.getRequestURL().toString();
+		String baseURL = tempUrl.substring(0, tempUrl.indexOf(request.getPathInfo()));
+		baseURL += "/apptoken/";
+		return baseURL;
+	}
+
+	private String changeHttpToHttpsIfHeaderSaysSo(String baseURI) {
+		String forwardedProtocol = request.getHeader("X-Forwarded-Proto");
+
+		if (ifForwardedProtocolExists(forwardedProtocol)) {
+			return baseURI.replaceAll("http", forwardedProtocol);
+		}
+		return baseURI;
+	}
+
+	private boolean ifForwardedProtocolExists(String forwardedProtocol) {
+		return null != forwardedProtocol && !"".equals(forwardedProtocol);
 	}
 
 	@POST
