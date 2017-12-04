@@ -24,7 +24,6 @@ import static org.testng.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -37,6 +36,7 @@ import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 public class AppTokenEndpointTest {
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
+	private TestHttpServletRequest request;
 
 	@BeforeMethod
 	public void setup() {
@@ -47,14 +47,53 @@ public class AppTokenEndpointTest {
 		GatekeeperTokenProviderSpy gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		// UriInfo uriInfo = new TestUri();
-		HttpServletRequest request = new TestHttpServletRequest();
+		request = new TestHttpServletRequest();
 		appTokenEndpoint = new AppTokenEndpoint(request);
 		// recordEndpoint = new RecordEndpoint(request);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppToken() {
+		String userId = "someUserId";
+		String appToken = "someAppToken";
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		assertResponseStatusIs(Response.Status.CREATED);
+		String expectedJsonToken = "{\"data\":{\"children\":["
+				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
+		request.headers.put("X-Forwarded-Proto", "https");
+		appTokenEndpoint = new AppTokenEndpoint(request);
+		String userId = "someUserId";
+		String appToken = "someAppToken";
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		assertResponseStatusIs(Response.Status.CREATED);
+		String expectedJsonToken = "{\"data\":{\"children\":["
+				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"https://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
+		request.headers.put("X-Forwarded-Proto", "");
+		appTokenEndpoint = new AppTokenEndpoint(request);
 		String userId = "someUserId";
 		String appToken = "someAppToken";
 
