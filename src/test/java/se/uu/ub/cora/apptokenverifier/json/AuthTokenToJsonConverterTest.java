@@ -21,23 +21,51 @@ package se.uu.ub.cora.apptokenverifier.json;
 
 import static org.testng.Assert.assertEquals;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public class AuthTokenToJsonConverterTest {
+	private String url;
+	private AuthToken authToken;
+
+	@BeforeMethod
+	public void beforeMethod() {
+		url = "http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313";
+		authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someId", 599,
+				"someIdInUserStorage", "someIdFromLogin");
+
+	}
+
 	@Test
 	public void testAuthTokenToJsonConverter() {
-		String url = "http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313";
-		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorage("someId", 599,
-				"someIdInUserStorage");
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 		String json = converter.convertAuthTokenToJson();
 		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"}]"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
+				+ "\"url\":\"http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313\"}}}";
+		assertEquals(json, expected);
+	}
+
+	@Test
+	public void testAuthTokenToJsonConverterWithName() {
+		authToken.firstName = "someFirstName";
+		authToken.lastName = "someLastName";
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
+		String json = converter.convertAuthTokenToJson();
+		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"}," + "{"
+				+ "\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
+				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
+				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
 				+ "\"url\":\"http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313\"}}}";
 		assertEquals(json, expected);
 	}

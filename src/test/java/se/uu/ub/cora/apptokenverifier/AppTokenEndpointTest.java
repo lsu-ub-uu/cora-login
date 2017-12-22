@@ -32,11 +32,13 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public class AppTokenEndpointTest {
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
 	private TestHttpServletRequest request;
+	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
 
 	@BeforeMethod
 	public void setup() {
@@ -44,7 +46,7 @@ public class AppTokenEndpointTest {
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
-		GatekeeperTokenProviderSpy gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
+		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		request = new TestHttpServletRequest();
@@ -61,10 +63,40 @@ public class AppTokenEndpointTest {
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenWithName() {
+		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
+				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
+		authToken.firstName = "someFirstName";
+		authToken.lastName = "someLastName";
+		gatekeeperTokenProvider.authToken = authToken;
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		String userId = "someUserId";
+		String appToken = "someAppToken";
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		assertResponseStatusIs(Response.Status.CREATED);
+		String expectedJsonToken = "{\"data\":{\"children\":["
+				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
+				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
+				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
+
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
 				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -81,10 +113,11 @@ public class AppTokenEndpointTest {
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
 				+ "\"url\":\"https://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -101,10 +134,11 @@ public class AppTokenEndpointTest {
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"}]"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
 				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);

@@ -24,11 +24,12 @@ import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 
 public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+	public AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
+			"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 
 	@Override
 	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return AuthToken.withIdAndValidForNoSecondsAndIdInUserStorage("someAuthToken", 278,
-				"someIdInUserStorage");
+		return authToken;
 	}
 
 	@Override
