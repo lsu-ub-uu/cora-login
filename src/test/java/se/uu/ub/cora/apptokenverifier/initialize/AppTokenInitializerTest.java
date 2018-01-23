@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Uppsala University Library
+ * Copyright 2016, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -32,13 +32,13 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
 
 public class AppTokenInitializerTest {
-	private AppTokenInitializer ApptokenInitializer;
+	private AppTokenInitializer apptokenInitializer;
 	private ServletContext source;
 	private ServletContextEvent context;
 
 	@BeforeMethod
 	public void setUp() {
-		ApptokenInitializer = new AppTokenInitializer();
+		apptokenInitializer = new AppTokenInitializer();
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
 
@@ -46,27 +46,31 @@ public class AppTokenInitializerTest {
 
 	@Test
 	public void testInitializeSystem() {
-		source.setInitParameter("appTokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
-		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
-		ApptokenInitializer.contextInitialized(context);
+		setNeededInitParameters();
 		assertTrue(AppTokenInstanceProvider.getApptokenStorage() instanceof AppTokenStorageSpy);
 	}
 
-	@Test(expectedExceptions = RuntimeException.class)
-	public void testInitializeSystemWithoutUserPickerFactoryClassName() {
-		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
-		ApptokenInitializer.contextInitialized(context);
-	}
-
-	@Test
-	public void testInitializeSystemInitInfoSetInDependencyProvider() {
+	private void setNeededInitParameters() {
 		source.setInitParameter("appTokenStorageClassName",
 				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
 		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		ApptokenInitializer.contextInitialized(context);
+		source.setInitParameter("publicPathToSystem", "/systemone/idplogin/rest/");
+		apptokenInitializer.contextInitialized(context);
+	}
 
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Error "
+			+ "starting AppTokenVerifier: Context must have a appTokenStorageClassName set.")
+	public void testInitializeSystemWithoutUserPickerFactoryClassName() {
+		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
+		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		source.setInitParameter("publicPathToSystem", "/systemone/idplogin/rest/");
+		apptokenInitializer.contextInitialized(context);
+	}
+
+	@Test
+	public void testInitializeSystemInitInfoSetInDependencyProvider() {
+		setNeededInitParameters();
 		AppTokenStorageSpy appTokenStorageSpy = (AppTokenStorageSpy) AppTokenInstanceProvider
 				.getApptokenStorage();
 		assertEquals(appTokenStorageSpy.getInitInfo().get("storageOnDiskBasePath"),
@@ -75,18 +79,45 @@ public class AppTokenInitializerTest {
 
 	@Test
 	public void testGatekeeperTokenProviderIsSet() {
-		source.setInitParameter("appTokenStorageClassName",
-				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
-		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
-		ApptokenInitializer.contextInitialized(context);
+		setNeededInitParameters();
 		assertNotNull(AppTokenInstanceProvider.getGatekeeperTokenProvider());
 	}
 
-	@Test(expectedExceptions = RuntimeException.class)
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Error "
+			+ "starting AppTokenVerifier: Context must have a gatekeeperURL set.")
 	public void testInitializeSystemWithoutGatekeeperURL() {
 		source.setInitParameter("appTokenStorageClassName",
 				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
-		ApptokenInitializer.contextInitialized(context);
+		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		source.setInitParameter("publicPathToSystem", "/systemone/idplogin/rest/");
+		apptokenInitializer.contextInitialized(context);
+	}
+
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Error "
+			+ "starting AppTokenVerifier: Context must have a storageOnDiskBasePath set.")
+	public void testInitializeSystemWithoutStorageOnDiskBasePath() {
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
+		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
+		source.setInitParameter("publicPathToSystem", "/systemone/idplogin/rest/");
+		apptokenInitializer.contextInitialized(context);
+	}
+
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Error "
+			+ "starting AppTokenVerifier: Context must have a publicPathToSystem set.")
+	public void testInitializeSystemWithoutPublicPathToSystem() {
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy");
+		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
+		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		apptokenInitializer.contextInitialized(context);
+	}
+
+	@Test
+	public void testInitInfoSetApptokenVerifierInstanceProvider() throws Exception {
+		setNeededInitParameters();
+		assertEquals(AppTokenInstanceProvider.getInitInfo().get("publicPathToSystem"),
+				"/systemone/idplogin/rest/");
 	}
 
 	@Test

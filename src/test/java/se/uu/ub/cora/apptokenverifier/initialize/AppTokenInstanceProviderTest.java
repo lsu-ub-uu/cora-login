@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -67,6 +67,13 @@ public class AppTokenInstanceProviderTest {
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 		assertEquals(AppTokenInstanceProvider.getGatekeeperTokenProvider(),
 				gatekeeperTokenProvider);
+	}
+
+	@Test
+	public void testSetInitInfo() throws Exception {
+		Map<String, String> initInfo = new HashMap<>();
+		AppTokenInstanceProvider.setInitInfo(initInfo);
+		assertEquals(AppTokenInstanceProvider.getInitInfo(), initInfo);
 	}
 
 }

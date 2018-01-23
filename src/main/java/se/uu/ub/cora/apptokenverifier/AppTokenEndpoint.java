@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -42,6 +42,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 @Path("apptoken")
 public class AppTokenEndpoint {
 
+	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
 
@@ -60,8 +61,10 @@ public class AppTokenEndpoint {
 
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
-		String baseURL = tempUrl.substring(0, tempUrl.indexOf(request.getPathInfo()));
-		baseURL += "/apptoken/";
+		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
+		baseURL += AppTokenInstanceProvider.getInitInfo().get("publicPathToSystem");
+
+		baseURL += "apptoken/";
 		return baseURL;
 	}
 
@@ -69,7 +72,7 @@ public class AppTokenEndpoint {
 		String forwardedProtocol = request.getHeader("X-Forwarded-Proto");
 
 		if (ifForwardedProtocolExists(forwardedProtocol)) {
-			return baseURI.replaceAll("http", forwardedProtocol);
+			return baseURI.replaceAll("http:", forwardedProtocol + ":");
 		}
 		return baseURI;
 	}

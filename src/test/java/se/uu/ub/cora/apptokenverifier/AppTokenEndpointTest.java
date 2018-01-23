@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -39,15 +39,18 @@ public class AppTokenEndpointTest {
 	private AppTokenEndpoint appTokenEndpoint;
 	private TestHttpServletRequest request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
+	private Map<String, String> initInfo = new HashMap<>();
 
 	@BeforeMethod
 	public void setup() {
 		Map<String, String> initInfo = new HashMap<>();
+		initInfo.put("publicPathToSystem", "/apptokenverifier/rest/");
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		AppTokenInstanceProvider.setInitInfo(initInfo);
 
 		request = new TestHttpServletRequest();
 		appTokenEndpoint = new AppTokenEndpoint(request);
@@ -67,8 +70,9 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -96,8 +100,9 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
 
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -117,8 +122,34 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"https://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"https://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoHttpsWhenAlreadyHttpsInRequestUrl() {
+		request.headers.put("X-Forwarded-Proto", "https");
+		request.requestURL = new StringBuffer(
+				"https://localhost:8080/apptoken/rest/apptoken/141414");
+
+		appTokenEndpoint = new AppTokenEndpoint(request);
+		String userId = "someUserId";
+		String appToken = "someAppToken";
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		assertResponseStatusIs(Response.Status.CREATED);
+		String expectedJsonToken = "{\"data\":{\"children\":["
+				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
+				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
+				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ ",\"name\":\"authToken\"},"
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"https://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -138,8 +169,9 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptoken/rest/apptoken/someUserId\"}}}";
+				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
+				+ "\"rel\":\"delete\","
+				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -47,13 +47,16 @@ public class AppTokenInitializer implements ServletContextListener {
 		try {
 			tryToInitialize();
 		} catch (Exception e) {
-			throw new RuntimeException("Error starting AppTokenVerifier: " + e);
+			throw new RuntimeException("Error starting AppTokenVerifier: " + e.getMessage());
 		}
 	}
 
 	private void tryToInitialize() throws InstantiationException, IllegalAccessException,
 			ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		collectInitInformation();
+		ensureKeyExistsInInitInfo("storageOnDiskBasePath");
+		ensureKeyExistsInInitInfo("publicPathToSystem");
+		AppTokenInstanceProvider.setInitInfo(initInfo);
 		createAndSetApptokenStorage();
 		createAndSetGatekeeperTokenProvider();
 	}
@@ -64,6 +67,12 @@ public class AppTokenInitializer implements ServletContextListener {
 		while (initParameterNames.hasMoreElements()) {
 			String key = initParameterNames.nextElement();
 			initInfo.put(key, servletContext.getInitParameter(key));
+		}
+	}
+
+	private void ensureKeyExistsInInitInfo(String keyName) {
+		if (!initInfo.containsKey(keyName)) {
+			throw new RuntimeException("Context must have a " + keyName + " set.");
 		}
 	}
 

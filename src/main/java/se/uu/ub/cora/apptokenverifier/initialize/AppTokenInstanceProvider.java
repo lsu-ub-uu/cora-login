@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -19,6 +19,8 @@
 
 package se.uu.ub.cora.apptokenverifier.initialize;
 
+import java.util.Map;
+
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
@@ -26,6 +28,7 @@ public final class AppTokenInstanceProvider {
 
 	private static AppTokenStorage appTokenStorage;
 	private static GatekeeperTokenProvider gatekeeperTokenProvider;
+	private static Map<String, String> initInfo;
 
 	private AppTokenInstanceProvider() {
 		// not called
@@ -48,6 +51,14 @@ public final class AppTokenInstanceProvider {
 
 	public static GatekeeperTokenProvider getGatekeeperTokenProvider() {
 		return gatekeeperTokenProvider;
+	}
+
+	public static void setInitInfo(Map<String, String> initInfo) {
+		AppTokenInstanceProvider.initInfo = initInfo;
+	}
+
+	public static Map<String, String> getInitInfo() {
+		return initInfo;
 	}
 
 }
