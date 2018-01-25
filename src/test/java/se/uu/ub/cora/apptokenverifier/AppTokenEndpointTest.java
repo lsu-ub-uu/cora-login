@@ -44,7 +44,7 @@ public class AppTokenEndpointTest {
 	@BeforeMethod
 	public void setup() {
 		Map<String, String> initInfo = new HashMap<>();
-		initInfo.put("publicPathToSystem", "/apptokenverifier/rest/");
+		initInfo.put("appTokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
@@ -54,7 +54,6 @@ public class AppTokenEndpointTest {
 
 		request = new TestHttpServletRequest();
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		// recordEndpoint = new RecordEndpoint(request);
 	}
 
 	@Test

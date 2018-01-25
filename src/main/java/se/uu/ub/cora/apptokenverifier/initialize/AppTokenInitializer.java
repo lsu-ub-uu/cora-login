@@ -55,7 +55,7 @@ public class AppTokenInitializer implements ServletContextListener {
 			ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		collectInitInformation();
 		ensureKeyExistsInInitInfo("storageOnDiskBasePath");
-		ensureKeyExistsInInitInfo("publicPathToSystem");
+		ensureKeyExistsInInitInfo("apptokenPublicPathToSystem");
 		AppTokenInstanceProvider.setInitInfo(initInfo);
 		createAndSetApptokenStorage();
 		createAndSetGatekeeperTokenProvider();

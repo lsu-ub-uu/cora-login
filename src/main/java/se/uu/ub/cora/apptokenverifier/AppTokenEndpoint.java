@@ -62,7 +62,7 @@ public class AppTokenEndpoint {
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		baseURL += AppTokenInstanceProvider.getInitInfo().get("publicPathToSystem");
+		baseURL += AppTokenInstanceProvider.getInitInfo().get("appTokenVerifierPublicPathToSystem");
 
 		baseURL += "apptoken/";
 		return baseURL;
