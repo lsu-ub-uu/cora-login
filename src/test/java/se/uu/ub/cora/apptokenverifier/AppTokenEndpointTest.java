@@ -44,7 +44,7 @@ public class AppTokenEndpointTest {
 	@BeforeMethod
 	public void setup() {
 		Map<String, String> initInfo = new HashMap<>();
-		initInfo.put("appTokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
+		initInfo.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
