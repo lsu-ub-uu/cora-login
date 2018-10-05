@@ -1,4 +1,4 @@
-<!-- ~ Copyright 2015 Uppsala University Library ~ ~ This file is part of 
+<!-- ~ Copyright 2015, 2018 Uppsala University Library ~ ~ This file is part of 
 	Cora. ~ ~ Cora is free software: you can redistribute it and/or modify ~ 
 	it under the terms of the GNU General Public License as published by ~ the 
 	Free Software Foundation, either version 3 of the License, or ~ (at your 
@@ -16,42 +16,27 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>0.6-SNAPSHOT</version>
+		<version>0.7-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.4-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>apptokenverifier</name>
 
 	<properties>
-		<apptokenstorage.version>0.3-SNAPSHOT</apptokenstorage.version>
-		<gatekeepertokenprovider.version>0.3-SNAPSHOT</gatekeepertokenprovider.version>
-		<javax.ws.rs.version>2.0.1</javax.ws.rs.version>
-		<jersey.version>2.25</jersey.version>
+		<apptokenstorage.version>0.4-SNAPSHOT</apptokenstorage.version>
+		<gatekeepertokenprovider.version>0.4-SNAPSHOT</gatekeepertokenprovider.version>
+		<javax.ws.rs.version>2.1.1</javax.ws.rs.version>
+		<jersey.version>2.27</jersey.version>
 	</properties>
 
 	<scm>
-		<connection>scm:git:https://git.epc.ub.uu.se/epc/apptokenverifier.git</connection>
-		<developerConnection>scm:git:https://git.epc.ub.uu.se/epc/apptokenverifier.git</developerConnection>
-		<url>https://git.epc.ub.uu.se/epc/apptokenverifier.git</url>
+		<connection>scm:git:https://github.com/lsu-ub-uu/apptokenverifier.git</connection>
+		<developerConnection>scm:git:https://github.com/lsu-ub-uu/apptokenverifier.git</developerConnection>
+		<url>https://github.com/lsu-ub-uu/apptokenverifier.git</url>
 	</scm>
-
-	<repositories>
-		<repository>
-			<id>maven-public</id>
-			<name>LSU Nexus Repository</name>
-			<url>http://epc.ub.uu.se/nexus/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<updatePolicy>daily</updatePolicy>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -87,7 +72,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
+			<version>4.0.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- The JAXB APIs are considered to be Java EE APIs, and therefore are 
@@ -96,18 +81,8 @@
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
-			<version>2.2.11</version>
+			<version>2.3.0</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>com.sun.xml.bind</groupId> -->
-		<!-- <artifactId>jaxb-core</artifactId> -->
-		<!-- <version>2.2.11</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.sun.xml.bind</groupId> -->
-		<!-- <artifactId>jaxb-impl</artifactId> -->
-		<!-- <version>2.2.11</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
