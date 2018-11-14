@@ -68,6 +68,17 @@ public class AppTokenInitializerTest {
 		apptokenInitializer.contextInitialized(context);
 	}
 
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""
+			+ "Error starting AppTokenVerifier: "
+			+ "Invocation exception from AppTokenStorageThrowsInvocationExceptionSpy")
+	public void testHandlingAndGettingCorrectErrorMessageFromErrorsThrowsOnStartup() {
+		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		source.setInitParameter("apptokenVerifierPublicPathToSystem", "/systemone/idplogin/rest/");
+		source.setInitParameter("appTokenStorageClassName",
+				"se.uu.ub.cora.apptokenverifier.AppTokenStorageThrowsInvocationExceptionSpy");
+		apptokenInitializer.contextInitialized(context);
+	}
+
 	@Test
 	public void testInitializeSystemInitInfoSetInDependencyProvider() {
 		setNeededInitParameters();
@@ -116,7 +127,8 @@ public class AppTokenInitializerTest {
 	@Test
 	public void testInitInfoSetApptokenVerifierInstanceProvider() throws Exception {
 		setNeededInitParameters();
-		assertEquals(AppTokenInstanceProvider.getInitInfo().get("apptokenVerifierPublicPathToSystem"),
+		assertEquals(
+				AppTokenInstanceProvider.getInitInfo().get("apptokenVerifierPublicPathToSystem"),
 				"/systemone/idplogin/rest/");
 	}
 

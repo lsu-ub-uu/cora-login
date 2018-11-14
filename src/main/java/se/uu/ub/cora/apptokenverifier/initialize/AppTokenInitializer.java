@@ -46,9 +46,17 @@ public class AppTokenInitializer implements ServletContextListener {
 		servletContext = arg0.getServletContext();
 		try {
 			tryToInitialize();
+		} catch (InvocationTargetException e) {
+			throwRuntimeExceptionWithRootCauseForInvocationException(e);
 		} catch (Exception e) {
 			throw new RuntimeException("Error starting AppTokenVerifier: " + e.getMessage());
 		}
+	}
+
+	private void throwRuntimeExceptionWithRootCauseForInvocationException(
+			InvocationTargetException e) {
+		throw new RuntimeException(
+				"Error starting AppTokenVerifier: " + e.getTargetException().getMessage());
 	}
 
 	private void tryToInitialize() throws InstantiationException, IllegalAccessException,
