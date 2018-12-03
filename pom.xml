@@ -16,18 +16,18 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>0.7-SNAPSHOT</version>
+		<version>0.8-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.5-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>apptokenverifier</name>
 
 	<properties>
-		<apptokenstorage.version>0.4-SNAPSHOT</apptokenstorage.version>
-		<gatekeepertokenprovider.version>0.4-SNAPSHOT</gatekeepertokenprovider.version>
+		<apptokenstorage.version>0.5-SNAPSHOT</apptokenstorage.version>
+		<gatekeepertokenprovider.version>0.5-SNAPSHOT</gatekeepertokenprovider.version>
 		<javax.ws.rs.version>2.1.1</javax.ws.rs.version>
 		<jersey.version>2.27</jersey.version>
 	</properties>
