@@ -42,7 +42,7 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>apptokenstorage</artifactId>
 			<version>${apptokenstorage.version}</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>

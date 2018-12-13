@@ -82,8 +82,8 @@ public class AppTokenInitializer implements ServletContextListener {
 	private void createAndSetApptokenStorage()
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException,
 			NoSuchMethodException, InvocationTargetException {
-		String userPickerProviderString = getInitParameter("appTokenStorageClassName");
-		createInstanceOfApptokenStorageProviderClass(userPickerProviderString);
+		String appTokenStorageString = getInitParameter("appTokenStorageClassName");
+		createInstanceOfApptokenStorageProviderClass(appTokenStorageString);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 	}
 
@@ -94,11 +94,12 @@ public class AppTokenInitializer implements ServletContextListener {
 		throw new RuntimeException("Context must have a " + parameterName + " set.");
 	}
 
-	private void createInstanceOfApptokenStorageProviderClass(String userPickerProviderString)
+	private void createInstanceOfApptokenStorageProviderClass(String appTokenStorageString)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException,
 			NoSuchMethodException, InvocationTargetException {
-		Constructor<?> constructor = Class.forName(userPickerProviderString)
-				.getConstructor(Map.class);
+
+		Constructor<?> constructor = Class.forName(appTokenStorageString).getConstructor(Map.class);
+
 		appTokenStorage = (AppTokenStorage) constructor.newInstance(initInfo);
 	}
 
