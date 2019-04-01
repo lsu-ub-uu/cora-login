@@ -72,6 +72,7 @@ public class AppTokenInitializerTest {
 			+ "Error starting AppTokenVerifier: "
 			+ "Invocation exception from AppTokenStorageThrowsInvocationExceptionSpy")
 	public void testHandlingAndGettingCorrectErrorMessageFromErrorsThrowsOnStartup() {
+		source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
 		source.setInitParameter("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		source.setInitParameter("apptokenVerifierPublicPathToSystem", "/systemone/idplogin/rest/");
 		source.setInitParameter("appTokenStorageClassName",
