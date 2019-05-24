@@ -20,21 +20,28 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 
 import java.util.Map;
 
+import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
 
-public class AppTokenVerifierModuleStarterSpy implements AppTokenVerifierModuleStarter {
+public class AppTokenStorageProviderSpy2 implements AppTokenStorageProvider {
 
-	boolean startWasCalled = false;
 	Map<String, String> initInfo;
-	Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations;
+	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
 
 	@Override
-	public void startUsingInitInfoAndAppTokenStorageProviders(Map<String, String> initInfo,
-			Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations) {
-		this.initInfo = initInfo;
-		this.appTokenStorageProviderImplementations = appTokenStorageProviderImplementations;
-		startWasCalled = true;
+	public AppTokenStorage getAppTokenStorage() {
+		return appTokenStorageSpy;
+	}
 
+	@Override
+	public void startUsingInitInfo(Map<String, String> initInfo) {
+		this.initInfo = initInfo;
+	}
+
+	@Override
+	public int getOrderToSelectImplementionsBy() {
+		return 2;
 	}
 
 }

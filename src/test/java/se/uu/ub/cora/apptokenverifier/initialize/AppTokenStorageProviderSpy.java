@@ -39,4 +39,9 @@ public class AppTokenStorageProviderSpy implements AppTokenStorageProvider {
 		this.initInfo = initInfo;
 	}
 
+	@Override
+	public int getOrderToSelectImplementionsBy() {
+		return 0;
+	}
+
 }

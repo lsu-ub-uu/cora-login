@@ -1,5 +1,6 @@
 /*
  * Copyright 2019 Olov McKie
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -22,10 +23,19 @@ import java.util.Map;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
+import se.uu.ub.cora.apptokenstorage.SelectOrder;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
+import se.uu.ub.cora.httphandler.HttpHandlerFactory;
+import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
 
 public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleStarter {
+	private static final String FOUND = "Found ";
 	private Map<String, String> initInfo;
 	private Iterable<AppTokenStorageProvider> appTokenStorageProviders;
+	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleStarterImp.class);
+	private String simpleName = AppTokenVerifierModuleStarterImp.class.getSimpleName();
 
 	@Override
 	public void startUsingInitInfoAndAppTokenStorageProviders(Map<String, String> initInfo,
@@ -36,63 +46,73 @@ public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleS
 	}
 
 	public void start() {
-		// UserPickerProvider userPickerProvider =
-		// getImplementationThrowErrorIfNoneOrMoreThanOne(
-		// userPickerProviders, "UserPickerProvider");
-		// String guestUserId = tryToGetInitParameter("guestUserId");
+		startAppTokenStorage();
+		startGatekeeperTokenProvider();
+	}
 
-		AppTokenStorageProvider appTokenStorageProvider = getImplementationThrowErrorIfNoneOrMoreThanOne(
+	private void startAppTokenStorage() {
+		AppTokenStorageProvider appTokenStorageProvider = getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
 				appTokenStorageProviders, "AppTokenStorageProvider");
 
 		appTokenStorageProvider.startUsingInitInfo(initInfo);
 		AppTokenStorage appTokenStorage = appTokenStorageProvider.getAppTokenStorage();
 
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
-
-		// userPickerProvider.startUsingUserStorageAndGuestUserId(userStorage,
-		// guestUserId);
-
-		// GatekeeperLocator locator = new GatekeeperLocatorImp();
-		// GatekeeperInstanceProvider.setGatekeeperLocator(locator);
-		// GatekeeperImp.INSTANCE.setUserPickerProvider(userPickerProvider);
 	}
 
-	private String tryToGetInitParameter(String parameterName) {
-		throwErrorIfKeyIsMissingFromInitInfo(parameterName);
-		return initInfo.get(parameterName);
-	}
-
-	private void throwErrorIfKeyIsMissingFromInitInfo(String key) {
-		if (!initInfo.containsKey(key)) {
-			throw new AppTokenVerifierInitializationException("InitInfo must contain " + key);
-		}
-	}
-
-	private <T extends Object> T getImplementationThrowErrorIfNoneOrMoreThanOne(
-			Iterable<T> implementations, String implementationClassName) {
-		T implementation = null;
-		int noOfImplementationsFound = 0;
-		for (T currentImplementation : implementations) {
-			noOfImplementationsFound++;
-			implementation = currentImplementation;
-		}
-		throwErrorIfNone(noOfImplementationsFound, implementationClassName);
-		throwErrorIfMoreThanOne(noOfImplementationsFound, implementationClassName);
+	private <T extends SelectOrder> T getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
+			Iterable<T> implementations, String interfaceClassName) {
+		T implementation = findAndLogPreferedImplementation(implementations, interfaceClassName);
+		throwErrorIfNoImplementationFound(interfaceClassName, implementation);
+		log.logInfoUsingMessage("Using " + implementation.getClass().getName() + " as "
+				+ interfaceClassName + " implementation.");
 		return implementation;
 	}
 
-	private void throwErrorIfNone(int noOfImplementationsFound, String implementationClassName) {
-		if (noOfImplementationsFound == 0) {
-			throw new AppTokenVerifierInitializationException(
-					"No implementations found for " + implementationClassName);
+	private <T extends SelectOrder> T findAndLogPreferedImplementation(Iterable<T> implementations,
+			String interfaceClassName) {
+		T implementation = null;
+		int preferenceLevel = -99999;
+		for (T currentImplementation : implementations) {
+			if (preferenceLevel < currentImplementation.getOrderToSelectImplementionsBy()) {
+				preferenceLevel = currentImplementation.getOrderToSelectImplementionsBy();
+				implementation = currentImplementation;
+			}
+			log.logInfoUsingMessage(FOUND + currentImplementation.getClass().getName() + " as "
+					+ interfaceClassName + " implementation with select order "
+					+ currentImplementation.getOrderToSelectImplementionsBy() + ".");
+		}
+		return implementation;
+	}
+
+	private <T extends SelectOrder> void throwErrorIfNoImplementationFound(
+			String interfaceClassName, T implementation) {
+		if (null == implementation) {
+			String errorMessage = "No implementations found for " + interfaceClassName;
+			log.logFatalUsingMessage(errorMessage);
+			throw new AppTokenVerifierInitializationException(errorMessage);
 		}
 	}
 
-	private void throwErrorIfMoreThanOne(int noOfImplementationsFound,
-			String implementationClassName) {
-		if (noOfImplementationsFound > 1) {
-			throw new AppTokenVerifierInitializationException(
-					"More than one implementation found for " + implementationClassName);
+	private void startGatekeeperTokenProvider() {
+		ensureKeyExistsInInitInfo("gatekeeperURL");
+		ensureKeyExistsInInitInfo("apptokenVerifierPublicPathToSystem");
+		createAndSetGatekeeperTokenProvider();
+	}
+
+	private void ensureKeyExistsInInitInfo(String keyName) {
+		if (!initInfo.containsKey(keyName)) {
+			String message = "Error starting " + simpleName + ", context must have a " + keyName
+					+ " set.";
+			log.logFatalUsingMessage(message);
+			throw new AppTokenVerifierInitializationException(message);
 		}
+	}
+
+	private void createAndSetGatekeeperTokenProvider() {
+		String baseUrl = initInfo.get("gatekeeperURL");
+		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
+		AppTokenInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
+				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
 	}
 }
