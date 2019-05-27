@@ -48,6 +48,8 @@ public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleS
 	public void start() {
 		startAppTokenStorage();
 		startGatekeeperTokenProvider();
+		ensureInitInfoIsSetInAppTokenInstanceProviderForEndpoint();
+
 	}
 
 	private void startAppTokenStorage() {
@@ -96,7 +98,6 @@ public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleS
 
 	private void startGatekeeperTokenProvider() {
 		ensureKeyExistsInInitInfo("gatekeeperURL");
-		ensureKeyExistsInInitInfo("apptokenVerifierPublicPathToSystem");
 		createAndSetGatekeeperTokenProvider();
 	}
 
@@ -114,5 +115,12 @@ public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleS
 		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
 				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
+	}
+
+	private void ensureInitInfoIsSetInAppTokenInstanceProviderForEndpoint() {
+		ensureKeyExistsInInitInfo("apptokenVerifierPublicPathToSystem");
+		AppTokenInstanceProvider.setInitInfo(initInfo);
+		log.logInfoUsingMessage("Using " + initInfo.get("apptokenVerifierPublicPathToSystem")
+				+ " as apptokenVerifierPublicPathToSystem.");
 	}
 }

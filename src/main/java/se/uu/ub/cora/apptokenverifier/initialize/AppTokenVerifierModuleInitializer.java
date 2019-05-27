@@ -47,8 +47,6 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	private void initializeAppTokenVerifier() {
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
-		// ensureKeyExistsInInitInfo("gatekeeperURL");
-		// ensureKeyExistsInInitInfo("apptokenVerifierPublicPathToSystem");
 		collectUserPickerProviderImplementations();
 		startAppTokenVerifier();
 		log.logInfoUsingMessage(simpleName + " started");
@@ -61,15 +59,6 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 			initInfo.put(key, servletContext.getInitParameter(key));
 		}
 	}
-
-	// private void ensureKeyExistsInInitInfo(String keyName) {
-	// if (!initInfo.containsKey(keyName)) {
-	// String message = "Error starting " + simpleName + ", context must have a " + keyName
-	// + " set.";
-	// log.logFatalUsingMessage(message);
-	// throw new AppTokenVerifierInitializationException(message);
-	// }
-	// }
 
 	private void collectUserPickerProviderImplementations() {
 		appTokenStorageProviderImplementations = ServiceLoader.load(AppTokenStorageProvider.class);

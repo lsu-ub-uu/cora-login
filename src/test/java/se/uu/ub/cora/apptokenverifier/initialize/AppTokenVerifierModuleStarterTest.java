@@ -151,6 +151,18 @@ public class AppTokenVerifierModuleStarterTest {
 	}
 
 	@Test
+	public void testGatekeeperTokenProviderIsSet() {
+		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) AppTokenInstanceProvider
+				.getGatekeeperTokenProvider();
+		assertTrue(gatekeeperTokenProvider instanceof GatekeeperTokenProviderImp);
+		String gatekeeperUrl = gatekeeperTokenProvider.getGatekeeperUrl();
+		assertEquals(gatekeeperUrl, initInfo.get("gatekeeperURL"));
+
+		HttpHandlerFactory httpHandlerFactory = gatekeeperTokenProvider.getHttpHandlerFactory();
+		assertTrue(httpHandlerFactory instanceof HttpHandlerFactoryImp);
+	}
+
+	@Test
 	public void testInitializeSystemWithoutapptokenVerifierPublicPathToSystemThrowsErrorAndLogsMessage() {
 		initInfo.remove("apptokenVerifierPublicPathToSystem");
 		Exception caughtException = startAppTokenVerifierMakeSureAnExceptionIsThrown();
@@ -161,14 +173,16 @@ public class AppTokenVerifierModuleStarterTest {
 	}
 
 	@Test
-	public void testGatekeeperTokenProviderIsSet() {
-		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) AppTokenInstanceProvider
-				.getGatekeeperTokenProvider();
-		assertTrue(gatekeeperTokenProvider instanceof GatekeeperTokenProviderImp);
-		String gatekeeperUrl = gatekeeperTokenProvider.getGatekeeperUrl();
-		assertEquals(gatekeeperUrl, initInfo.get("gatekeeperURL"));
+	public void testAppTokenInstanceProviderHasInitInfoSetForEndpoint() throws Exception {
+		startAppTokenVerifierModuleStarter();
+		assertSame(AppTokenInstanceProvider.getInitInfo(), initInfo);
+	}
 
-		HttpHandlerFactory httpHandlerFactory = gatekeeperTokenProvider.getHttpHandlerFactory();
-		assertTrue(httpHandlerFactory instanceof HttpHandlerFactoryImp);
+	@Test
+	public void testAppTokenInstanceProviderLogsInitInfoForEndpoint() throws Exception {
+		startAppTokenVerifierModuleStarter();
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 2),
+				"Using /systemone/idplogin/rest/ as " + "apptokenVerifierPublicPathToSystem.");
 	}
 }

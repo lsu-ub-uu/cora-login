@@ -46,8 +46,6 @@ public class AppTokenVerifierModuleInitializerTest {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		source = new ServletContextSpy();
-		// source.setInitParameter("initParam1", "initValue1");
-		// source.setInitParameter("initParam2", "initValue2");
 		context = new ServletContextEvent(source);
 		initializer = new AppTokenVerifierModuleInitializer();
 	}
@@ -67,9 +65,6 @@ public class AppTokenVerifierModuleInitializerTest {
 	}
 
 	private void setNeededInitParameters() {
-		// source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
-		// source.setInitParameter("apptokenVerifierPublicPathToSystem",
-		// "/systemone/idplogin/rest/");
 		source.setInitParameter("initParam1", "initValue1");
 		source.setInitParameter("initParam2", "initValue2");
 
@@ -91,35 +86,9 @@ public class AppTokenVerifierModuleInitializerTest {
 		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
 		Map<String, String> initInfo = starter.initInfo;
 		assertEquals(initInfo.size(), 2);
-		// assertEquals(initInfo.get("gatekeeperURL"), "http://localhost:8080/gatekeeper/");
-		// assertEquals(initInfo.get("apptokenVerifierPublicPathToSystem"),
-		// "/systemone/idplogin/rest/");
 		source.setInitParameter("initParam1", "initValue1");
 		source.setInitParameter("initParam2", "initValue2");
 	}
-
-	// @Test
-	// public void testInitializeSystemWithoutGatekeeperURLThrowsErrorAndLogsMessage() {
-	// source.setInitParameter("apptokenVerifierPublicPathToSystem", "/systemone/idplogin/rest/");
-	// Exception caughtException = startAndMakeSureErrorIsThrown();
-	// assertEquals(caughtException.getMessage(),
-	// "Error starting AppTokenVerifierModuleInitializer, context must have a gatekeeperURL set.");
-	// assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
-	// "Error starting AppTokenVerifierModuleInitializer, context must have a gatekeeperURL set.");
-	// }
-	//
-	// @Test
-	// public void
-	// testInitializeSystemWithoutapptokenVerifierPublicPathToSystemThrowsErrorAndLogsMessage() {
-	// source.setInitParameter("gatekeeperURL", "http://localhost:8080/gatekeeper/");
-	// Exception caughtException = startAndMakeSureErrorIsThrown();
-	// assertEquals(caughtException.getMessage(),
-	// "Error starting AppTokenVerifierModuleInitializer, context must have a
-	// apptokenVerifierPublicPathToSystem set.");
-	// assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
-	// "Error starting AppTokenVerifierModuleInitializer, context must have a
-	// apptokenVerifierPublicPathToSystem set.");
-	// }
 
 	@Test
 	public void testUserPickerProviderImplementationsArePassedOnToStarter() {
