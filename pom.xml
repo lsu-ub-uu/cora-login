@@ -25,8 +25,8 @@
 
 	<properties>
 		<logger.version>1.0.0</logger.version>
-		<apptokenstorage.version>1.1-SNAPSHOT</apptokenstorage.version>
-		<gatekeepertokenprovider.version>1.1-SNAPSHOT</gatekeepertokenprovider.version>
+		<apptokenstorage.version>1.1.0</apptokenstorage.version>
+		<gatekeepertokenprovider.version>1.1.0</gatekeepertokenprovider.version>
 		<javax.ws.rs.version>2.1.1</javax.ws.rs.version>
 		<jersey.version>2.27</jersey.version>
 	</properties>
