@@ -58,7 +58,9 @@ public class AppTokenInitializer implements ServletContextListener {
 			ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		collectInitInformation();
 		ensureKeyExistsInInitInfo("storageOnDiskBasePath");
+		ensureKeyExistsInInitInfo("appTokenStorageClassName");
 		ensureKeyExistsInInitInfo("apptokenVerifierPublicPathToSystem");
+		ensureKeyExistsInInitInfo("gatekeeperURL");
 		AppTokenInstanceProvider.setInitInfo(initInfo);
 		createAndSetApptokenStorage();
 		createAndSetGatekeeperTokenProvider();
@@ -82,22 +84,19 @@ public class AppTokenInitializer implements ServletContextListener {
 	private void createAndSetApptokenStorage()
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException,
 			NoSuchMethodException, InvocationTargetException {
-		String userPickerProviderString = getInitParameter("appTokenStorageClassName");
-		createInstanceOfApptokenStorageProviderClass(userPickerProviderString);
+		String appTokenStorageClassString = getInitParameter("appTokenStorageClassName");
+		createInstanceOfApptokenStorageProviderClass(appTokenStorageClassString);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 	}
 
 	private String getInitParameter(String parameterName) {
-		if (initInfo.containsKey(parameterName)) {
-			return initInfo.get(parameterName);
-		}
-		throw new RuntimeException("Context must have a " + parameterName + " set.");
+		return initInfo.get(parameterName);
 	}
 
-	private void createInstanceOfApptokenStorageProviderClass(String userPickerProviderString)
+	private void createInstanceOfApptokenStorageProviderClass(String appTokenStorageClassString)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException,
 			NoSuchMethodException, InvocationTargetException {
-		Constructor<?> constructor = Class.forName(userPickerProviderString)
+		Constructor<?> constructor = Class.forName(appTokenStorageClassString)
 				.getConstructor(Map.class);
 		appTokenStorage = (AppTokenStorage) constructor.newInstance(initInfo);
 	}
