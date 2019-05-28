@@ -25,11 +25,13 @@ import java.util.ServiceLoader;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 
+@WebListener
 public class AppTokenVerifierModuleInitializer implements ServletContextListener {
 	private AppTokenVerifierModuleStarter starter = new AppTokenVerifierModuleStarterImp();
 	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleInitializer.class);
