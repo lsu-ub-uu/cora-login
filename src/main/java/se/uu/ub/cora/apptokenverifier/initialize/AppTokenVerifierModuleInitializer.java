@@ -49,7 +49,7 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	private void initializeAppTokenVerifier() {
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
-		collectUserPickerProviderImplementations();
+		collectAppTokenStorageProviderImplementations();
 		startAppTokenVerifier();
 		log.logInfoUsingMessage(simpleName + " started");
 	}
@@ -62,7 +62,7 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 		}
 	}
 
-	private void collectUserPickerProviderImplementations() {
+	private void collectAppTokenStorageProviderImplementations() {
 		appTokenStorageProviderImplementations = ServiceLoader.load(AppTokenStorageProvider.class);
 	}
 
