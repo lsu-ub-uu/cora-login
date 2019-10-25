@@ -41,8 +41,8 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	private String simpleName = AppTokenVerifierModuleInitializer.class.getSimpleName();
 
 	@Override
-	public void contextInitialized(ServletContextEvent arg0) {
-		servletContext = arg0.getServletContext();
+	public void contextInitialized(ServletContextEvent contextEvent) {
+		servletContext = contextEvent.getServletContext();
 		initializeAppTokenVerifier();
 	}
 

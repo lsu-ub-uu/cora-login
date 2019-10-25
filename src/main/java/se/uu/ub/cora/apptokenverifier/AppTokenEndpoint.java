@@ -51,7 +51,7 @@ public class AppTokenEndpoint {
 		url = getBaseURLFromURI();
 	}
 
-	private String getBaseURLFromURI() {
+	private final String getBaseURLFromURI() {
 		String baseURL = getBaseURLFromRequest();
 
 		baseURL = changeHttpToHttpsIfHeaderSaysSo(baseURL);
@@ -72,7 +72,7 @@ public class AppTokenEndpoint {
 		String forwardedProtocol = request.getHeader("X-Forwarded-Proto");
 
 		if (ifForwardedProtocolExists(forwardedProtocol)) {
-			return baseURI.replaceAll("http:", forwardedProtocol + ":");
+			return baseURI.replace("http:", forwardedProtocol + ":");
 		}
 		return baseURI;
 	}
