@@ -39,7 +39,6 @@ public class AppTokenEndpointTest {
 	private AppTokenEndpoint appTokenEndpoint;
 	private TestHttpServletRequest request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
-	private Map<String, String> initInfo = new HashMap<>();
 
 	@BeforeMethod
 	public void setup() {
