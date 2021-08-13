@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.4.1</version>
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
@@ -24,9 +24,9 @@
 	<name>apptokenverifier</name>
 
 	<properties>
-		<logger.version>2.2.0</logger.version>
-		<gatekeepertokenprovider.version>2.2.0</gatekeepertokenprovider.version>
-		<apptokenstorage.version>2.2.0</apptokenstorage.version>
+		<logger.version>2.3.0</logger.version>
+		<gatekeepertokenprovider.version>2.3.0</gatekeepertokenprovider.version>
+		<apptokenstorage.version>2.3.0</apptokenstorage.version>
 		<servlet-api.version>4.0.1</servlet-api.version>
 		<jersey.version>2.32</jersey.version>
 	</properties>
