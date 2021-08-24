@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2021 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -22,11 +22,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.ServiceLoader;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;

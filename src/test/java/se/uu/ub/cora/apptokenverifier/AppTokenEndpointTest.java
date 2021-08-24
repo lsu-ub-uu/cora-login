@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018 Uppsala University Library
+ * Copyright 2017, 2018, 2021 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -24,12 +24,11 @@ import static org.testng.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;

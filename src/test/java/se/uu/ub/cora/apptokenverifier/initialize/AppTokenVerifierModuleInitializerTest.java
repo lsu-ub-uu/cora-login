@@ -24,8 +24,8 @@ import static org.testng.Assert.assertTrue;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
