@@ -24,11 +24,11 @@
 	<name>apptokenverifier</name>
 
 	<properties>
-		<logger.version>2.3.0</logger.version>
-		<gatekeepertokenprovider.version>2.3.0</gatekeepertokenprovider.version>
-		<apptokenstorage.version>2.3.0</apptokenstorage.version>
+		<logger.version>2.4.0</logger.version>
+		<gatekeepertokenprovider.version>2.4.0</gatekeepertokenprovider.version>
+		<apptokenstorage.version>2.4.0</apptokenstorage.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
-		<jersey.version>3.0.2</jersey.version>
+		<jersey.version>3.0.3</jersey.version>
 	</properties>
 
 	<scm>
