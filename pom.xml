@@ -29,9 +29,12 @@
 		<apptokenstorage.version>2.4.0</apptokenstorage.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
 		<argon2.version>2.11</argon2.version>
+		<testutils.version>1.2.0</testutils.version>
 		<jersey.version>3.0.4</jersey.version>
+		<spring-security-crypto.version>5.6.2</spring-security-crypto.version>
+		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
+		<commons-logging.verison>1.2</commons-logging.verison>
 	</properties>
-
 	<scm>
 		<connection>scm:git:https://github.com/lsu-ub-uu/cora-apptokenverifier.git</connection>
 		<developerConnection>scm:git:https://github.com/lsu-ub-uu/cora-apptokenverifier.git</developerConnection>
@@ -59,15 +62,32 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+			<version>${spring-security-crypto.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>${bcpkix-jdk15on.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${commons-logging.verison}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${testng.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>de.mkammerer</groupId>
-			<artifactId>argon2-jvm</artifactId>
-			<version>${argon2.version}</version>
+				<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>testutils</artifactId>
+			<version>${testutils.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
