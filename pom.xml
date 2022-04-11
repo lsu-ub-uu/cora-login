@@ -31,9 +31,6 @@
 		<argon2.version>2.11</argon2.version>
 		<testutils.version>1.2.0</testutils.version>
 		<jersey.version>3.0.4</jersey.version>
-		<spring-security-crypto.version>5.6.2</spring-security-crypto.version>
-		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
-		<commons-logging.verison>1.2</commons-logging.verison>
 	</properties>
 	<scm>
 		<connection>scm:git:https://github.com/lsu-ub-uu/cora-apptokenverifier.git</connection>
@@ -60,22 +57,6 @@
 			<artifactId>gatekeepertokenprovider</artifactId>
 			<version>${gatekeepertokenprovider.version}</version>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-crypto</artifactId>
-			<version>${spring-security-crypto.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>${bcpkix-jdk15on.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>${commons-logging.verison}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
