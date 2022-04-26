@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.apptokenverifier.spy;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -396,7 +396,6 @@ public class ServletContextSpy implements ServletContext {
 	@Override
 	public void setResponseCharacterEncoding(String encoding) {
 		// TODO Auto-generated method stub
-
 	}
 
 }

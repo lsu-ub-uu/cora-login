@@ -1,6 +1,6 @@
 /*
  * Copyright 2019 Olov McKie
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -28,35 +28,41 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.log.LoggerFactorySpy;
+import se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.testspies.logger.LoggerFactorySpy;
+import se.uu.ub.cora.testspies.logger.LoggerSpy;
 
 public class AppTokenVerifierModuleStarterTest {
 
 	private Map<String, String> initInfo;
 	private List<AppTokenStorageProvider> appTokenStorageProviders;
 	private LoggerFactorySpy loggerFactorySpy;
-	private String testedClassName = "AppTokenVerifierModuleStarterImp";
+	private Class<AppTokenVerifierModuleStarterImp> testedClass = AppTokenVerifierModuleStarterImp.class;
+	private LoggerSpy loggerSpy;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		loggerSpy = new LoggerSpy();
+		loggerFactorySpy.MRV.setReturnValues("factorForClass", List.of(loggerSpy), testedClass);
 		initInfo = new HashMap<>();
 		initInfo.put("guestUserId", "someGuestUserId");
 		appTokenStorageProviders = new ArrayList<>();
 		appTokenStorageProviders.add(new AppTokenStorageProviderSpy());
 		initInfo.put("apptokenVerifierPublicPathToSystem", "/systemone/idplogin/rest/");
 		initInfo.put("gatekeeperURL", "http://localhost:8080/gatekeeper/");
+
 	}
 
 	private void startAppTokenVerifierModuleStarter() {
@@ -75,7 +81,7 @@ public class AppTokenVerifierModuleStarterTest {
 	public void testStartModuleLogsErrorIfNoUserStorageProviderImplementations() throws Exception {
 		appTokenStorageProviders.clear();
 		startAppTokenVerifierMakeSureAnExceptionIsThrown();
-		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
+		loggerSpy.MCR.assertParameters("logFatalUsingMessage", 0,
 				"No implementations found for AppTokenStorageProvider");
 	}
 
@@ -94,22 +100,25 @@ public class AppTokenVerifierModuleStarterTest {
 	@Test
 	public void testStartModuleLogsInfoIfMoreThanOneUserStorageProviderImplementations()
 			throws Exception {
-		appTokenStorageProviders.add(new AppTokenStorageProviderSpy2());
+		AppTokenStorageProviderSpy spy2 = new AppTokenStorageProviderSpy();
+		spy2.MRV.setDefaultReturnValuesSupplier("getOrderToSelectImplementionsBy",
+				(Supplier<Integer>) () -> 2);
+		appTokenStorageProviders.add(spy2);
 		appTokenStorageProviders.add(new AppTokenStorageProviderSpy());
+
 		startAppTokenVerifierModuleStarter();
 
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
-				"Found se.uu.ub.cora.apptokenverifier.initialize.AppTokenStorageProviderSpy as "
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
+				"Found se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageProviderSpy as "
 						+ "AppTokenStorageProvider implementation with select order 0.");
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
-				"Found se.uu.ub.cora.apptokenverifier.initialize.AppTokenStorageProviderSpy2 as "
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
+				"Found se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageProviderSpy as "
 						+ "AppTokenStorageProvider implementation with select order 2.");
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 2),
-				"Found se.uu.ub.cora.apptokenverifier.initialize.AppTokenStorageProviderSpy as "
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 2,
+				"Found se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageProviderSpy as "
 						+ "AppTokenStorageProvider implementation with select order 0.");
-
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 3),
-				"Using se.uu.ub.cora.apptokenverifier.initialize.AppTokenStorageProviderSpy2 as "
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 3,
+				"Using se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageProviderSpy as "
 						+ "AppTokenStorageProvider implementation.");
 	}
 
@@ -119,25 +128,19 @@ public class AppTokenVerifierModuleStarterTest {
 		AppTokenStorageProviderSpy appTokenStorageProviderSpy = (AppTokenStorageProviderSpy) appTokenStorageProviders
 				.get(0);
 		startAppTokenVerifierModuleStarter();
-		assertSame(appTokenStorageProviderSpy.initInfo, initInfo);
-	}
-
-	@Test
-	public void testStartModuleAppTokenStorageSentToUserPickerImplementation() throws Exception {
-		AppTokenStorageProviderSpy userStorageProviderSpy = (AppTokenStorageProviderSpy) appTokenStorageProviders
-				.get(0);
-		AppTokenStorage userStorage = userStorageProviderSpy.getAppTokenStorage();
-		startAppTokenVerifierModuleStarter();
-		assertEquals(userStorageProviderSpy.getAppTokenStorage(), userStorage);
+		appTokenStorageProviderSpy.MCR.assertParameters("startUsingInitInfo", 0, initInfo);
 	}
 
 	@Test
 	public void testGatekeeperInstanceProviderSetUpWithLocator() throws Exception {
 		AppTokenStorageProviderSpy appTokenStorageProviderSpy = (AppTokenStorageProviderSpy) appTokenStorageProviders
 				.get(0);
-		AppTokenStorage appTokenStorage = appTokenStorageProviderSpy.getAppTokenStorage();
+
 		startAppTokenVerifierModuleStarter();
-		assertSame(AppTokenInstanceProvider.getApptokenStorage(), appTokenStorage);
+
+		var appTokenStorageFromProvider = appTokenStorageProviderSpy.MCR
+				.getReturnValue("getAppTokenStorage", 0);
+		assertSame(AppTokenInstanceProvider.getApptokenStorage(), appTokenStorageFromProvider);
 	}
 
 	@Test
@@ -146,7 +149,7 @@ public class AppTokenVerifierModuleStarterTest {
 		Exception caughtException = startAppTokenVerifierMakeSureAnExceptionIsThrown();
 		assertEquals(caughtException.getMessage(),
 				"Error starting AppTokenVerifierModuleStarterImp, context must have a gatekeeperURL set.");
-		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
+		loggerSpy.MCR.assertParameters("logFatalUsingMessage", 0,
 				"Error starting AppTokenVerifierModuleStarterImp, context must have a gatekeeperURL set.");
 	}
 
@@ -167,9 +170,11 @@ public class AppTokenVerifierModuleStarterTest {
 		initInfo.remove("apptokenVerifierPublicPathToSystem");
 		Exception caughtException = startAppTokenVerifierMakeSureAnExceptionIsThrown();
 		assertEquals(caughtException.getMessage(),
-				"Error starting AppTokenVerifierModuleStarterImp, context must have a apptokenVerifierPublicPathToSystem set.");
-		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
-				"Error starting AppTokenVerifierModuleStarterImp, context must have a apptokenVerifierPublicPathToSystem set.");
+				"Error starting AppTokenVerifierModuleStarterImp, "
+						+ "context must have a apptokenVerifierPublicPathToSystem set.");
+		loggerSpy.MCR.assertParameters("logFatalUsingMessage", 0,
+				"Error starting AppTokenVerifierModuleStarterImp, "
+						+ "context must have a apptokenVerifierPublicPathToSystem set.");
 	}
 
 	@Test
@@ -182,7 +187,7 @@ public class AppTokenVerifierModuleStarterTest {
 	public void testAppTokenInstanceProviderLogsInitInfoForEndpoint() throws Exception {
 		startAppTokenVerifierModuleStarter();
 
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 2),
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 2,
 				"Using /systemone/idplogin/rest/ as " + "apptokenVerifierPublicPathToSystem.");
 	}
 }

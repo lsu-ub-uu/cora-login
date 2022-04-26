@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,30 +21,36 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.log.LoggerFactorySpy;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import se.uu.ub.cora.apptokenverifier.spy.AppTokenVerifierModuleStarterSpy;
+import se.uu.ub.cora.apptokenverifier.spy.ServletContextSpy;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.testspies.logger.LoggerFactorySpy;
+import se.uu.ub.cora.testspies.logger.LoggerSpy;
 
 public class AppTokenVerifierModuleInitializerTest {
 	private ServletContext source;
 	private ServletContextEvent context;
 	private AppTokenVerifierModuleInitializer initializer;
 	private LoggerFactorySpy loggerFactorySpy;
-	private String testedClassName = "AppTokenVerifierModuleInitializer";
+	private Class<AppTokenVerifierModuleInitializer> testedClass = AppTokenVerifierModuleInitializer.class;
+	private LoggerSpy loggerSpy;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		loggerSpy = new LoggerSpy();
+		loggerFactorySpy.MRV.setReturnValues("factorForClass", List.of(loggerSpy), testedClass);
+
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
 		initializer = new AppTokenVerifierModuleInitializer();
@@ -54,7 +60,7 @@ public class AppTokenVerifierModuleInitializerTest {
 	public void testNonExceptionThrowingStartup() throws Exception {
 		setNeededInitParameters();
 		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
-		assertTrue(starter.startWasCalled);
+		starter.MCR.assertMethodWasCalled("startUsingInitInfoAndAppTokenStorageProviders");
 	}
 
 	private AppTokenVerifierModuleStarterSpy startAppTokenVerifierModuleInitializerWithStarterSpy() {
@@ -74,9 +80,9 @@ public class AppTokenVerifierModuleInitializerTest {
 	public void testLogMessagesOnStartup() throws Exception {
 		setNeededInitParameters();
 		startAppTokenVerifierModuleInitializerWithStarterSpy();
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
 				"AppTokenVerifierModuleInitializer starting...");
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
 				"AppTokenVerifierModuleInitializer started");
 	}
 
@@ -84,10 +90,10 @@ public class AppTokenVerifierModuleInitializerTest {
 	public void testInitParametersArePassedOnToStarter() {
 		setNeededInitParameters();
 		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
-		Map<String, String> initInfo = starter.initInfo;
+		Map<String, String> initInfo = (Map<String, String>) starter.MCR
+				.getValueForMethodNameAndCallNumberAndParameterName(
+						"startUsingInitInfoAndAppTokenStorageProviders", 0, "initInfo");
 		assertEquals(initInfo.size(), 2);
-		source.setInitParameter("initParam1", "initValue1");
-		source.setInitParameter("initParam2", "initValue2");
 	}
 
 	@Test
@@ -95,8 +101,9 @@ public class AppTokenVerifierModuleInitializerTest {
 		setNeededInitParameters();
 		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
 
-		Iterable<AppTokenStorageProvider> iterable = starter.appTokenStorageProviderImplementations;
-		assertTrue(iterable instanceof ServiceLoader);
+		var implementations = starter.MCR.getValueForMethodNameAndCallNumberAndParameterName(
+				"startUsingInitInfoAndAppTokenStorageProviders", 0, "implementations");
+		assertTrue(implementations instanceof ServiceLoader);
 	}
 
 	@Test

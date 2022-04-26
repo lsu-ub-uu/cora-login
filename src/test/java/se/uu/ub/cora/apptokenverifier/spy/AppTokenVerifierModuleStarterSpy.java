@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,25 +16,27 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.apptokenverifier.spy;
 
 import java.util.Map;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.AppTokenVerifierModuleStarter;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class AppTokenVerifierModuleStarterSpy implements AppTokenVerifierModuleStarter {
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
 
-	boolean startWasCalled = false;
-	Map<String, String> initInfo;
-	Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations;
+	public AppTokenVerifierModuleStarterSpy() {
+		MCR.useMRV(MRV);
+	}
 
 	@Override
 	public void startUsingInitInfoAndAppTokenStorageProviders(Map<String, String> initInfo,
-			Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations) {
-		this.initInfo = initInfo;
-		this.appTokenStorageProviderImplementations = appTokenStorageProviderImplementations;
-		startWasCalled = true;
-
+			Iterable<AppTokenStorageProvider> implementations) {
+		MCR.addCall("initInfo", initInfo, "implementations", implementations);
 	}
 
 }

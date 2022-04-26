@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -23,28 +23,34 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.spy.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
 
 public class AppTokenEndpointTest {
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
 	private TestHttpServletRequest request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
+	private AppTokenStorageSpy appTokenStorage;
+	private String userId = "someUserId";
+	private String appToken = "someAppToken";
 
 	@BeforeMethod
 	public void setup() {
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
+		appTokenStorage = new AppTokenStorageSpy();
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
@@ -56,9 +62,6 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppToken() {
-		String userId = "someUserId";
-		String appToken = "someAppToken";
-
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -80,11 +83,9 @@ public class AppTokenEndpointTest {
 				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
-		gatekeeperTokenProvider.authToken = authToken;
+		gatekeeperTokenProvider.MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo",
+				((Supplier<AuthToken>) () -> authToken));
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
@@ -108,8 +109,6 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
 		request.headers.put("X-Forwarded-Proto", "https");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
@@ -155,8 +154,6 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
 		request.headers.put("X-Forwarded-Proto", "");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
@@ -178,18 +175,9 @@ public class AppTokenEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenForAppTokenUserIdNotFound() {
-		String userId = "someUserIdNotFound";
-		String appToken = "someAppToken";
-
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
-		assertResponseStatusIs(Response.Status.NOT_FOUND);
-	}
-
-	@Test
-	public void testGetAuthTokenForAppTokenNotFound() {
-		String userId = "someUserId";
-		String appToken = "someAppTokenNotFound";
+	public void testGetAuthTokenForAppTokenWhenCombinationUserIdAndAppTokenNotFound() {
+		appTokenStorage.MRV.setDefaultReturnValuesSupplier("userIdHasAppToken",
+				(Supplier<Boolean>) () -> false);
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
@@ -197,19 +185,16 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
-		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		gatekeeperTokenProvider.MRV.setAlwaysThrowException("getAuthTokenForUserInfo",
+				new AuthenticationException("authToken gives no authorization"));
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		String userId = "someUserId";
 		String authToken = "someAuthToken";
 
 		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
@@ -218,10 +203,9 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testRemoveAuthTokenForUserWrongToken() {
-		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		gatekeeperTokenProvider.MRV.setAlwaysThrowException("removeAuthTokenForUser",
+				new AuthenticationException("authToken could not be removed"));
 
-		String userId = "someUserId";
 		String authToken = "someAuthTokenNotFound";
 
 		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);

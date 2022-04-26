@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018 Uppsala University Library
+ * Copyright 2017, 2018, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -31,8 +31,8 @@ import java.util.Map;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
-import se.uu.ub.cora.apptokenverifier.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spy.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.spy.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
 public class AppTokenInstanceProviderTest {
@@ -56,7 +56,7 @@ public class AppTokenInstanceProviderTest {
 	public void testApptokenStorage() {
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorage apptokenStorageSpy = new AppTokenStorageSpy(initInfo);
+		AppTokenStorage apptokenStorageSpy = new AppTokenStorageSpy();
 		AppTokenInstanceProvider.setApptokenStorage(apptokenStorageSpy);
 		assertEquals(AppTokenInstanceProvider.getApptokenStorage(), apptokenStorageSpy);
 	}

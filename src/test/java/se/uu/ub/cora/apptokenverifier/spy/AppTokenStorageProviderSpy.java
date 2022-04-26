@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,32 +16,40 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.apptokenverifier.spy;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class AppTokenStorageProviderSpy2 implements AppTokenStorageProvider {
+public class AppTokenStorageProviderSpy implements AppTokenStorageProvider {
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
 
-	Map<String, String> initInfo;
-	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
+	public AppTokenStorageProviderSpy() {
+		MCR.useMRV(MRV);
+		MRV.setDefaultReturnValuesSupplier("getAppTokenStorage", AppTokenStorageSpy::new);
+		MRV.setDefaultReturnValuesSupplier("getOrderToSelectImplementionsBy",
+				(Supplier<Integer>) () -> 0);
+	}
 
 	@Override
 	public AppTokenStorage getAppTokenStorage() {
-		return appTokenStorageSpy;
+		return (AppTokenStorage) MCR.addCallAndReturnFromMRV();
 	}
 
 	@Override
 	public void startUsingInitInfo(Map<String, String> initInfo) {
-		this.initInfo = initInfo;
+		MCR.addCall("initInfo", initInfo);
 	}
 
 	@Override
 	public int getOrderToSelectImplementionsBy() {
-		return 2;
+		return (int) MCR.addCallAndReturnFromMRV();
 	}
 
 }

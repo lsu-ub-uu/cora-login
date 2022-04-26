@@ -28,8 +28,9 @@
 		<gatekeepertokenprovider.version>2.7.0</gatekeepertokenprovider.version>
 		<apptokenstorage.version>2.5.0</apptokenstorage.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
+		<testutils.version>1.5-SNAPSHOT</testutils.version>
+		<testspies.version>1.1-SNAPSHOT</testspies.version>
 		<argon2.version>2.11</argon2.version>
-		<testutils.version>1.4.0</testutils.version>
 		<jersey.version>3.0.4</jersey.version>
 	</properties>
 	<scm>
@@ -64,10 +65,16 @@
 			<version>${testng.version}</version>
 			<scope>test</scope>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>testutils</artifactId>
 			<version>${testutils.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>testspies</artifactId>
+			<version>${testspies.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

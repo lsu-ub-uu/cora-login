@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2017, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -17,25 +17,36 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.apptokenverifier.spy;
+
+import java.util.function.Supplier;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
-	public AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
-			"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
+
+	public GatekeeperTokenProviderSpy() {
+		MCR.useMRV(MRV);
+		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
+				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
+		MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo",
+				((Supplier<AuthToken>) () -> authToken));
+	}
 
 	@Override
 	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return authToken;
+		return (AuthToken) MCR.addCallAndReturnFromMRV("userInfo", userInfo);
 	}
 
 	@Override
 	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		// TODO Auto-generated method stub
-
+		MCR.addCall("idInUserStorage", idInUserStorage, "authToken", authToken);
 	}
 
 }
