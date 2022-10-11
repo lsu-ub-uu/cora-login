@@ -29,8 +29,10 @@ import org.testng.annotations.Test;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderErrorSpy;
+import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public class AppTokenEndpointTest {
@@ -44,7 +46,7 @@ public class AppTokenEndpointTest {
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
+		AppTokenStorageView appTokenStorage = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2017 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,32 +16,32 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+
+package se.uu.ub.cora.apptokenverifier.spies;
 
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
 
-public class AppTokenStorageProviderSpy implements AppTokenStorageProvider {
+public class AppTokenStorageSpy implements AppTokenStorageView {
+	private Map<String, String> initInfo;
 
-	Map<String, String> initInfo;
-	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
-
-	@Override
-	public AppTokenStorage getAppTokenStorage() {
-		return appTokenStorageSpy;
-	}
-
-	@Override
-	public void startUsingInitInfo(Map<String, String> initInfo) {
+	public AppTokenStorageSpy(Map<String, String> initInfo) {
 		this.initInfo = initInfo;
 	}
 
-	@Override
-	public int getOrderToSelectImplementionsBy() {
-		return 0;
+	public Map<String, String> getInitInfo() {
+		return initInfo;
 	}
 
+	@Override
+	public boolean userIdHasAppToken(String userId, String appToken) {
+		if ("someUserIdNotFound".equals(userId)) {
+			return false;
+		}
+		if ("someAppTokenNotFound".equals(appToken)) {
+			return false;
+		}
+		return true;
+	}
 }

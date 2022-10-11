@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2017 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,32 +16,24 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
 
-import java.util.Map;
+package se.uu.ub.cora.apptokenverifier.spies;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
 
-public class AppTokenStorageProviderSpy2 implements AppTokenStorageProvider {
-
-	Map<String, String> initInfo;
-	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
+public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider {
 
 	@Override
-	public AppTokenStorage getAppTokenStorage() {
-		return appTokenStorageSpy;
+	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
+		throw new AuthenticationException("authToken gives no authorization");
 	}
 
 	@Override
-	public void startUsingInitInfo(Map<String, String> initInfo) {
-		this.initInfo = initInfo;
-	}
-
-	@Override
-	public int getOrderToSelectImplementionsBy() {
-		return 2;
+	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
+		throw new AuthenticationException("authToken could not be removed");
 	}
 
 }

@@ -16,21 +16,22 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.apptokenverifier.spies;
 
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorageViewInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.AppTokenVerifierModuleStarter;
 
 public class AppTokenVerifierModuleStarterSpy implements AppTokenVerifierModuleStarter {
 
-	boolean startWasCalled = false;
-	Map<String, String> initInfo;
-	Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations;
+	public boolean startWasCalled = false;
+	public Map<String, String> initInfo;
+	public Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations;
 
 	@Override
 	public void startUsingInitInfoAndAppTokenStorageProviders(Map<String, String> initInfo,
-			Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations) {
+			Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations) {
 		this.initInfo = initInfo;
 		this.appTokenStorageProviderImplementations = appTokenStorageProviderImplementations;
 		startWasCalled = true;

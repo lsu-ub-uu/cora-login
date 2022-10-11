@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,24 +16,19 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package se.uu.ub.cora.apptokenverifier;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
-import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
+/**
+ * AppTokenStorageViewInstanceProvider is used to provide storage for AppToken
+ */
+public interface AppTokenStorageViewInstanceProvider {
 
-public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider {
-
-	@Override
-	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		throw new AuthenticationException("authToken gives no authorization");
-	}
-
-	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		throw new AuthenticationException("authToken could not be removed");
-	}
-
+	/**
+	 * getStorageView should be implemented in such a way that it returns an AppTokenStorage that
+	 * can be used by AppTokenVerifier
+	 * 
+	 * @return An AppTokenStorageView that gives access to storage for the implementing
+	 *         AppTokenStorage
+	 */
+	AppTokenStorageView getStorageView();
 }

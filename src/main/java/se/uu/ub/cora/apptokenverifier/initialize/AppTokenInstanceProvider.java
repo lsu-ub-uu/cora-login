@@ -21,12 +21,12 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
 public final class AppTokenInstanceProvider {
 
-	private static AppTokenStorage appTokenStorage;
+	private static AppTokenStorageView appTokenStorage;
 	private static GatekeeperTokenProvider gatekeeperTokenProvider;
 	private static Map<String, String> initInfo;
 
@@ -35,12 +35,12 @@ public final class AppTokenInstanceProvider {
 		throw new UnsupportedOperationException();
 	}
 
-	public static void setApptokenStorage(AppTokenStorage appTokenStorage) {
+	public static void setApptokenStorage(AppTokenStorageView appTokenStorage) {
 		AppTokenInstanceProvider.appTokenStorage = appTokenStorage;
 
 	}
 
-	public static AppTokenStorage getApptokenStorage() {
+	public static AppTokenStorageView getApptokenStorage() {
 		return appTokenStorage;
 	}
 

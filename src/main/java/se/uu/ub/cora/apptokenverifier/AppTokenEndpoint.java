@@ -31,7 +31,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
@@ -97,7 +96,7 @@ public class AppTokenEndpoint {
 	}
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
-		AppTokenStorage appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
+		AppTokenStorageView appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
 		if (!appTokenStorage.userIdHasAppToken(userId, appToken)) {
 			throw new NotFoundException();
 		}

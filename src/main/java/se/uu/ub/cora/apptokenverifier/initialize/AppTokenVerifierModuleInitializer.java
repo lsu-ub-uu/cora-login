@@ -26,7 +26,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageViewInstanceProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 
@@ -36,7 +36,7 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleInitializer.class);
 	private ServletContext servletContext;
 	private HashMap<String, String> initInfo = new HashMap<>();
-	private Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations;
+	private Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations;
 	private String simpleName = AppTokenVerifierModuleInitializer.class.getSimpleName();
 
 	@Override
@@ -62,7 +62,8 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	}
 
 	private void collectAppTokenStorageProviderImplementations() {
-		appTokenStorageProviderImplementations = ServiceLoader.load(AppTokenStorageProvider.class);
+		appTokenStorageProviderImplementations = ServiceLoader
+				.load(AppTokenStorageViewInstanceProvider.class);
 	}
 
 	private void startAppTokenVerifier() {

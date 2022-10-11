@@ -30,9 +30,9 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageSpy;
-import se.uu.ub.cora.apptokenverifier.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
+import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
 public class AppTokenInstanceProviderTest {
@@ -56,7 +56,7 @@ public class AppTokenInstanceProviderTest {
 	public void testApptokenStorage() {
 		Map<String, String> initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorage apptokenStorageSpy = new AppTokenStorageSpy(initInfo);
+		AppTokenStorageView apptokenStorageSpy = new AppTokenStorageSpy(initInfo);
 		AppTokenInstanceProvider.setApptokenStorage(apptokenStorageSpy);
 		assertEquals(AppTokenInstanceProvider.getApptokenStorage(), apptokenStorageSpy);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Uppsala University Library
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,26 +16,31 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
+package se.uu.ub.cora.apptokenverifier.spies;
 
-package se.uu.ub.cora.apptokenverifier;
+import java.util.Map;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorageViewInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
 
-public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
-	public AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
-			"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
+public class AppTokenStorageProviderSpy implements AppTokenStorageViewInstanceProvider {
+
+	public Map<String, String> initInfo;
+	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
 
 	@Override
-	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return authToken;
+	public AppTokenStorageView getAppTokenStorage() {
+		return appTokenStorageSpy;
 	}
 
 	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		// TODO Auto-generated method stub
+	public void startUsingInitInfo(Map<String, String> initInfo) {
+		this.initInfo = initInfo;
+	}
 
+	@Override
+	public int getOrderToSelectImplementionsBy() {
+		return 0;
 	}
 
 }

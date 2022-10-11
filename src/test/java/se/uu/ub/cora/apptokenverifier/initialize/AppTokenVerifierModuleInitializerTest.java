@@ -24,22 +24,23 @@ import static org.testng.Assert.assertTrue;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.log.LoggerFactorySpy;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import se.uu.ub.cora.apptokenstorage.AppTokenStorageViewInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.spies.AppTokenVerifierModuleStarterSpy;
+import se.uu.ub.cora.apptokenverifier.spies.ServletContextSpy;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.logger.spies.LoggerSpy;
 
 public class AppTokenVerifierModuleInitializerTest {
 	private ServletContext source;
 	private ServletContextEvent context;
 	private AppTokenVerifierModuleInitializer initializer;
 	private LoggerFactorySpy loggerFactorySpy;
-	private String testedClassName = "AppTokenVerifierModuleInitializer";
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -74,9 +75,13 @@ public class AppTokenVerifierModuleInitializerTest {
 	public void testLogMessagesOnStartup() throws Exception {
 		setNeededInitParameters();
 		startAppTokenVerifierModuleInitializerWithStarterSpy();
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+
+		loggerFactorySpy.MCR.assertParameters("factorForClass", 1,
+				AppTokenVerifierModuleInitializer.class);
+		LoggerSpy loggerSpy = (LoggerSpy) loggerFactorySpy.MCR.getReturnValue("factorForClass", 1);
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
 				"AppTokenVerifierModuleInitializer starting...");
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
 				"AppTokenVerifierModuleInitializer started");
 	}
 
@@ -95,7 +100,7 @@ public class AppTokenVerifierModuleInitializerTest {
 		setNeededInitParameters();
 		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
 
-		Iterable<AppTokenStorageProvider> iterable = starter.appTokenStorageProviderImplementations;
+		Iterable<AppTokenStorageViewInstanceProvider> iterable = starter.appTokenStorageProviderImplementations;
 		assertTrue(iterable instanceof ServiceLoader);
 	}
 

@@ -21,25 +21,25 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenstorage.SelectOrder;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageViewInstanceProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
+import se.uu.ub.cora.initialize.SelectOrder;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 
 public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleStarter {
 	private static final String FOUND = "Found ";
 	private Map<String, String> initInfo;
-	private Iterable<AppTokenStorageProvider> appTokenStorageProviders;
+	private Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviders;
 	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleStarterImp.class);
 	private String simpleName = AppTokenVerifierModuleStarterImp.class.getSimpleName();
 
 	@Override
 	public void startUsingInitInfoAndAppTokenStorageProviders(Map<String, String> initInfo,
-			Iterable<AppTokenStorageProvider> appTokenStorageProviderImplementations) {
+			Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations) {
 		this.initInfo = initInfo;
 		this.appTokenStorageProviders = appTokenStorageProviderImplementations;
 		start();
@@ -53,11 +53,11 @@ public class AppTokenVerifierModuleStarterImp implements AppTokenVerifierModuleS
 	}
 
 	private void startAppTokenStorage() {
-		AppTokenStorageProvider appTokenStorageProvider = getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
+		AppTokenStorageViewInstanceProvider appTokenStorageProvider = getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
 				appTokenStorageProviders, "AppTokenStorageProvider");
 
 		appTokenStorageProvider.startUsingInitInfo(initInfo);
-		AppTokenStorage appTokenStorage = appTokenStorageProvider.getAppTokenStorage();
+		AppTokenStorageView appTokenStorage = appTokenStorageProvider.getAppTokenStorage();
 
 		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
 	}

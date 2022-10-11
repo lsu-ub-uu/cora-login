@@ -19,29 +19,8 @@
 
 package se.uu.ub.cora.apptokenverifier;
 
-import java.util.Map;
+public interface AppTokenStorageView {
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
+	boolean userIdHasAppToken(String userId, String appToken);
 
-public class AppTokenStorageSpy implements AppTokenStorage {
-	private Map<String, String> initInfo;
-
-	public AppTokenStorageSpy(Map<String, String> initInfo) {
-		this.initInfo = initInfo;
-	}
-
-	public Map<String, String> getInitInfo() {
-		return initInfo;
-	}
-
-	@Override
-	public boolean userIdHasAppToken(String userId, String appToken) {
-		if ("someUserIdNotFound".equals(userId)) {
-			return false;
-		}
-		if ("someAppTokenNotFound".equals(appToken)) {
-			return false;
-		}
-		return true;
-	}
 }

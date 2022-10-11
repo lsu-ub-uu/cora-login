@@ -17,14 +17,14 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.apptokenverifier.spies;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
+import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
 
-public class AppTokenStorageThrowsInvocationExceptionSpy implements AppTokenStorage {
+public class AppTokenStorageThrowsInvocationExceptionSpy implements AppTokenStorageView {
 	private Map<String, String> initInfo;
 
 	public AppTokenStorageThrowsInvocationExceptionSpy(Map<String, String> initInfo)
