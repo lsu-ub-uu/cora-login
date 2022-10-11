@@ -49,7 +49,7 @@ public class AppTokenStorageProvider {
 
 	}
 
-	static AppTokenStorageViewInstanceProvider onlyForTestGetSearchStorageViewInstanceProvider() {
+	public static AppTokenStorageViewInstanceProvider onlyForTestGetSearchStorageViewInstanceProvider() {
 		return instanceProvider;
 	}
 
