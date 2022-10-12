@@ -31,11 +31,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.initialize.SettingsProvider;
 
 @Path("apptoken")
 public class AppTokenEndpoint {
@@ -60,7 +61,7 @@ public class AppTokenEndpoint {
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		baseURL += AppTokenInstanceProvider.getInitInfo().get("apptokenVerifierPublicPathToSystem");
+		baseURL += SettingsProvider.getSetting("apptokenVerifierPublicPathToSystem");
 
 		baseURL += "apptoken/";
 		return baseURL;
@@ -96,14 +97,14 @@ public class AppTokenEndpoint {
 	}
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
-		AppTokenStorageView appTokenStorage = AppTokenInstanceProvider.getApptokenStorage();
+		AppTokenStorageView appTokenStorage = AppTokenStorageProvider.getStorageView();
 		if (!appTokenStorage.userIdHasAppToken(userId, appToken)) {
 			throw new NotFoundException();
 		}
 	}
 
 	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
-		GatekeeperTokenProvider gatekeeperTokenProvider = AppTokenInstanceProvider
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekepperInstanceProvider
 				.getGatekeeperTokenProvider();
 
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
@@ -140,7 +141,7 @@ public class AppTokenEndpoint {
 	}
 
 	private Response tryToRemoveAuthTokenForUser(String userId, String authToken) {
-		GatekeeperTokenProvider gatekeeperTokenProvider = AppTokenInstanceProvider
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekepperInstanceProvider
 				.getGatekeeperTokenProvider();
 		gatekeeperTokenProvider.removeAuthTokenForUser(userId, authToken);
 		return buildResponse(Status.OK);

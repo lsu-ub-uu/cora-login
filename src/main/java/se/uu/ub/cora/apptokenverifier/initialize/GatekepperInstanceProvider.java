@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Olov McKie
+ * Copyright 2017, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,14 +16,25 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package se.uu.ub.cora.apptokenverifier.initialize;
 
-public class AppTokenVerifierInitializationException extends RuntimeException {
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
-	private static final long serialVersionUID = 1106993019564065759L;
+public final class GatekepperInstanceProvider {
 
-	public AppTokenVerifierInitializationException(String message) {
-		super(message);
+	private static GatekeeperTokenProvider gatekeeperTokenProvider;
+
+	private GatekepperInstanceProvider() {
+		// not called
+		throw new UnsupportedOperationException();
 	}
 
+	public static void setGatekeeperTokenProvider(GatekeeperTokenProvider gatekeeperTokenProvider) {
+		GatekepperInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
+	}
+
+	public static GatekeeperTokenProvider getGatekeeperTokenProvider() {
+		return gatekeeperTokenProvider;
+	}
 }

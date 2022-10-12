@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.apptokenverifier.spies;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +43,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.servlet.http.Part;
 
-public class TestHttpServletRequest implements HttpServletRequest {
+public class HttpServletRequestSpy implements HttpServletRequest {
 	public Map<String, String> headers = new HashMap<>();
 	public StringBuffer requestURL;
 

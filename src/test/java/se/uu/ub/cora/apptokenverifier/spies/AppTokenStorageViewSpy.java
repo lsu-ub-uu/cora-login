@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,29 +18,24 @@
  */
 package se.uu.ub.cora.apptokenverifier.spies;
 
-import java.util.Map;
+import java.util.function.Supplier;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageViewInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class AppTokenStorageProviderSpy implements AppTokenStorageViewInstanceProvider {
+public class AppTokenStorageViewSpy implements AppTokenStorageView {
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
 
-	public Map<String, String> initInfo;
-	private AppTokenStorageSpy appTokenStorageSpy = new AppTokenStorageSpy(initInfo);
-
-	@Override
-	public AppTokenStorageView getAppTokenStorage() {
-		return appTokenStorageSpy;
+	public AppTokenStorageViewSpy() {
+		MCR.useMRV(MRV);
+		MRV.setDefaultReturnValuesSupplier("userIdHasAppToken", (Supplier<Boolean>) () -> true);
 	}
 
 	@Override
-	public void startUsingInitInfo(Map<String, String> initInfo) {
-		this.initInfo = initInfo;
-	}
-
-	@Override
-	public int getOrderToSelectImplementionsBy() {
-		return 0;
+	public boolean userIdHasAppToken(String userId, String appToken) {
+		return (boolean) MCR.addCallAndReturnFromMRV("userId", userId, "appToken", appToken);
 	}
 
 }

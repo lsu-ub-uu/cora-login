@@ -20,23 +20,25 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.ServiceLoader;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageViewInstanceProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
+import se.uu.ub.cora.httphandler.HttpHandlerFactory;
+import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
+import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 
 @WebListener
 public class AppTokenVerifierModuleInitializer implements ServletContextListener {
-	private AppTokenVerifierModuleStarter starter = new AppTokenVerifierModuleStarterImp();
+	// private AppTokenVerifierModuleStarter starter = new AppTokenVerifierModuleStarterImp();
 	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleInitializer.class);
 	private ServletContext servletContext;
 	private HashMap<String, String> initInfo = new HashMap<>();
-	private Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations;
+	// private Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations;
 	private String simpleName = AppTokenVerifierModuleInitializer.class.getSimpleName();
 
 	@Override
@@ -48,8 +50,9 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 	private void initializeAppTokenVerifier() {
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
-		collectAppTokenStorageProviderImplementations();
-		startAppTokenVerifier();
+		createAndSetGatekeeperTokenProvider();
+		// collectAppTokenStorageProviderImplementations();
+		// startAppTokenVerifier();
 		log.logInfoUsingMessage(simpleName + " started");
 	}
 
@@ -59,26 +62,40 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 			String key = initParameterNames.nextElement();
 			initInfo.put(key, servletContext.getInitParameter(key));
 		}
+		SettingsProvider.setSettings(initInfo);
 	}
 
-	private void collectAppTokenStorageProviderImplementations() {
-		appTokenStorageProviderImplementations = ServiceLoader
-				.load(AppTokenStorageViewInstanceProvider.class);
+	private void createAndSetGatekeeperTokenProvider() {
+		String baseUrl = SettingsProvider.getSetting("gatekeeperURL");
+		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
+				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
 	}
 
-	private void startAppTokenVerifier() {
-		starter.startUsingInitInfoAndAppTokenStorageProviders(initInfo,
-				appTokenStorageProviderImplementations);
-	}
+	// private void ensureInitInfoIsSetInAppTokenInstanceProviderForEndpoint() {
+	// GatekepperInstanceProvider.setInitInfo(initInfo);
+	// log.logInfoUsingMessage("Using " + initInfo.get("apptokenVerifierPublicPathToSystem")
+	// + " as apptokenVerifierPublicPathToSystem.");
+	// }
 
-	void setStarter(AppTokenVerifierModuleStarter starter) {
-		// needed for test
-		this.starter = starter;
-	}
-
-	AppTokenVerifierModuleStarter getStarter() {
-		// needed for test
-		return starter;
-	}
+	// private void collectAppTokenStorageProviderImplementations() {
+	// appTokenStorageProviderImplementations = ServiceLoader
+	// .load(AppTokenStorageViewInstanceProvider.class);
+	// }
+	//
+	// private void startAppTokenVerifier() {
+	// starter.startUsingInitInfoAndAppTokenStorageProviders(initInfo,
+	// appTokenStorageProviderImplementations);
+	// }
+	//
+	// void setStarter(AppTokenVerifierModuleStarter starter) {
+	// // needed for test
+	// this.starter = starter;
+	// }
+	//
+	// AppTokenVerifierModuleStarter getStarter() {
+	// // needed for test
+	// return starter;
+	// }
 
 }

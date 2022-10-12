@@ -18,12 +18,16 @@
  */
 package se.uu.ub.cora.apptokenverifier;
 
+import se.uu.ub.cora.initialize.ModuleInitializer;
+import se.uu.ub.cora.initialize.ModuleInitializerImp;
+
 /**
- * AppTokenStorageViewInstanceProvider provides view access to search data stored in storage.
+ * AppTokenStorageViewInstanceProvider provides view access to apptoken data stored in storage.
  */
 public class AppTokenStorageProvider {
 
-	private static AppTokenStorageViewInstanceProvider instanceProvider = new AppTokenStorageViewInstanceProviderImp();
+	private static AppTokenStorageViewInstanceProvider instanceProvider;
+	private static ModuleInitializer moduleInitializer = new ModuleInitializerImp();
 
 	private AppTokenStorageProvider() {
 		// prevent call to constructor
@@ -32,25 +36,51 @@ public class AppTokenStorageProvider {
 
 	/**
 	 * getStorageView returns a new AppTokenStorageView that can be used by anything that needs
-	 * access search data.
+	 * access apptoken data.
 	 * <p>
 	 * <i>Code using the returned AppTokenStorageView instance MUST consider the returned instance
 	 * as NOT thread safe.</i>
 	 * 
-	 * @return A AppTokenStorageView that gives access to search data.
+	 * @return A AppTokenStorageView that gives access to apptoken data.
 	 */
 	public static AppTokenStorageView getStorageView() {
+		locateAndChooseRecordStorageInstanceProvider();
 		return instanceProvider.getStorageView();
 	}
 
-	public static void onlyForTestSetSearchStorageViewInstanceProvider(
-			AppTokenStorageViewInstanceProvider instanceProvider) {
-		AppTokenStorageProvider.instanceProvider = instanceProvider;
+	private static void locateAndChooseRecordStorageInstanceProvider() {
+		if (instanceProvider == null) {
+			instanceProvider = moduleInitializer
+					.loadOneImplementationBySelectOrder(AppTokenStorageViewInstanceProvider.class);
+		}
+	}
+
+	public static void onlyForTestSetModuleInitializer(ModuleInitializer moduleInitializer) {
+		AppTokenStorageProvider.moduleInitializer = moduleInitializer;
 
 	}
 
-	public static AppTokenStorageViewInstanceProvider onlyForTestGetSearchStorageViewInstanceProvider() {
-		return instanceProvider;
+	public static ModuleInitializer onlyForTestGetModuleInitializer() {
+		return moduleInitializer;
+	}
+
+	/**
+	 * onlyForTestSetAppTokenViewInstanceProvider sets a AppTokenStorageViewInstanceProvider that
+	 * will be used to return instances for the {@link #getStorageView()} method. This possibility
+	 * to set a AppTokenStorageViewInstanceProvider is provided to enable testing of getting a
+	 * record storage in other classes and is not intented to be used in production.
+	 * <p>
+	 * The AppTokenStorageViewInstanceProvider to use in production should be provided through an
+	 * implementation of {@link AppTokenStorageViewInstanceProvider} in a seperate java module.
+	 * 
+	 * @param instanceProvider
+	 *            A AppTokenStorageViewInstanceProvider to use to return AppTokenStorageView
+	 *            instances for testing
+	 */
+	public static void onlyForTestSetAppTokenViewInstanceProvider(
+			AppTokenStorageViewInstanceProvider instanceProvider) {
+		AppTokenStorageProvider.instanceProvider = instanceProvider;
+
 	}
 
 }

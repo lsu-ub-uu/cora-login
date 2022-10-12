@@ -23,51 +23,62 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
-import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageSpy;
+import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageViewSpy;
 import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spies.HttpServletRequestSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.initialize.SettingsProvider;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 
 public class AppTokenEndpointTest {
+	private static final String SOME_APP_TOKEN = "someAppToken";
+	private static final String SOME_USER_ID = "someUserId";
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
-	private TestHttpServletRequest request;
+	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
+	private AppTokenStorageViewInstanceProviderSpy instanceProvider;
 
 	@BeforeMethod
 	public void setup() {
-		Map<String, String> initInfo = new HashMap<>();
-		initInfo.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
-		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorageView appTokenStorage = new AppTokenStorageSpy(initInfo);
-		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
-		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		AppTokenInstanceProvider.setInitInfo(initInfo);
+		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactory);
 
-		request = new TestHttpServletRequest();
+		Map<String, String> settings = new HashMap<>();
+		settings.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
+		settings.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
+
+		instanceProvider = new AppTokenStorageViewInstanceProviderSpy();
+		AppTokenStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
+		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		SettingsProvider.setSettings(settings);
+
+		request = new HttpServletRequestSpy();
 		appTokenEndpoint = new AppTokenEndpoint(request);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppToken() {
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -77,18 +88,25 @@ public class AppTokenEndpointTest {
 	}
 
 	@Test
+	public void testCallsAppTokenStorage() throws Exception {
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		AppTokenStorageViewSpy appTokenStorage = (AppTokenStorageViewSpy) instanceProvider.MCR
+				.getReturnValue("getStorageView", 0);
+		appTokenStorage.MCR.assertParameters("userIdHasAppToken", 0, SOME_USER_ID, SOME_APP_TOKEN);
+
+	}
+
+	@Test
 	public void testGetAuthTokenForAppTokenWithName() {
 		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
 				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
 		gatekeeperTokenProvider.authToken = authToken;
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
@@ -96,7 +114,7 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
 				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
-				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
+				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}]"
 
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
@@ -110,16 +128,15 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
 		request.headers.put("X-Forwarded-Proto", "https");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -133,18 +150,16 @@ public class AppTokenEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		request.requestURL = new StringBuffer(
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
-
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -157,16 +172,15 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
 		request.headers.put("X-Forwarded-Proto", "");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -181,52 +195,58 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenUserIdNotFound() {
-		String userId = "someUserIdNotFound";
-		String appToken = "someAppToken";
+		setNoUserForAppTokenInStorage();
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken("someUserIdNotFound", SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppTokenNotFound() {
-		String userId = "someUserId";
-		String appToken = "someAppTokenNotFound";
+		setNoUserForAppTokenInStorage();
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
+
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	private void setNoUserForAppTokenInStorage() {
+		AppTokenStorageViewSpy appTokenStorageView = new AppTokenStorageViewSpy();
+		appTokenStorageView.MRV.setDefaultReturnValuesSupplier("userIdHasAppToken",
+				(Supplier<Boolean>) () -> false);
+		AppTokenStorageViewInstanceProviderSpy instanceProvider = new AppTokenStorageViewInstanceProviderSpy();
+		instanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
+				(Supplier<AppTokenStorageView>) () -> appTokenStorageView);
+
+		AppTokenStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		String userId = "someUserId";
-		String authToken = "someAuthToken";
+		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthToken");
 
-		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
 		assertResponseStatusIs(Response.Status.OK);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUserWrongToken() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String authToken = "someAuthTokenNotFound";
+		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID,
+				"someAuthTokenNotFound");
 
-		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 

@@ -18,7 +18,7 @@
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
-	<version>3.6-SNAPSHOT</version>
+	<version>4.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>apptokenverifier</name>
@@ -28,7 +28,7 @@
 		<loggerspies.version>1.0-SNAPSHOT</loggerspies.version>
 		<gatekeepertokenprovider.version>2.7.0</gatekeepertokenprovider.version>
 		<initialize.version>1.0-SNAPSHOT</initialize.version>
-<!--		<apptokenstorage.version>3.0-SNAPSHOT</apptokenstorage.version>-->
+		<initialize-spies.version>1.0-SNAPSHOT</initialize-spies.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
 		<jersey.version>3.0.8</jersey.version>
 	</properties>
@@ -59,12 +59,12 @@
 			<version>${initialize.version}</version>
 			<scope>provided</scope>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>se.uu.ub.cora</groupId>-->
-<!--			<artifactId>apptokenstorage</artifactId>-->
-<!--			<version>${apptokenstorage.version}</version>-->
-<!--			<scope>provided</scope>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>initialize-spies</artifactId>
+			<version>${initialize-spies.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>gatekeepertokenprovider</artifactId>

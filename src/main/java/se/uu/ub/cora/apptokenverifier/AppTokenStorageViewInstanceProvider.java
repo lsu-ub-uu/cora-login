@@ -18,10 +18,12 @@
  */
 package se.uu.ub.cora.apptokenverifier;
 
+import se.uu.ub.cora.initialize.SelectOrder;
+
 /**
  * AppTokenStorageViewInstanceProvider is used to provide storage for AppToken
  */
-public interface AppTokenStorageViewInstanceProvider {
+public interface AppTokenStorageViewInstanceProvider extends SelectOrder {
 
 	/**
 	 * getStorageView should be implemented in such a way that it returns an AppTokenStorage that
