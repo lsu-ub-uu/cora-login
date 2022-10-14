@@ -18,28 +18,41 @@
  */
 package se.uu.ub.cora.apptokenverifier.spies;
 
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageView;
-import se.uu.ub.cora.apptokenverifier.AppTokenStorageViewInstanceProvider;
+import java.util.function.Supplier;
+
+import se.uu.ub.cora.gatekeeper.user.AppToken;
+import se.uu.ub.cora.gatekeeper.user.User;
+import se.uu.ub.cora.gatekeeper.user.UserStorageView;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class AppTokenStorageViewInstanceProviderSpy implements AppTokenStorageViewInstanceProvider {
+public class UserStorageViewSpy implements UserStorageView {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
 
-	public AppTokenStorageViewInstanceProviderSpy() {
+	public UserStorageViewSpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getStorageView", AppTokenStorageViewSpy::new);
+		MRV.setDefaultReturnValuesSupplier("getUserById",
+				(Supplier<User>) () -> new User("idFromSpy"));
+		MRV.setDefaultReturnValuesSupplier("getUserByIdFromLogin",
+				(Supplier<User>) () -> new User("idFromSpy"));
+		MRV.setDefaultReturnValuesSupplier("getAppTokenById",
+				(Supplier<AppToken>) () -> new AppToken("idFromSpy", "tokenStringFromSpy"));
 	}
 
 	@Override
-	public AppTokenStorageView getStorageView() {
-		return (AppTokenStorageView) MCR.addCallAndReturnFromMRV();
+	public User getUserById(String userId) {
+		return (User) MCR.addCallAndReturnFromMRV("userId", userId);
 	}
 
 	@Override
-	public int getOrderToSelectImplementionsBy() {
-		return 0;
+	public User getUserByIdFromLogin(String idFromLogin) {
+		return (User) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin);
+	}
+
+	@Override
+	public AppToken getAppTokenById(String tokenId) {
+		return (AppToken) MCR.addCallAndReturnFromMRV("tokenId", tokenId);
 	}
 
 }

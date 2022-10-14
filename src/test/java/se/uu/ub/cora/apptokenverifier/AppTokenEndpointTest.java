@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,6 +21,7 @@ package se.uu.ub.cora.apptokenverifier;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -31,42 +32,62 @@ import org.testng.annotations.Test;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
-import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageViewInstanceProviderSpy;
-import se.uu.ub.cora.apptokenverifier.spies.AppTokenStorageViewSpy;
 import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.apptokenverifier.spies.HttpServletRequestSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewSpy;
+import se.uu.ub.cora.gatekeeper.user.User;
+import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.user.UserStorageView;
+import se.uu.ub.cora.gatekeeper.user.UserStorageViewException;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 
 public class AppTokenEndpointTest {
-	private static final String SOME_APP_TOKEN = "someAppToken";
+	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
 	private static final String SOME_USER_ID = "someUserId";
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
-	private AppTokenStorageViewInstanceProviderSpy instanceProvider;
+	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 
 	@BeforeMethod
 	public void setup() {
 		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactory);
+		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(userStorageInstanceProvider);
 
 		Map<String, String> settings = new HashMap<>();
 		settings.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
 		settings.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 
-		instanceProvider = new AppTokenStorageViewInstanceProviderSpy();
-		AppTokenStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 		SettingsProvider.setSettings(settings);
 
 		request = new HttpServletRequestSpy();
 		appTokenEndpoint = new AppTokenEndpoint(request);
+
+		User user = new User(SOME_USER_ID);
+		user.active = true;
+		user.appTokenIds.add("someAppTokenId1");
+		user.appTokenIds.add("someAppTokenId2");
+		setUserForUserIdInStorage(user);
+	}
+
+	private void setUserForUserIdInStorage(User user) {
+		UserStorageViewSpy userStorageView = new UserStorageViewSpy();
+		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserById",
+				(Supplier<User>) () -> user);
+		userStorageInstanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
+				(Supplier<UserStorageView>) () -> userStorageView);
+
+		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(userStorageInstanceProvider);
 	}
 
 	@Test
@@ -90,10 +111,12 @@ public class AppTokenEndpointTest {
 	@Test
 	public void testCallsAppTokenStorage() throws Exception {
 		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
-		AppTokenStorageViewSpy appTokenStorage = (AppTokenStorageViewSpy) instanceProvider.MCR
-				.getReturnValue("getStorageView", 0);
-		appTokenStorage.MCR.assertParameters("userIdHasAppToken", 0, SOME_USER_ID, SOME_APP_TOKEN);
 
+		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
+				.getReturnValue("getStorageView", 0);
+		userStorageView.MCR.assertParameters("getUserById", 0, SOME_USER_ID);
+		userStorageView.MCR.assertNumberOfCallsToMethod("getAppTokenById", 1);
+		userStorageView.MCR.assertParameters("getAppTokenById", 0, "someAppTokenId1");
 	}
 
 	@Test
@@ -195,31 +218,57 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenUserIdNotFound() {
-		setNoUserForAppTokenInStorage();
+		setNoUserForUserIdInStorage();
 
 		response = appTokenEndpoint.getAuthTokenForAppToken("someUserIdNotFound", SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 
-	@Test
-	public void testGetAuthTokenForAppTokenNotFound() {
-		setNoUserForAppTokenInStorage();
+	private void setNoUserForUserIdInStorage() {
+		UserStorageViewSpy userStorageView = new UserStorageViewSpy();
+		userStorageView.MRV.setAlwaysThrowException("getUserById",
+				UserStorageViewException.usingMessage("error"));
+		UserStorageViewInstanceProviderSpy instanceProvider = new UserStorageViewInstanceProviderSpy();
+		instanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
+				(Supplier<UserStorageView>) () -> userStorageView);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
+		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenNotActiveUser() {
+		User user = new User(SOME_USER_ID);
+		user.active = false;
+		setUserForUserIdInStorage(user);
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 
-	private void setNoUserForAppTokenInStorage() {
-		AppTokenStorageViewSpy appTokenStorageView = new AppTokenStorageViewSpy();
-		appTokenStorageView.MRV.setDefaultReturnValuesSupplier("userIdHasAppToken",
-				(Supplier<Boolean>) () -> false);
-		AppTokenStorageViewInstanceProviderSpy instanceProvider = new AppTokenStorageViewInstanceProviderSpy();
-		instanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
-				(Supplier<AppTokenStorageView>) () -> appTokenStorageView);
+	@Test
+	public void testGetAuthTokenForAppTokenNoAppTokens() {
+		User user = new User(SOME_USER_ID);
+		user.active = true;
+		user.appTokenIds = Collections.emptySet();
+		setUserForUserIdInStorage(user);
 
-		AppTokenStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenNoCorrectTokenAllTokensAreChecked() {
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
+				.getReturnValue("getStorageView", 0);
+		userStorageView.MCR.assertNumberOfCallsToMethod("getAppTokenById", 2);
+		userStorageView.MCR.assertParameters("getAppTokenById", 0, "someAppTokenId1");
+		userStorageView.MCR.assertParameters("getAppTokenById", 1, "someAppTokenId2");
 	}
 
 	@Test

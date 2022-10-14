@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,15 +16,14 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package se.uu.ub.cora.apptokenverifier;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -33,6 +32,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
+import se.uu.ub.cora.gatekeeper.user.AppToken;
+import se.uu.ub.cora.gatekeeper.user.User;
+import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.user.UserStorageView;
+import se.uu.ub.cora.gatekeeper.user.UserStorageViewException;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
@@ -97,9 +101,35 @@ public class AppTokenEndpoint {
 	}
 
 	private void checkAppTokenIsValid(String userId, String appToken) {
-		AppTokenStorageView appTokenStorage = AppTokenStorageProvider.getStorageView();
-		if (!appTokenStorage.userIdHasAppToken(userId, appToken)) {
-			throw new NotFoundException();
+		UserStorageView storageView = UserStorageProvider.getStorageView();
+		User user = storageView.getUserById(userId);
+		ensureUserIsActiveAndHasAtLeastOneAppToken(user);
+		ensureMatchingAppTokenFromStorage(storageView, user.appTokenIds, appToken);
+
+	}
+
+	private void ensureMatchingAppTokenFromStorage(UserStorageView storageView,
+			Set<String> appTokenIds, String userTokenString) {
+		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds, userTokenString);
+		if (!matchingTokenFound) {
+			throw UserStorageViewException.usingMessage("No matching token found");
+		}
+	}
+
+	private boolean tokenStringExistsInStorage(UserStorageView storageView, Set<String> appTokenIds,
+			String userTokenString) {
+		for (String appTokenId : appTokenIds) {
+			AppToken appToken = storageView.getAppTokenById(appTokenId);
+			if (userTokenString.equals(appToken.tokenString)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void ensureUserIsActiveAndHasAtLeastOneAppToken(User user) {
+		if (!user.active || user.appTokenIds.isEmpty()) {
+			throw UserStorageViewException.usingMessage("User is not active");
 		}
 	}
 
@@ -119,7 +149,7 @@ public class AppTokenEndpoint {
 	}
 
 	private Response handleError(Exception error) {
-		if (error instanceof NotFoundException) {
+		if (error instanceof UserStorageViewException) {
 			return buildResponse(Response.Status.NOT_FOUND);
 		}
 		return buildResponse(Status.INTERNAL_SERVER_ERROR);

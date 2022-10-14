@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2021 Uppsala University Library
+ * Copyright 2019, 2021, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -34,11 +34,9 @@ import se.uu.ub.cora.logger.LoggerProvider;
 
 @WebListener
 public class AppTokenVerifierModuleInitializer implements ServletContextListener {
-	// private AppTokenVerifierModuleStarter starter = new AppTokenVerifierModuleStarterImp();
 	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleInitializer.class);
 	private ServletContext servletContext;
 	private HashMap<String, String> initInfo = new HashMap<>();
-	// private Iterable<AppTokenStorageViewInstanceProvider> appTokenStorageProviderImplementations;
 	private String simpleName = AppTokenVerifierModuleInitializer.class.getSimpleName();
 
 	@Override
@@ -51,8 +49,6 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
 		createAndSetGatekeeperTokenProvider();
-		// collectAppTokenStorageProviderImplementations();
-		// startAppTokenVerifier();
 		log.logInfoUsingMessage(simpleName + " started");
 	}
 
@@ -71,31 +67,4 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
 				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
 	}
-
-	// private void ensureInitInfoIsSetInAppTokenInstanceProviderForEndpoint() {
-	// GatekepperInstanceProvider.setInitInfo(initInfo);
-	// log.logInfoUsingMessage("Using " + initInfo.get("apptokenVerifierPublicPathToSystem")
-	// + " as apptokenVerifierPublicPathToSystem.");
-	// }
-
-	// private void collectAppTokenStorageProviderImplementations() {
-	// appTokenStorageProviderImplementations = ServiceLoader
-	// .load(AppTokenStorageViewInstanceProvider.class);
-	// }
-	//
-	// private void startAppTokenVerifier() {
-	// starter.startUsingInitInfoAndAppTokenStorageProviders(initInfo,
-	// appTokenStorageProviderImplementations);
-	// }
-	//
-	// void setStarter(AppTokenVerifierModuleStarter starter) {
-	// // needed for test
-	// this.starter = starter;
-	// }
-	//
-	// AppTokenVerifierModuleStarter getStarter() {
-	// // needed for test
-	// return starter;
-	// }
-
 }
