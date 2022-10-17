@@ -27,6 +27,8 @@ import org.testng.annotations.Test;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import se.uu.ub.cora.apptokenverifier.spies.ServletContextSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
@@ -40,11 +42,15 @@ public class AppTokenVerifierModuleInitializerTest {
 	private ServletContextEvent context;
 	private AppTokenVerifierModuleInitializer initializer;
 	private LoggerFactorySpy loggerFactorySpy;
+	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
 		setNeededInitParameters();
@@ -68,6 +74,12 @@ public class AppTokenVerifierModuleInitializerTest {
 				"AppTokenVerifierModuleInitializer starting...");
 		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
 				"AppTokenVerifierModuleInitializer started");
+	}
+
+	@Test
+	public void testMakeCallToKnownNeededProvidersToMakeSureTheyStartCorrectlyAtSystemStartup()
+			throws Exception {
+		userStorageInstanceProvider.MCR.assertMethodWasCalled("getStorageView");
 	}
 
 	@Test

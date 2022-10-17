@@ -32,11 +32,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
 import se.uu.ub.cora.gatekeeper.user.AppToken;
 import se.uu.ub.cora.gatekeeper.user.User;
-import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
-import se.uu.ub.cora.gatekeeper.user.UserStorageView;
-import se.uu.ub.cora.gatekeeper.user.UserStorageViewException;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
@@ -44,7 +44,8 @@ import se.uu.ub.cora.initialize.SettingsProvider;
 
 @Path("apptoken")
 public class AppTokenEndpoint {
-
+	public static final String PATH_TO_SYSTEM = SettingsProvider
+			.getSetting("apptokenVerifierPublicPathToSystem");
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
@@ -65,7 +66,7 @@ public class AppTokenEndpoint {
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		baseURL += SettingsProvider.getSetting("apptokenVerifierPublicPathToSystem");
+		baseURL += PATH_TO_SYSTEM;
 
 		baseURL += "apptoken/";
 		return baseURL;
@@ -110,7 +111,8 @@ public class AppTokenEndpoint {
 
 	private void ensureMatchingAppTokenFromStorage(UserStorageView storageView,
 			Set<String> appTokenIds, String userTokenString) {
-		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds, userTokenString);
+		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds,
+				userTokenString);
 		if (!matchingTokenFound) {
 			throw UserStorageViewException.usingMessage("No matching token found");
 		}

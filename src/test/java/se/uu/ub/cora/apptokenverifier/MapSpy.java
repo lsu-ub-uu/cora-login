@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Uppsala University Library
+ * Copyright 2022 Olov McKie
  *
  * This file is part of Cora.
  *
@@ -16,30 +16,19 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.spies;
+package se.uu.ub.cora.apptokenverifier;
 
-import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
-import se.uu.ub.cora.gatekeeper.storage.UserStorageViewInstanceProvider;
+import java.util.HashMap;
+
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
-import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class UserStorageViewInstanceProviderSpy implements UserStorageViewInstanceProvider {
+public class MapSpy<K, V> extends HashMap<K, V> {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
-	public MethodReturnValues MRV = new MethodReturnValues();
-
-	public UserStorageViewInstanceProviderSpy() {
-		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getStorageView", UserStorageViewSpy::new);
-	}
 
 	@Override
-	public int getOrderToSelectImplementionsBy() {
-		return 0;
-	}
-
-	@Override
-	public UserStorageView getStorageView() {
-		return (UserStorageView) MCR.addCallAndReturnFromMRV();
+	public V get(Object key) {
+		MCR.addCall("key", key);
+		return super.get(key);
 	}
 
 }

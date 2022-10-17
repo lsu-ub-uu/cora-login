@@ -22,8 +22,6 @@ package se.uu.ub.cora.apptokenverifier;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
@@ -37,10 +35,10 @@ import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.apptokenverifier.spies.HttpServletRequestSpy;
 import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewSpy;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
 import se.uu.ub.cora.gatekeeper.user.User;
-import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
-import se.uu.ub.cora.gatekeeper.user.UserStorageView;
-import se.uu.ub.cora.gatekeeper.user.UserStorageViewException;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
@@ -54,21 +52,23 @@ public class AppTokenEndpointTest {
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
+	private MapSpy<String, String> settingsMapSpy;
 
 	@BeforeMethod
 	public void setup() {
 		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactory);
 		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
-		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(userStorageInstanceProvider);
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 
-		Map<String, String> settings = new HashMap<>();
-		settings.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
-		settings.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		settingsMapSpy = new MapSpy<>();
+		settingsMapSpy.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
+		settingsMapSpy.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		SettingsProvider.setSettings(settingsMapSpy);
 
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		SettingsProvider.setSettings(settings);
 
 		request = new HttpServletRequestSpy();
 		appTokenEndpoint = new AppTokenEndpoint(request);
@@ -87,7 +87,8 @@ public class AppTokenEndpointTest {
 		userStorageInstanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
 				(Supplier<UserStorageView>) () -> userStorageView);
 
-		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(userStorageInstanceProvider);
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 	}
 
 	@Test
@@ -233,7 +234,7 @@ public class AppTokenEndpointTest {
 		instanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
 				(Supplier<UserStorageView>) () -> userStorageView);
 
-		UserStorageProvider.onlyForTestSetAppTokenViewInstanceProvider(instanceProvider);
+		UserStorageProvider.onlyForTestSetUserStorageViewInstanceProvider(instanceProvider);
 	}
 
 	@Test

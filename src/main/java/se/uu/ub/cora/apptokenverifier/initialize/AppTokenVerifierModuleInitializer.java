@@ -25,6 +25,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
@@ -49,7 +50,12 @@ public class AppTokenVerifierModuleInitializer implements ServletContextListener
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
 		createAndSetGatekeeperTokenProvider();
+		makeCallToKnownNeededProvidersToMakeSureTheyStartCorrectlyAtSystemStartup();
 		log.logInfoUsingMessage(simpleName + " started");
+	}
+
+	private void makeCallToKnownNeededProvidersToMakeSureTheyStartCorrectlyAtSystemStartup() {
+		UserStorageProvider.getStorageView();
 	}
 
 	private void collectInitInformation() {
