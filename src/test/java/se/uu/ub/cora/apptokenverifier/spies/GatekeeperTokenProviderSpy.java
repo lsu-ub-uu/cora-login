@@ -17,31 +17,25 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.apptokenverifier.spies;
 
-import java.util.Map;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
+public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+	public AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
+			"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 
-public class AppTokenStorageSpy implements AppTokenStorage {
-	private Map<String, String> initInfo;
-
-	public AppTokenStorageSpy(Map<String, String> initInfo) {
-		this.initInfo = initInfo;
-	}
-
-	public Map<String, String> getInitInfo() {
-		return initInfo;
+	@Override
+	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
+		return authToken;
 	}
 
 	@Override
-	public boolean userIdHasAppToken(String userId, String appToken) {
-		if ("someUserIdNotFound".equals(userId)) {
-			return false;
-		}
-		if ("someAppTokenNotFound".equals(appToken)) {
-			return false;
-		}
-		return true;
+	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
+		// TODO Auto-generated method stub
+
 	}
+
 }

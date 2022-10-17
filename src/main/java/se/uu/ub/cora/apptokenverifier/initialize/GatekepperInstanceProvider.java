@@ -19,46 +19,22 @@
 
 package se.uu.ub.cora.apptokenverifier.initialize;
 
-import java.util.Map;
-
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
-public final class AppTokenInstanceProvider {
+public final class GatekepperInstanceProvider {
 
-	private static AppTokenStorage appTokenStorage;
 	private static GatekeeperTokenProvider gatekeeperTokenProvider;
-	private static Map<String, String> initInfo;
 
-	private AppTokenInstanceProvider() {
+	private GatekepperInstanceProvider() {
 		// not called
 		throw new UnsupportedOperationException();
 	}
 
-	public static void setApptokenStorage(AppTokenStorage appTokenStorage) {
-		AppTokenInstanceProvider.appTokenStorage = appTokenStorage;
-
-	}
-
-	public static AppTokenStorage getApptokenStorage() {
-		return appTokenStorage;
-	}
-
 	public static void setGatekeeperTokenProvider(GatekeeperTokenProvider gatekeeperTokenProvider) {
-		AppTokenInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
-
+		GatekepperInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
 	}
 
 	public static GatekeeperTokenProvider getGatekeeperTokenProvider() {
 		return gatekeeperTokenProvider;
 	}
-
-	public static void setInitInfo(Map<String, String> initInfo) {
-		AppTokenInstanceProvider.initInfo = initInfo;
-	}
-
-	public static Map<String, String> getInitInfo() {
-		return initInfo;
-	}
-
 }

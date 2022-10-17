@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,110 +21,82 @@ package se.uu.ub.cora.apptokenverifier.initialize;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenstorage.AppTokenStorageProvider;
-import se.uu.ub.cora.apptokenverifier.log.LoggerFactorySpy;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import se.uu.ub.cora.apptokenverifier.spies.ServletContextSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
+import se.uu.ub.cora.httphandler.HttpHandlerFactory;
+import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
+import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.logger.spies.LoggerSpy;
 
 public class AppTokenVerifierModuleInitializerTest {
 	private ServletContext source;
 	private ServletContextEvent context;
 	private AppTokenVerifierModuleInitializer initializer;
 	private LoggerFactorySpy loggerFactorySpy;
-	private String testedClassName = "AppTokenVerifierModuleInitializer";
+	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
-		initializer = new AppTokenVerifierModuleInitializer();
-	}
-
-	@Test
-	public void testNonExceptionThrowingStartup() throws Exception {
 		setNeededInitParameters();
-		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
-		assertTrue(starter.startWasCalled);
-	}
-
-	private AppTokenVerifierModuleStarterSpy startAppTokenVerifierModuleInitializerWithStarterSpy() {
-		AppTokenVerifierModuleStarterSpy starter = new AppTokenVerifierModuleStarterSpy();
-		initializer.setStarter(starter);
+		initializer = new AppTokenVerifierModuleInitializer();
 		initializer.contextInitialized(context);
-		return starter;
 	}
 
 	private void setNeededInitParameters() {
 		source.setInitParameter("initParam1", "initValue1");
 		source.setInitParameter("initParam2", "initValue2");
+		source.setInitParameter("gatekeeperURL", "/some/gatekeeper/url");
 
 	}
 
 	@Test
 	public void testLogMessagesOnStartup() throws Exception {
-		setNeededInitParameters();
-		startAppTokenVerifierModuleInitializerWithStarterSpy();
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+		loggerFactorySpy.MCR.assertParameters("factorForClass", 0,
+				AppTokenVerifierModuleInitializer.class);
+		LoggerSpy loggerSpy = (LoggerSpy) loggerFactorySpy.MCR.getReturnValue("factorForClass", 0);
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
 				"AppTokenVerifierModuleInitializer starting...");
-		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
 				"AppTokenVerifierModuleInitializer started");
 	}
 
 	@Test
+	public void testMakeCallToKnownNeededProvidersToMakeSureTheyStartCorrectlyAtSystemStartup()
+			throws Exception {
+		userStorageInstanceProvider.MCR.assertMethodWasCalled("getStorageView");
+	}
+
+	@Test
 	public void testInitParametersArePassedOnToStarter() {
-		setNeededInitParameters();
-		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
-		Map<String, String> initInfo = starter.initInfo;
-		assertEquals(initInfo.size(), 2);
-		source.setInitParameter("initParam1", "initValue1");
-		source.setInitParameter("initParam2", "initValue2");
+		assertEquals(SettingsProvider.getSetting("initParam1"), "initValue1");
+		assertEquals(SettingsProvider.getSetting("initParam2"), "initValue2");
 	}
 
 	@Test
-	public void testUserPickerProviderImplementationsArePassedOnToStarter() {
-		setNeededInitParameters();
-		AppTokenVerifierModuleStarterSpy starter = startAppTokenVerifierModuleInitializerWithStarterSpy();
+	public void testGatekeeperTokenProviderIsSet() {
+		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) GatekepperInstanceProvider
+				.getGatekeeperTokenProvider();
+		assertTrue(gatekeeperTokenProvider instanceof GatekeeperTokenProviderImp);
+		String gatekeeperUrl = gatekeeperTokenProvider.getGatekeeperUrl();
+		assertEquals(gatekeeperUrl, SettingsProvider.getSetting("gatekeeperURL"));
 
-		Iterable<AppTokenStorageProvider> iterable = starter.appTokenStorageProviderImplementations;
-		assertTrue(iterable instanceof ServiceLoader);
-	}
-
-	@Test
-	public void testInitUsesDefaultAppTokenVerifierModuleStarter() throws Exception {
-		setNeededInitParameters();
-		startAndMakeSureErrorIsThrownAsNoImplementationsExistInThisModule();
-		AppTokenVerifierModuleStarter starter = initializer.getStarter();
-		assertStarterIsGatekeeperModuleStarter(starter);
-	}
-
-	private void startAndMakeSureErrorIsThrownAsNoImplementationsExistInThisModule() {
-		Exception caughtException = startAndMakeSureErrorIsThrown();
-		assertEquals(caughtException.getMessage(),
-				"No implementations found for AppTokenStorageProvider");
-	}
-
-	private Exception startAndMakeSureErrorIsThrown() {
-		Exception caughtException = null;
-		try {
-			initializer.contextInitialized(context);
-		} catch (Exception e) {
-			caughtException = e;
-		}
-		assertTrue(caughtException instanceof AppTokenVerifierInitializationException);
-		return caughtException;
-	}
-
-	private void assertStarterIsGatekeeperModuleStarter(AppTokenVerifierModuleStarter starter) {
-		assertTrue(starter instanceof AppTokenVerifierModuleStarterImp);
+		HttpHandlerFactory httpHandlerFactory = gatekeeperTokenProvider.getHttpHandlerFactory();
+		assertTrue(httpHandlerFactory instanceof HttpHandlerFactoryImp);
 	}
 }

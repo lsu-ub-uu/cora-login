@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,51 +21,86 @@ package se.uu.ub.cora.apptokenverifier;
 
 import static org.testng.Assert.assertEquals;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenstorage.AppTokenStorage;
-import se.uu.ub.cora.apptokenverifier.initialize.AppTokenInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderErrorSpy;
+import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spies.HttpServletRequestSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewSpy;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
+import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.initialize.SettingsProvider;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 
 public class AppTokenEndpointTest {
+	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
+	private static final String SOME_USER_ID = "someUserId";
 	private Response response;
 	private AppTokenEndpoint appTokenEndpoint;
-	private TestHttpServletRequest request;
+	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
+	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
+	private MapSpy<String, String> settingsMapSpy;
 
 	@BeforeMethod
 	public void setup() {
-		Map<String, String> initInfo = new HashMap<>();
-		initInfo.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
-		initInfo.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
-		AppTokenStorage appTokenStorage = new AppTokenStorageSpy(initInfo);
-		AppTokenInstanceProvider.setApptokenStorage(appTokenStorage);
-		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		AppTokenInstanceProvider.setInitInfo(initInfo);
+		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactory);
+		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 
-		request = new TestHttpServletRequest();
+		settingsMapSpy = new MapSpy<>();
+		settingsMapSpy.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
+		settingsMapSpy.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
+		SettingsProvider.setSettings(settingsMapSpy);
+
+		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		request = new HttpServletRequestSpy();
 		appTokenEndpoint = new AppTokenEndpoint(request);
+
+		User user = new User(SOME_USER_ID);
+		user.active = true;
+		user.appTokenIds.add("someAppTokenId1");
+		user.appTokenIds.add("someAppTokenId2");
+		setUserForUserIdInStorage(user);
+	}
+
+	private void setUserForUserIdInStorage(User user) {
+		UserStorageViewSpy userStorageView = new UserStorageViewSpy();
+		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserById",
+				(Supplier<User>) () -> user);
+		userStorageInstanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
+				(Supplier<UserStorageView>) () -> userStorageView);
+
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppToken() {
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -75,18 +110,27 @@ public class AppTokenEndpointTest {
 	}
 
 	@Test
+	public void testCallsAppTokenStorage() throws Exception {
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
+				.getReturnValue("getStorageView", 0);
+		userStorageView.MCR.assertParameters("getUserById", 0, SOME_USER_ID);
+		userStorageView.MCR.assertNumberOfCallsToMethod("getAppTokenById", 1);
+		userStorageView.MCR.assertParameters("getAppTokenById", 0, "someAppTokenId1");
+	}
+
+	@Test
 	public void testGetAuthTokenForAppTokenWithName() {
 		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
 				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
 		gatekeeperTokenProvider.authToken = authToken;
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
@@ -94,7 +138,7 @@ public class AppTokenEndpointTest {
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
 				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
-				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
+				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}]"
 
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
@@ -108,16 +152,15 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
 		request.headers.put("X-Forwarded-Proto", "https");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -131,18 +174,16 @@ public class AppTokenEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		request.requestURL = new StringBuffer(
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
-
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -155,16 +196,15 @@ public class AppTokenEndpointTest {
 	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
 		request.headers.put("X-Forwarded-Proto", "");
 		appTokenEndpoint = new AppTokenEndpoint(request);
-		String userId = "someUserId";
-		String appToken = "someAppToken";
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
 				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
 				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
 				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
+				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
@@ -179,52 +219,84 @@ public class AppTokenEndpointTest {
 
 	@Test
 	public void testGetAuthTokenForAppTokenUserIdNotFound() {
-		String userId = "someUserIdNotFound";
-		String appToken = "someAppToken";
+		setNoUserForUserIdInStorage();
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken("someUserIdNotFound", SOME_APP_TOKEN);
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	private void setNoUserForUserIdInStorage() {
+		UserStorageViewSpy userStorageView = new UserStorageViewSpy();
+		userStorageView.MRV.setAlwaysThrowException("getUserById",
+				UserStorageViewException.usingMessage("error"));
+		UserStorageViewInstanceProviderSpy instanceProvider = new UserStorageViewInstanceProviderSpy();
+		instanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
+				(Supplier<UserStorageView>) () -> userStorageView);
+
+		UserStorageProvider.onlyForTestSetUserStorageViewInstanceProvider(instanceProvider);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenNotActiveUser() {
+		User user = new User(SOME_USER_ID);
+		user.active = false;
+		setUserForUserIdInStorage(user);
+
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 
 	@Test
-	public void testGetAuthTokenForAppTokenNotFound() {
-		String userId = "someUserId";
-		String appToken = "someAppTokenNotFound";
+	public void testGetAuthTokenForAppTokenNoAppTokens() {
+		User user = new User(SOME_USER_ID);
+		user.active = true;
+		user.appTokenIds = Collections.emptySet();
+		setUserForUserIdInStorage(user);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenNoCorrectTokenAllTokensAreChecked() {
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
+				.getReturnValue("getStorageView", 0);
+		userStorageView.MCR.assertNumberOfCallsToMethod("getAppTokenById", 2);
+		userStorageView.MCR.assertParameters("getAppTokenById", 0, "someAppTokenId1");
+		userStorageView.MCR.assertParameters("getAppTokenById", 1, "someAppTokenId2");
 	}
 
 	@Test
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String appToken = "someAppToken";
+		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(userId, appToken);
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		String userId = "someUserId";
-		String authToken = "someAuthToken";
+		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthToken");
 
-		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
 		assertResponseStatusIs(Response.Status.OK);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUserWrongToken() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		AppTokenInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		String userId = "someUserId";
-		String authToken = "someAuthTokenNotFound";
+		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID,
+				"someAuthTokenNotFound");
 
-		response = appTokenEndpoint.removeAuthTokenForAppToken(userId, authToken);
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 

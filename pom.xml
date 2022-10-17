@@ -18,15 +18,18 @@
 	</parent>
 
 	<artifactId>apptokenverifier</artifactId>
-	<version>3.6-SNAPSHOT</version>
+	<version>4.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>apptokenverifier</name>
 
 	<properties>
+		<gatekeeper.version>4.0-SNAPSHOT</gatekeeper.version>
 		<logger.version>2.5.0</logger.version>
+		<loggerspies.version>1.0-SNAPSHOT</loggerspies.version>
 		<gatekeepertokenprovider.version>2.7.0</gatekeepertokenprovider.version>
-		<apptokenstorage.version>2.5.0</apptokenstorage.version>
+		<initialize.version>1.0-SNAPSHOT</initialize.version>
+		<initialize-spies.version>1.0-SNAPSHOT</initialize-spies.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
 		<jersey.version>3.0.8</jersey.version>
 	</properties>
@@ -41,21 +44,39 @@
 	<dependencies>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>gatekeeper</artifactId>
+			<version>${gatekeeper.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>logger</artifactId>
 			<version>${logger.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
-			<artifactId>apptokenstorage</artifactId>
-			<version>${apptokenstorage.version}</version>
+			<artifactId>logger-spies</artifactId>
+			<version>${loggerspies.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>initialize</artifactId>
+			<version>${initialize.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>initialize-spies</artifactId>
+			<version>${initialize-spies.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>gatekeepertokenprovider</artifactId>
 			<version>${gatekeepertokenprovider.version}</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>

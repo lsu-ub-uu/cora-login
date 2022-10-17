@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Olov McKie
+ * Copyright 2022 Olov McKie
  *
  * This file is part of Cora.
  *
@@ -16,14 +16,19 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.apptokenverifier;
 
-public class AppTokenVerifierInitializationException extends RuntimeException {
+import java.util.HashMap;
 
-	private static final long serialVersionUID = 1106993019564065759L;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 
-	public AppTokenVerifierInitializationException(String message) {
-		super(message);
+public class MapSpy<K, V> extends HashMap<K, V> {
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+
+	@Override
+	public V get(Object key) {
+		MCR.addCall("key", key);
+		return super.get(key);
 	}
 
 }
