@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.spies;
+package se.uu.ub.cora.login.spies;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;

@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.login;
 
 import static org.testng.Assert.assertEquals;
 
@@ -29,12 +29,6 @@ import org.testng.annotations.Test;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
-import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderErrorSpy;
-import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
-import se.uu.ub.cora.apptokenverifier.spies.HttpServletRequestSpy;
-import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
-import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewSpy;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
@@ -43,6 +37,13 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.AppTokenEndpoint;
+import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
+import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.login.spies.HttpServletRequestSpy;
+import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.login.spies.UserStorageViewSpy;
 
 public class AppTokenEndpointTest {
 	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
@@ -63,7 +64,7 @@ public class AppTokenEndpointTest {
 				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
 
 		settingsMapSpy = new MapSpy<>();
-		settingsMapSpy.put("apptokenVerifierPublicPathToSystem", "/apptokenverifier/rest/");
+		settingsMapSpy.put("loginPublicPathToSystem", "/login/rest/");
 		settingsMapSpy.put("storageOnDiskBasePath", "/mnt/data/basicstorage");
 		SettingsProvider.setSettings(settingsMapSpy);
 
@@ -104,7 +105,7 @@ public class AppTokenEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -143,7 +144,7 @@ public class AppTokenEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -164,7 +165,7 @@ public class AppTokenEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"https://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"https://localhost:8080/login/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -187,7 +188,7 @@ public class AppTokenEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"https://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"https://localhost:8080/login/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -208,7 +209,7 @@ public class AppTokenEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/apptokenverifier/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}

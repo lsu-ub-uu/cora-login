@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.json;
+package se.uu.ub.cora.login.json;
 
 import static org.testng.Assert.assertEquals;
 
@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 public class AuthTokenToJsonConverterTest {
 	private String url;
@@ -32,7 +33,7 @@ public class AuthTokenToJsonConverterTest {
 
 	@BeforeMethod
 	public void beforeMethod() {
-		url = "http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313";
+		url = "http://epc.ub.uu.se/login/rest/apptoken/131313";
 		authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someId", 599,
 				"someIdInUserStorage", "someIdFromLogin");
 
@@ -48,7 +49,7 @@ public class AuthTokenToJsonConverterTest {
 				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313\"}}}";
+				+ "\"url\":\"http://epc.ub.uu.se/login/rest/apptoken/131313\"}}}";
 		assertEquals(json, expected);
 	}
 
@@ -66,7 +67,7 @@ public class AuthTokenToJsonConverterTest {
 				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\"," + "\"rel\":\"delete\","
-				+ "\"url\":\"http://epc.ub.uu.se/apptokenverifier/rest/apptoken/131313\"}}}";
+				+ "\"url\":\"http://epc.ub.uu.se/login/rest/apptoken/131313\"}}}";
 		assertEquals(json, expected);
 	}
 }

@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.login.initialize;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -26,8 +26,6 @@ import org.testng.annotations.Test;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
-import se.uu.ub.cora.apptokenverifier.spies.ServletContextSpy;
-import se.uu.ub.cora.apptokenverifier.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
@@ -36,6 +34,10 @@ import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.logger.spies.LoggerSpy;
+import se.uu.ub.cora.login.initialize.AppTokenVerifierModuleInitializer;
+import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.spies.ServletContextSpy;
+import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 
 public class AppTokenVerifierModuleInitializerTest {
 	private ServletContext source;

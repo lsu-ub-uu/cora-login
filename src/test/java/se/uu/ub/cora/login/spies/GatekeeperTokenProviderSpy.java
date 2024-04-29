@@ -17,23 +17,25 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.spies;
+package se.uu.ub.cora.login.spies;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
-import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
 
-public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider {
+public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+	public AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
+			"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
 
 	@Override
 	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		throw new AuthenticationException("authToken gives no authorization");
+		return authToken;
 	}
 
 	@Override
 	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		throw new AuthenticationException("authToken could not be removed");
+		// TODO Auto-generated method stub
+
 	}
 
 }

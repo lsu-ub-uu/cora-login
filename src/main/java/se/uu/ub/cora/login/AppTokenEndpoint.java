@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.apptokenverifier;
+package se.uu.ub.cora.login;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,8 +30,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.apptokenverifier.initialize.GatekepperInstanceProvider;
-import se.uu.ub.cora.apptokenverifier.json.AuthTokenToJsonConverter;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
@@ -41,11 +39,13 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.initialize.SettingsProvider;
+import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 @Path("apptoken")
 public class AppTokenEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
-			.getSetting("apptokenVerifierPublicPathToSystem");
+			.getSetting("loginPublicPathToSystem");
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;

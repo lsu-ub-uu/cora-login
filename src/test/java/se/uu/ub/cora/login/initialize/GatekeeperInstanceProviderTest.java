@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.login.initialize;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -28,8 +28,9 @@ import java.lang.reflect.Modifier;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.apptokenverifier.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 
 public class GatekeeperInstanceProviderTest {
 	@Test

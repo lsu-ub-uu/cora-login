@@ -17,11 +17,14 @@
 		<version>2.5.0</version>
 	</parent>
 
-	<artifactId>apptokenverifier</artifactId>
-	<version>4.8-SNAPSHOT</version>
+	<artifactId>login</artifactId>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>apptokenverifier</name>
+	<name>Login</name>
+	<build>
+		<finalName>login</finalName>
+	</build>
 
 	<properties>
 		<gatekeeper.version>4.6.0</gatekeeper.version>
@@ -35,9 +38,9 @@
 	</properties>
 
 	<scm>
-		<connection>scm:git:https://github.com/lsu-ub-uu/cora-apptokenverifier.git</connection>
-		<developerConnection>scm:git:https://github.com/lsu-ub-uu/cora-apptokenverifier.git</developerConnection>
-		<url>https://github.com/lsu-ub-uu/cora-apptokenverifier.git</url>
+		<connection>scm:git:https://github.com/lsu-ub-uu/cora-login.git</connection>
+		<developerConnection>scm:git:https://github.com/lsu-ub-uu/cora-login.git</developerConnection>
+		<url>https://github.com/lsu-ub-uu/cora-login.git</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -107,7 +110,4 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	<build>
-		<finalName>apptokenverifier</finalName>
-	</build>
 </project>

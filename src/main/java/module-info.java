@@ -1,4 +1,4 @@
-module se.uu.ub.cora.apptokenverifier {
+module se.uu.ub.cora.login {
 	requires se.uu.ub.cora.logger;
 
 	requires se.uu.ub.cora.gatekeepertokenprovider;
@@ -9,6 +9,6 @@ module se.uu.ub.cora.apptokenverifier {
 	requires transitive se.uu.ub.cora.initialize;
 	requires se.uu.ub.cora.gatekeeper;
 
-	exports se.uu.ub.cora.apptokenverifier;
+	exports se.uu.ub.cora.login;
 
 }

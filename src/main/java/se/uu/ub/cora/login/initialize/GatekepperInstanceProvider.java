@@ -17,7 +17,7 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.apptokenverifier.initialize;
+package se.uu.ub.cora.login.initialize;
 
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
