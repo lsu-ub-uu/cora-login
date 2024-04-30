@@ -37,7 +37,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
-import se.uu.ub.cora.login.AppTokenEndpoint;
+import se.uu.ub.cora.login.LoginEndpoint;
 import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
@@ -45,11 +45,11 @@ import se.uu.ub.cora.login.spies.HttpServletRequestSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewSpy;
 
-public class AppTokenEndpointTest {
+public class LoginEndpointTest {
 	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
 	private static final String SOME_USER_ID = "someUserId";
 	private Response response;
-	private AppTokenEndpoint appTokenEndpoint;
+	private LoginEndpoint appTokenEndpoint;
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
@@ -72,7 +72,7 @@ public class AppTokenEndpointTest {
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		request = new HttpServletRequestSpy();
-		appTokenEndpoint = new AppTokenEndpoint(request);
+		appTokenEndpoint = new LoginEndpoint(request);
 
 		User user = new User(SOME_USER_ID);
 		user.active = true;
@@ -152,7 +152,7 @@ public class AppTokenEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
 		request.headers.put("X-Forwarded-Proto", "https");
-		appTokenEndpoint = new AppTokenEndpoint(request);
+		appTokenEndpoint = new LoginEndpoint(request);
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
@@ -175,7 +175,7 @@ public class AppTokenEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		request.requestURL = new StringBuffer(
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
-		appTokenEndpoint = new AppTokenEndpoint(request);
+		appTokenEndpoint = new LoginEndpoint(request);
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
@@ -196,7 +196,7 @@ public class AppTokenEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
 		request.headers.put("X-Forwarded-Proto", "");
-		appTokenEndpoint = new AppTokenEndpoint(request);
+		appTokenEndpoint = new LoginEndpoint(request);
 
 		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 

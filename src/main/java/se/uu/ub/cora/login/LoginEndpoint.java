@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -43,14 +43,14 @@ import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 @Path("apptoken")
-public class AppTokenEndpoint {
+public class LoginEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
 			.getSetting("loginPublicPathToSystem");
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
 
-	public AppTokenEndpoint(@Context HttpServletRequest request) {
+	public LoginEndpoint(@Context HttpServletRequest request) {
 		this.request = request;
 		url = getBaseURLFromURI();
 	}

@@ -34,11 +34,11 @@ import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 
 @WebListener
-public class AppTokenVerifierModuleInitializer implements ServletContextListener {
-	private Logger log = LoggerProvider.getLoggerForClass(AppTokenVerifierModuleInitializer.class);
+public class LoginModuleInitializer implements ServletContextListener {
+	private Logger log = LoggerProvider.getLoggerForClass(LoginModuleInitializer.class);
 	private ServletContext servletContext;
 	private HashMap<String, String> initInfo = new HashMap<>();
-	private String simpleName = AppTokenVerifierModuleInitializer.class.getSimpleName();
+	private String simpleName = LoginModuleInitializer.class.getSimpleName();
 
 	@Override
 	public void contextInitialized(ServletContextEvent contextEvent) {

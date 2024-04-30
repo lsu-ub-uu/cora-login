@@ -34,15 +34,13 @@ import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.logger.spies.LoggerSpy;
-import se.uu.ub.cora.login.initialize.AppTokenVerifierModuleInitializer;
-import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.login.spies.ServletContextSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 
-public class AppTokenVerifierModuleInitializerTest {
+public class LoginModuleInitializerTest {
 	private ServletContext source;
 	private ServletContextEvent context;
-	private AppTokenVerifierModuleInitializer initializer;
+	private LoginModuleInitializer initializer;
 	private LoggerFactorySpy loggerFactorySpy;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 
@@ -56,7 +54,7 @@ public class AppTokenVerifierModuleInitializerTest {
 		source = new ServletContextSpy();
 		context = new ServletContextEvent(source);
 		setNeededInitParameters();
-		initializer = new AppTokenVerifierModuleInitializer();
+		initializer = new LoginModuleInitializer();
 		initializer.contextInitialized(context);
 	}
 
@@ -69,13 +67,11 @@ public class AppTokenVerifierModuleInitializerTest {
 
 	@Test
 	public void testLogMessagesOnStartup() throws Exception {
-		loggerFactorySpy.MCR.assertParameters("factorForClass", 0,
-				AppTokenVerifierModuleInitializer.class);
+		loggerFactorySpy.MCR.assertParameters("factorForClass", 0, LoginModuleInitializer.class);
 		LoggerSpy loggerSpy = (LoggerSpy) loggerFactorySpy.MCR.getReturnValue("factorForClass", 0);
 		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
-				"AppTokenVerifierModuleInitializer starting...");
-		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1,
-				"AppTokenVerifierModuleInitializer started");
+				"LoginModuleInitializer starting...");
+		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 1, "LoginModuleInitializer started");
 	}
 
 	@Test
