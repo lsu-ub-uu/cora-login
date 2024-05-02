@@ -23,10 +23,12 @@ import java.net.URISyntaxException;
 import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -42,10 +44,12 @@ import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
-@Path("apptoken")
+@Path("/")
 public class LoginEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
 			.getSetting("loginPublicPathToSystem");
+	private static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain; charset=utf-8";
+	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
@@ -86,8 +90,10 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	@Path("{userid}")
-	public Response getAuthTokenForAppToken(@PathParam("userid") String userId, String appToken) {
+	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
+	@Path("apptoken/{userId}")
+	public Response getAuthTokenForAppToken(@PathParam("userId") String userId, String appToken) {
 		try {
 			return tryToGetAuthTokenForAppToken(userId, appToken);
 		} catch (Exception error) {
@@ -162,8 +168,9 @@ public class LoginEndpoint {
 	}
 
 	@DELETE
-	@Path("{userid}")
-	public Response removeAuthTokenForAppToken(@PathParam("userid") String userId,
+	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Path("authToken/{userId}")
+	public Response removeAuthTokenForAppToken(@PathParam("userId") String userId,
 			String authToken) {
 		try {
 			return tryToRemoveAuthTokenForUser(userId, authToken);

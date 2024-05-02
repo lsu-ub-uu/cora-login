@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -20,6 +20,7 @@
 package se.uu.ub.cora.login;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.function.Supplier;
@@ -37,7 +38,6 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
-import se.uu.ub.cora.login.LoginEndpoint;
 import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
@@ -48,8 +48,10 @@ import se.uu.ub.cora.login.spies.UserStorageViewSpy;
 public class LoginEndpointTest {
 	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
 	private static final String SOME_USER_ID = "someUserId";
+	private static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain; charset=utf-8";
+	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private Response response;
-	private LoginEndpoint appTokenEndpoint;
+	private LoginEndpoint loginEndpoint;
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
@@ -72,7 +74,7 @@ public class LoginEndpointTest {
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		request = new HttpServletRequestSpy();
-		appTokenEndpoint = new LoginEndpoint(request);
+		loginEndpoint = new LoginEndpoint(request);
 
 		User user = new User(SOME_USER_ID);
 		user.active = true;
@@ -93,8 +95,28 @@ public class LoginEndpointTest {
 	}
 
 	@Test
+	public void testLoginEndpointPathAnnotation() throws Exception {
+		AnnotationTestHelper annotationHelper = AnnotationTestHelper
+				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
+						"getAuthTokenForAppToken", 2);
+		assertTrue(annotationHelper.assertPathAnnotationForClass("/"));
+	}
+
+	@Test
+	public void testAnnotationsetAuthTokenForAppToken_Annotations() throws Exception {
+		AnnotationTestHelper annotationHelper = AnnotationTestHelper
+				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
+						"getAuthTokenForAppToken", 2);
+
+		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken/{userId}");
+		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
+		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
+		annotationHelper.assertPathParamAnnotationByNameAndPosition("userId", 0);
+	}
+
+	@Test
 	public void testGetAuthTokenForAppToken() {
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -112,7 +134,7 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testCallsAppTokenStorage() throws Exception {
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
 				.getReturnValue("getStorageView", 0);
@@ -130,7 +152,7 @@ public class LoginEndpointTest {
 		gatekeeperTokenProvider.authToken = authToken;
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -152,9 +174,9 @@ public class LoginEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
 		request.headers.put("X-Forwarded-Proto", "https");
-		appTokenEndpoint = new LoginEndpoint(request);
+		loginEndpoint = new LoginEndpoint(request);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -175,9 +197,9 @@ public class LoginEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		request.requestURL = new StringBuffer(
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
-		appTokenEndpoint = new LoginEndpoint(request);
+		loginEndpoint = new LoginEndpoint(request);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -196,9 +218,9 @@ public class LoginEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
 		request.headers.put("X-Forwarded-Proto", "");
-		appTokenEndpoint = new LoginEndpoint(request);
+		loginEndpoint = new LoginEndpoint(request);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.CREATED);
 		String expectedJsonToken = "{\"data\":{\"children\":["
@@ -222,7 +244,7 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenForAppTokenUserIdNotFound() {
 		setNoUserForUserIdInStorage();
 
-		response = appTokenEndpoint.getAuthTokenForAppToken("someUserIdNotFound", SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken("someUserIdNotFound", SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
@@ -244,7 +266,7 @@ public class LoginEndpointTest {
 		user.active = false;
 		setUserForUserIdInStorage(user);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
@@ -256,14 +278,14 @@ public class LoginEndpointTest {
 		user.appTokenIds = Collections.emptySet();
 		setUserForUserIdInStorage(user);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 	}
 
 	@Test
 	public void testGetAuthTokenForAppTokenNoCorrectTokenAllTokensAreChecked() {
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, "someAppTokenNotFound");
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
 		UserStorageViewSpy userStorageView = (UserStorageViewSpy) userStorageInstanceProvider.MCR
@@ -278,14 +300,14 @@ public class LoginEndpointTest {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		response = appTokenEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthToken");
+		response = loginEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthToken");
 
 		assertResponseStatusIs(Response.Status.OK);
 	}
@@ -295,10 +317,20 @@ public class LoginEndpointTest {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		response = appTokenEndpoint.removeAuthTokenForAppToken(SOME_USER_ID,
-				"someAuthTokenNotFound");
+		response = loginEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthTokenNotFound");
 
 		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	@Test
+	public void testRemoveAuthTokenForAppToken_Annotations() throws Exception {
+		AnnotationTestHelper annotationHelper = AnnotationTestHelper
+				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
+						"removeAuthTokenForAppToken", 2);
+
+		annotationHelper.assertHttpMethodAndPathAnnotation("DELETE", "authToken/{userId}");
+		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
+		annotationHelper.assertPathParamAnnotationByNameAndPosition("userId", 0);
 	}
 
 }
