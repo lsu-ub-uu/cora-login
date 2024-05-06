@@ -43,10 +43,10 @@ public class LoginModuleInitializer implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent contextEvent) {
 		servletContext = contextEvent.getServletContext();
-		initializeAppTokenVerifier();
+		initializeLogin();
 	}
 
-	private void initializeAppTokenVerifier() {
+	private void initializeLogin() {
 		log.logInfoUsingMessage(simpleName + " starting...");
 		collectInitInformation();
 		createAndSetGatekeeperTokenProvider();
