@@ -20,9 +20,10 @@
 package se.uu.ub.cora.login;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
+import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.testng.annotations.BeforeMethod;
@@ -97,9 +98,8 @@ public class LoginEndpointTest {
 	@Test
 	public void testLoginEndpointPathAnnotation() throws Exception {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
-				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
-						"getAuthTokenForAppToken", 2);
-		assertTrue(annotationHelper.assertPathAnnotationForClass("/"));
+				.createAnnotationTestHelperForClass(LoginEndpoint.class);
+		annotationHelper.assertPathAnnotationForClass("/");
 	}
 
 	@Test
@@ -127,9 +127,13 @@ public class LoginEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/authToken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
+		List<Object> locationHeaders = response.getHeaders().get("location");
+		assertEquals(locationHeaders.size(), 1);
+		URI firstLocationHeader = (URI) locationHeaders.get(0);
+		assertEquals(firstLocationHeader.getPath(), "authToken/");
 	}
 
 	@Test
@@ -166,7 +170,7 @@ public class LoginEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/authToken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -187,7 +191,7 @@ public class LoginEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"https://localhost:8080/login/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"https://localhost:8080/login/rest/authToken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -210,7 +214,7 @@ public class LoginEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"https://localhost:8080/login/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"https://localhost:8080/login/rest/authToken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
@@ -231,7 +235,7 @@ public class LoginEndpointTest {
 				+ ",\"name\":\"authToken\"},"
 				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
 				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/login/rest/apptoken/someUserId\"}}}";
+				+ "\"url\":\"http://localhost:8080/login/rest/authToken/someUserId\"}}}";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}

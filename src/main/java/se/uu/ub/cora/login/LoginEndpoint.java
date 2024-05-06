@@ -71,8 +71,7 @@ public class LoginEndpoint {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
 		baseURL += PATH_TO_SYSTEM;
-
-		baseURL += "apptoken/";
+		baseURL += "authToken/";
 		return baseURL;
 	}
 
@@ -148,7 +147,7 @@ public class LoginEndpoint {
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
 		AuthToken authTokenForUserInfo = gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 		String json = convertAuthTokenToJson(authTokenForUserInfo, url + userId);
-		URI uri = new URI("apptoken/");
+		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
 

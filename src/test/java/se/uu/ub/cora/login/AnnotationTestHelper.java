@@ -21,6 +21,7 @@ package se.uu.ub.cora.login;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,15 +42,20 @@ public class AnnotationTestHelper {
 	private Annotation[][] parameterAnnotations;
 	private Annotation[] classAnnotations;
 
-	public static AnnotationTestHelper createAnnotationTestHelperForClassMethodNameAndNumOfParameters(
-			Class<?> class1, String methodName, int numOfParameters) throws NoSuchMethodException {
-		var parameters = generateParameters(numOfParameters);
-		return new AnnotationTestHelper(class1, methodName, parameters);
+	public static AnnotationTestHelper createAnnotationTestHelperForClass(Class<?> endpointClass)
+			throws NoSuchMethodException {
+		return new AnnotationTestHelper(endpointClass);
 	}
 
-	private AnnotationTestHelper(Class<?> class1, String methodName, Class<?>[] parameters)
+	public static AnnotationTestHelper createAnnotationTestHelperForClassMethodNameAndNumOfParameters(
+			Class<?> endpointClass, String methodName, int numOfParameters)
 			throws NoSuchMethodException {
-		Class<?> endpointClass = class1;
+		var parameters = generateParameters(numOfParameters);
+		return new AnnotationTestHelper(endpointClass, methodName, parameters);
+	}
+
+	private AnnotationTestHelper(Class<?> endpointClass, String methodName, Class<?>[] parameters)
+			throws NoSuchMethodException {
 
 		classAnnotations = endpointClass.getDeclaredAnnotations();
 		method = endpointClass.getMethod(methodName, parameters);
@@ -57,7 +63,19 @@ public class AnnotationTestHelper {
 
 	}
 
-	public boolean assertPathAnnotationForClass(String expectedAnnotation) {
+	public AnnotationTestHelper(Class<?> endpointClass) {
+		classAnnotations = endpointClass.getDeclaredAnnotations();
+	}
+
+	public void assertPathAnnotationForClass(String expectedAnnotation) {
+		if (annotationExistsInClass(expectedAnnotation)) {
+			assertTrue(true);
+		} else {
+			fail();
+		}
+	}
+
+	private boolean annotationExistsInClass(String expectedAnnotation) {
 		for (Annotation annotation : classAnnotations) {
 			Path pathAnnotation = (Path) annotation;
 			if (pathAnnotation.value().equals(expectedAnnotation)) {
