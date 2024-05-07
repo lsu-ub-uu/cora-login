@@ -21,7 +21,6 @@ package se.uu.ub.cora.login;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -68,11 +67,7 @@ public class AnnotationTestHelper {
 	}
 
 	public void assertPathAnnotationForClass(String expectedAnnotation) {
-		if (annotationExistsInClass(expectedAnnotation)) {
-			assertTrue(true);
-		} else {
-			fail();
-		}
+		assertTrue(annotationExistsInClass(expectedAnnotation));
 	}
 
 	private boolean annotationExistsInClass(String expectedAnnotation) {
