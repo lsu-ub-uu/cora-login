@@ -8,6 +8,7 @@ module se.uu.ub.cora.login {
 	requires transitive jakarta.ws.rs;
 	requires transitive se.uu.ub.cora.initialize;
 	requires se.uu.ub.cora.gatekeeper;
+	requires jersey.media.multipart;
 
 	exports se.uu.ub.cora.login;
 
