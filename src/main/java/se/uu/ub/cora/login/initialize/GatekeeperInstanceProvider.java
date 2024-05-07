@@ -21,17 +21,17 @@ package se.uu.ub.cora.login.initialize;
 
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 
-public final class GatekepperInstanceProvider {
+public final class GatekeeperInstanceProvider {
 
 	private static GatekeeperTokenProvider gatekeeperTokenProvider;
 
-	private GatekepperInstanceProvider() {
+	private GatekeeperInstanceProvider() {
 		// not called
 		throw new UnsupportedOperationException();
 	}
 
 	public static void setGatekeeperTokenProvider(GatekeeperTokenProvider gatekeeperTokenProvider) {
-		GatekepperInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
+		GatekeeperInstanceProvider.gatekeeperTokenProvider = gatekeeperTokenProvider;
 	}
 
 	public static GatekeeperTokenProvider getGatekeeperTokenProvider() {

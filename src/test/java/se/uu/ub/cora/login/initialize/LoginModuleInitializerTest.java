@@ -21,6 +21,9 @@ package se.uu.ub.cora.login.initialize;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.HashMap;
+
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -48,6 +51,7 @@ public class LoginModuleInitializerTest {
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		resetSettingsProviderAndGatekeeperInstanceToEmptyState();
 		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
 		UserStorageProvider
 				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
@@ -55,18 +59,27 @@ public class LoginModuleInitializerTest {
 		context = new ServletContextEvent(source);
 		setNeededInitParameters();
 		initializer = new LoginModuleInitializer();
-		initializer.contextInitialized(context);
+	}
+
+	@AfterMethod
+	public void afterMethod() {
+		resetSettingsProviderAndGatekeeperInstanceToEmptyState();
+	}
+
+	private void resetSettingsProviderAndGatekeeperInstanceToEmptyState() {
+		SettingsProvider.setSettings(new HashMap<>());
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(null);
 	}
 
 	private void setNeededInitParameters() {
 		source.setInitParameter("initParam1", "initValue1");
 		source.setInitParameter("initParam2", "initValue2");
 		source.setInitParameter("gatekeeperURL", "/some/gatekeeper/url");
-
 	}
 
 	@Test
 	public void testLogMessagesOnStartup() throws Exception {
+		initializer.contextInitialized(context);
 		loggerFactorySpy.MCR.assertParameters("factorForClass", 0, LoginModuleInitializer.class);
 		LoggerSpy loggerSpy = (LoggerSpy) loggerFactorySpy.MCR.getReturnValue("factorForClass", 0);
 		loggerSpy.MCR.assertParameters("logInfoUsingMessage", 0,
@@ -77,18 +90,21 @@ public class LoginModuleInitializerTest {
 	@Test
 	public void testMakeCallToKnownNeededProvidersToMakeSureTheyStartCorrectlyAtSystemStartup()
 			throws Exception {
+		initializer.contextInitialized(context);
 		userStorageInstanceProvider.MCR.assertMethodWasCalled("getStorageView");
 	}
 
 	@Test
 	public void testInitParametersArePassedOnToStarter() {
+		initializer.contextInitialized(context);
 		assertEquals(SettingsProvider.getSetting("initParam1"), "initValue1");
 		assertEquals(SettingsProvider.getSetting("initParam2"), "initValue2");
 	}
 
 	@Test
-	public void testGatekeeperTokenProviderIsSet() {
-		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) GatekepperInstanceProvider
+	public void testGatekeeperTokenProviderIsSet() throws Exception {
+		initializer.contextInitialized(context);
+		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 		assertTrue(gatekeeperTokenProvider instanceof GatekeeperTokenProviderImp);
 		String gatekeeperUrl = gatekeeperTokenProvider.getGatekeeperUrl();

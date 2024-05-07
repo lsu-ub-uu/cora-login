@@ -39,7 +39,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
-import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.login.spies.HttpServletRequestSpy;
@@ -62,6 +62,7 @@ public class LoginEndpointTest {
 	public void setup() {
 		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactory);
+
 		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
 		UserStorageProvider
 				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
@@ -72,24 +73,31 @@ public class LoginEndpointTest {
 		SettingsProvider.setSettings(settingsMapSpy);
 
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		request = new HttpServletRequestSpy();
 		loginEndpoint = new LoginEndpoint(request);
 
-		User user = new User(SOME_USER_ID);
-		user.active = true;
-		user.appTokenIds.add("someAppTokenId1");
-		user.appTokenIds.add("someAppTokenId2");
+		User user = createUserUserWithStatusAndApptokens(true, "someAppTokenId1",
+				"someAppTokenId2");
+
 		setUserForUserIdInStorage(user);
+	}
+
+	private User createUserUserWithStatusAndApptokens(boolean active, String... appTokens) {
+		User user = new User(SOME_USER_ID);
+		user.active = active;
+		for (String appToken : appTokens) {
+			user.appTokenIds.add(appToken);
+		}
+		return user;
 	}
 
 	private void setUserForUserIdInStorage(User user) {
 		UserStorageViewSpy userStorageView = new UserStorageViewSpy();
-		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserById",
-				(Supplier<User>) () -> user);
+		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserById", () -> user);
 		userStorageInstanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
-				(Supplier<UserStorageView>) () -> userStorageView);
+				() -> userStorageView);
 
 		UserStorageProvider
 				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
@@ -154,7 +162,7 @@ public class LoginEndpointTest {
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
 		gatekeeperTokenProvider.authToken = authToken;
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
@@ -302,7 +310,7 @@ public class LoginEndpointTest {
 	@Test
 	public void testGetAuthTokenForAppTokenErrorFromGatekeeper() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
@@ -319,7 +327,7 @@ public class LoginEndpointTest {
 	@Test
 	public void testRemoveAuthTokenForUserWrongToken() {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
 		response = loginEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthTokenNotFound");
 
@@ -337,4 +345,23 @@ public class LoginEndpointTest {
 		annotationHelper.assertPathParamAnnotationByNameAndPosition("userId", 0);
 	}
 
+	@Test()
+	public void testUserIsNotActiveThrowException() throws Exception {
+		User user = createUserUserWithStatusAndApptokens(false, "appToken1");
+		setUserForUserIdInStorage(user);
+
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
+
+	@Test()
+	public void testUserIsActiveButHasNoAppTokenThrowException() throws Exception {
+		User user = createUserUserWithStatusAndApptokens(true);
+		setUserForUserIdInStorage(user);
+
+		response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(Response.Status.NOT_FOUND);
+	}
 }

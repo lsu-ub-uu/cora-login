@@ -29,20 +29,20 @@ import java.lang.reflect.Modifier;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 
 public class GatekeeperInstanceProviderTest {
 	@Test
 	public void testPrivateConstructor() throws Exception {
-		Constructor<GatekepperInstanceProvider> constructor = GatekepperInstanceProvider.class
+		Constructor<GatekeeperInstanceProvider> constructor = GatekeeperInstanceProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 	}
 
 	@Test(expectedExceptions = InvocationTargetException.class)
 	public void testPrivateConstructorInvoke() throws Exception {
-		Constructor<GatekepperInstanceProvider> constructor = GatekepperInstanceProvider.class
+		Constructor<GatekeeperInstanceProvider> constructor = GatekeeperInstanceProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 		constructor.setAccessible(true);
@@ -52,8 +52,8 @@ public class GatekeeperInstanceProviderTest {
 	@Test
 	public void testGatekeeperTokenProvider() {
 		GatekeeperTokenProvider gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		assertEquals(GatekepperInstanceProvider.getGatekeeperTokenProvider(),
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		assertEquals(GatekeeperInstanceProvider.getGatekeeperTokenProvider(),
 				gatekeeperTokenProvider);
 	}
 }

@@ -41,7 +41,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.initialize.SettingsProvider;
-import se.uu.ub.cora.login.initialize.GatekepperInstanceProvider;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 @Path("/")
@@ -109,7 +109,7 @@ public class LoginEndpoint {
 	private void checkAppTokenIsValid(String userId, String appToken) {
 		UserStorageView storageView = UserStorageProvider.getStorageView();
 		User user = storageView.getUserById(userId);
-		ensureUserIsActiveAndHasAtLeastOneAppToken(user);
+		ensureUserIsActive(user);
 		ensureMatchingAppTokenFromStorage(storageView, user.appTokenIds, appToken);
 
 	}
@@ -119,7 +119,7 @@ public class LoginEndpoint {
 		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds,
 				userTokenString);
 		if (!matchingTokenFound) {
-			throw UserStorageViewException.usingMessage("No matching token found");
+			throw LoginException.withMessage("No matching token found");
 		}
 	}
 
@@ -134,14 +134,14 @@ public class LoginEndpoint {
 		return false;
 	}
 
-	private void ensureUserIsActiveAndHasAtLeastOneAppToken(User user) {
-		if (!user.active || user.appTokenIds.isEmpty()) {
-			throw UserStorageViewException.usingMessage("User is not active");
+	private void ensureUserIsActive(User user) {
+		if (!user.active) {
+			throw LoginException.withMessage("User is not active");
 		}
 	}
 
 	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
-		GatekeeperTokenProvider gatekeeperTokenProvider = GatekepperInstanceProvider
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
@@ -156,10 +156,14 @@ public class LoginEndpoint {
 	}
 
 	private Response handleError(Exception error) {
-		if (error instanceof UserStorageViewException) {
+		if (isNotFoundError(error)) {
 			return buildResponse(Response.Status.NOT_FOUND);
 		}
 		return buildResponse(Status.INTERNAL_SERVER_ERROR);
+	}
+
+	private boolean isNotFoundError(Exception error) {
+		return error instanceof UserStorageViewException || error instanceof LoginException;
 	}
 
 	private Response buildResponse(Status status) {
@@ -179,7 +183,7 @@ public class LoginEndpoint {
 	}
 
 	private Response tryToRemoveAuthTokenForUser(String userId, String authToken) {
-		GatekeeperTokenProvider gatekeeperTokenProvider = GatekepperInstanceProvider
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 		gatekeeperTokenProvider.removeAuthTokenForUser(userId, authToken);
 		return buildResponse(Status.OK);

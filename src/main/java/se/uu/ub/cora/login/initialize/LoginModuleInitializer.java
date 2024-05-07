@@ -70,7 +70,7 @@ public class LoginModuleInitializer implements ServletContextListener {
 	private void createAndSetGatekeeperTokenProvider() {
 		String baseUrl = SettingsProvider.getSetting("gatekeeperURL");
 		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
-		GatekepperInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(GatekeeperTokenProviderImp
 				.usingBaseUrlAndHttpHandlerFactory(baseUrl, httpHandlerFactory));
 	}
 }
