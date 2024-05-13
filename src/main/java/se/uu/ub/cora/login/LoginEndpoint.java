@@ -53,10 +53,12 @@ public class LoginEndpoint {
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
+	private UserStorageView userStorageView;
 
 	public LoginEndpoint(@Context HttpServletRequest request) {
 		this.request = request;
 		url = getBaseURLFromURI();
+		userStorageView = UserStorageProvider.getStorageView();
 	}
 
 	private final String getBaseURLFromURI() {
@@ -70,9 +72,7 @@ public class LoginEndpoint {
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		baseURL += PATH_TO_SYSTEM;
-		baseURL += "authToken/";
-		return baseURL;
+		return baseURL + PATH_TO_SYSTEM + "authToken/";
 	}
 
 	private String changeHttpToHttpsIfHeaderSaysSo(String baseURI) {
@@ -102,31 +102,28 @@ public class LoginEndpoint {
 
 	private Response tryToGetAuthTokenForAppToken(String userId, String appToken)
 			throws URISyntaxException {
-		checkAppTokenIsValid(userId, appToken);
+		User user = getUserAndMakeSureIsActive(userId);
+		ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
 		return getNewAuthTokenFromGatekeeper(userId);
 	}
 
-	private void checkAppTokenIsValid(String userId, String appToken) {
-		UserStorageView storageView = UserStorageProvider.getStorageView();
-		User user = storageView.getUserById(userId);
+	User getUserAndMakeSureIsActive(String userId) {
+		User user = userStorageView.getUserById(userId);
 		ensureUserIsActive(user);
-		ensureMatchingAppTokenFromStorage(storageView, user.appTokenIds, appToken);
-
+		return user;
 	}
 
-	private void ensureMatchingAppTokenFromStorage(UserStorageView storageView,
-			Set<String> appTokenIds, String userTokenString) {
-		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds,
-				userTokenString);
+	private void ensureMatchingAppTokenFromStorage(Set<String> appTokenIds,
+			String userTokenString) {
+		boolean matchingTokenFound = tokenStringExistsInStorage(appTokenIds, userTokenString);
 		if (!matchingTokenFound) {
 			throw LoginException.withMessage("No matching token found");
 		}
 	}
 
-	private boolean tokenStringExistsInStorage(UserStorageView storageView, Set<String> appTokenIds,
-			String userTokenString) {
+	private boolean tokenStringExistsInStorage(Set<String> appTokenIds, String userTokenString) {
 		for (String appTokenId : appTokenIds) {
-			AppToken appToken = storageView.getAppTokenById(appTokenId);
+			AppToken appToken = userStorageView.getAppTokenById(appTokenId);
 			if (userTokenString.equals(appToken.tokenString)) {
 				return true;
 			}
@@ -168,6 +165,27 @@ public class LoginEndpoint {
 
 	private Response buildResponse(Status status) {
 		return Response.status(status).build();
+	}
+
+	@POST
+	// @Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
+	@Path("password/{userId}")
+	public Response getAuthTokenForPassword(@PathParam("userId") String userId, String password) {
+		User user = getUserAndMakeSureIsActive(userId);
+		try {
+			throwExcpetionIfNoPasswordMatch(password, user);
+			// createNewAuthToken
+			return null;
+		} catch (Exception error) {
+			return handleError(error);
+		}
+	}
+
+	private void throwExcpetionIfNoPasswordMatch(String password, User user) {
+		if (!userStorageView.doesPasswordMatchForUser(user, password)) {
+			throw LoginException.withMessage("Password do not match");
+		}
 	}
 
 	@DELETE

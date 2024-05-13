@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Uppsala University Library
+ * Copyright 2022, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -38,6 +38,7 @@ public class UserStorageViewSpy implements UserStorageView {
 				(Supplier<User>) () -> new User("idFromSpy"));
 		MRV.setDefaultReturnValuesSupplier("getAppTokenById",
 				(Supplier<AppToken>) () -> new AppToken("idFromSpy", "tokenStringFromSpy"));
+		MRV.setDefaultReturnValuesSupplier("doesPasswordMatchForUser", () -> false);
 	}
 
 	@Override
@@ -53,6 +54,11 @@ public class UserStorageViewSpy implements UserStorageView {
 	@Override
 	public AppToken getAppTokenById(String tokenId) {
 		return (AppToken) MCR.addCallAndReturnFromMRV("tokenId", tokenId);
+	}
+
+	@Override
+	public boolean doesPasswordMatchForUser(User user, String password) {
+		return (boolean) MCR.addCallAndReturnFromMRV("user", user, "password", password);
 	}
 
 }
