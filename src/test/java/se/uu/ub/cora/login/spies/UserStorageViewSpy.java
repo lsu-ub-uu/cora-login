@@ -42,8 +42,8 @@ public class UserStorageViewSpy implements UserStorageView {
 	}
 
 	@Override
-	public User getUserById(String userId) {
-		return (User) MCR.addCallAndReturnFromMRV("userId", userId);
+	public User getUserById(String recordId) {
+		return (User) MCR.addCallAndReturnFromMRV("recordId", recordId);
 	}
 
 	@Override
@@ -56,9 +56,9 @@ public class UserStorageViewSpy implements UserStorageView {
 		return (AppToken) MCR.addCallAndReturnFromMRV("tokenId", tokenId);
 	}
 
-	@Override
-	public boolean doesPasswordMatchForUser(User user, String password) {
-		return (boolean) MCR.addCallAndReturnFromMRV("user", user, "password", password);
-	}
+	// @Override
+	// public boolean doesPasswordMatchForUser(User user, String password) {
+	// return (boolean) MCR.addCallAndReturnFromMRV("user", user, "password", password);
+	// }
 
 }

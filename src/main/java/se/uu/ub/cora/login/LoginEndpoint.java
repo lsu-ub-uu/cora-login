@@ -183,9 +183,9 @@ public class LoginEndpoint {
 	}
 
 	private void throwExcpetionIfNoPasswordMatch(String password, User user) {
-		if (!userStorageView.doesPasswordMatchForUser(user, password)) {
-			throw LoginException.withMessage("Password do not match");
-		}
+		// if (!userStorageView.doesPasswordMatchForUser(user, password)) {
+		throw LoginException.withMessage("Password do not match");
+		// }
 	}
 
 	@DELETE
