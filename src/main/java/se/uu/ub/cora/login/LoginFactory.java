@@ -16,15 +16,21 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package se.uu.ub.cora.login;
 
 public interface LoginFactory {
 
 	/**
 	 * factorPasswordLogin is intended to factor new instances of PasswordLogin
+	 * 
+	 * @return A new PasswordLogin object.
 	 */
 	PasswordLogin factorPasswordLogin();
 
+	/**
+	 * factorAppTokenLogin is intended to factor new instances of AppTokenLogin
+	 * 
+	 * @return A new AppTokenLogin object.
+	 */
 	AppTokenLogin factorAppTokenLogin();
 }

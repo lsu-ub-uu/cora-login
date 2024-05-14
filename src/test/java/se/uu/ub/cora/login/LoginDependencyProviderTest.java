@@ -23,17 +23,36 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.gatekeeper.storage.UserStorageViewInstanceProvider;
+import se.uu.ub.cora.logger.LoggerFactory;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.password.texthasher.TextHasher;
+
 public class LoginDependencyProviderTest {
 
 	@BeforeMethod
 	private void beforeMethod() {
+		LoggerFactory loggerFactory = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactory);
+
+		UserStorageViewInstanceProvider instanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider.onlyForTestSetUserStorageViewInstanceProvider(instanceProvider);
+	}
+
+	@Test
+	public void testLoginFactoryHasTextHaserFactory() throws Exception {
+		LoginDependencyProvider.onlyForTestSetLoginFactory(null);
 	}
 
 	@Test
 	public void testGetPasswordLoginReturnsPasswordLoginImp() throws Exception {
-		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
+		PasswordLoginImp passwordLogin = (PasswordLoginImp) LoginDependencyProvider
+				.getPasswordLogin();
 
-		assertTrue(passwordLogin instanceof PasswordLoginImp);
+		assertTrue(passwordLogin.onlyForTestGetTextHasher() instanceof TextHasher);
 	}
 
 	@Test

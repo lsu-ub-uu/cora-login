@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2024 Uppsala University Library
+ * Copyright 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,34 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login.spies;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+package se.uu.ub.cora.login;
+
+import se.uu.ub.cora.password.texthasher.TextHasher;
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+public class TextHasherFactorySpy implements TextHasherFactory {
+
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
-	public AuthToken authToken = AuthToken
-			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
-					"someIdInUserStorage", "someIdFromLogin");
 
-	public GatekeeperTokenProviderSpy() {
+	public TextHasherFactorySpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo", () -> authToken);
+		MRV.setDefaultReturnValuesSupplier("factor", TextHasherSpy::new);
 	}
 
 	@Override
-	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return (AuthToken) MCR.addCallAndReturnFromMRV("userInfo", userInfo);
+	public TextHasher factor() {
+		return (TextHasher) MCR.addCallAndReturnFromMRV();
 	}
-
-	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		MCR.addCall("idInUserStorage", idInUserStorage, "authToken", authToken);
-	}
-
 }

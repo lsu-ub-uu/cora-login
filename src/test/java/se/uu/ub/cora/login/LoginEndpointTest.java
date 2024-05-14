@@ -61,6 +61,7 @@ public class LoginEndpointTest {
 	private MapSpy<String, String> settingsMapSpy;
 	private User user;
 	private UserStorageViewSpy userStorageView;
+	private LoginFactorySpy loginFactory;
 
 	@BeforeMethod
 	public void setup() {
@@ -77,6 +78,9 @@ public class LoginEndpointTest {
 
 		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
 		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		loginFactory = new LoginFactorySpy();
+		LoginDependencyProvider.onlyForTestSetLoginFactory(loginFactory);
 
 		request = new HttpServletRequestSpy();
 
@@ -201,7 +205,7 @@ public class LoginEndpointTest {
 	@Test
 	public void testCallsAppTokenStorage() throws Exception {
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
 
 		userStorageView.MCR.assertNumberOfCallsToMethod("getAppTokenById", 1);
 		userStorageView.MCR.assertParameters("getAppTokenById", 0, "someAppTokenId1");
@@ -369,31 +373,39 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithPassword_CallsGetUserAndMakeSureIsActive() throws Exception {
-		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
+	public void testGetAuthTokenWithPassword_PasswordLogin() throws Exception {
 
 		loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
 
-		loginEndpoint.MCR.assertParameters("getUserAndMakeSureIsActive", 0, SOME_USER_ID);
+		loginFactory.MCR.assertParameters("factorPasswordLogin", 0);
 	}
 
-	@Test
-	public void testGetAuthTokenWithPassword_CallsPasswordMatchesForUser() throws Exception {
-		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
-
-		loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
-
-		User user = (User) loginEndpoint.MCR.getReturnValue("getUserAndMakeSureIsActive", 0);
-		userStorageView.MCR.assertParameters("doesPasswordMatchForUser", 0, user, SOME_PASSWORD);
-	}
-
-	@Test
-	public void testGetAuthTokenWithPassword_PasswordDoNotMatch() throws Exception {
-
-		Response response = loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
-
-		assertResponseStatusIs(response, Response.Status.NOT_FOUND);
-	}
+	// @Test
+	// public void testGetAuthTokenWithPassword_CallsGetUserAndMakeSureIsActive() throws Exception {
+	// LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
+	//
+	// loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+	//
+	// loginEndpoint.MCR.assertParameters("getUserAndMakeSureIsActive", 0, SOME_USER_ID);
+	// }
+	//
+	// @Test
+	// public void testGetAuthTokenWithPassword_CallsPasswordMatchesForUser() throws Exception {
+	// LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
+	//
+	// loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+	//
+	// User user = (User) loginEndpoint.MCR.getReturnValue("getUserAndMakeSureIsActive", 0);
+	// userStorageView.MCR.assertParameters("doesPasswordMatchForUser", 0, user, SOME_PASSWORD);
+	// }
+	//
+	// @Test
+	// public void testGetAuthTokenWithPassword_PasswordDoNotMatch() throws Exception {
+	//
+	// Response response = loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+	//
+	// assertResponseStatusIs(response, Response.Status.NOT_FOUND);
+	// }
 
 	@Test
 	public void testRemoveAuthTokenForUser() {

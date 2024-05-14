@@ -28,6 +28,7 @@
 
 	<properties>
 		<gatekeeper.version>4.7-SNAPSHOT</gatekeeper.version>
+		<password.version>1.8.0</password.version>
 		<logger.version>2.10.0</logger.version>
 		<loggerspies.version>1.5.0</loggerspies.version>
 		<gatekeepertokenprovider.version>2.14.0</gatekeepertokenprovider.version>
@@ -49,6 +50,12 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>gatekeeper</artifactId>
 			<version>${gatekeeper.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>password</artifactId>
+			<version>${password.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

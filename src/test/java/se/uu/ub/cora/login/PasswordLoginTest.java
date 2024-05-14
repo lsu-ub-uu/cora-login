@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.login;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
+
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
@@ -27,8 +30,12 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
 import se.uu.ub.cora.gatekeeper.user.User;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
+import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewSpy;
 
@@ -36,21 +43,28 @@ public class PasswordLoginTest {
 
 	private static final String SOME_PASSWORD = "somePassword";
 	private static final String SOME_USER_ID = "someUserId";
-	private PasswordLogin passwordLogin;
+	private PasswordLoginImp passwordLogin;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 	private UserStorageViewSpy userStorageView;
 	private User user;
+	private TextHasherSpy textHasher;
+	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
 
 	@BeforeMethod
 	private void beforeMethod() {
 		LoggerFactorySpy loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 
-		user = new User(SOME_USER_ID);
-		configureUser(user, true, Optional.empty(), "someAppTokenId1", "someAppTokenId2");
+		user = new User("someRecordInfoId");
+		configureUser(user, true, Optional.of("someSystemSecret"), "someAppTokenId1",
+				"someAppTokenId2");
 		setupBasicUserInStorage(user);
+		textHasher = new TextHasherSpy();
 
-		passwordLogin = new PasswordLoginImp();
+		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+
+		passwordLogin = new PasswordLoginImp(textHasher);
 	}
 
 	private void setupBasicUserInStorage(User user) {
@@ -91,7 +105,7 @@ public class PasswordLoginTest {
 
 	@Test
 	public void testGetAuthToken_CallsGetUser() throws Exception {
-		configureUser(user, true, Optional.empty());
+		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 
 		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
 
@@ -106,4 +120,50 @@ public class PasswordLoginTest {
 		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
 	}
 
+	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
+			+ "Login failed.")
+	public void testNoSystemSecretInStorage() throws Exception {
+		configureUser(user, true, Optional.empty());
+
+		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+	}
+
+	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
+			+ "Login failed.")
+	public void testNoMatch() throws Exception {
+		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> false);
+
+		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+	}
+
+	@Test
+	public void testPasswordMatches() throws Exception {
+		configureUser(user, true, Optional.of("someSystemSecret"));
+		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
+
+		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+
+		textHasher.MCR.assertParameters("matches", 0, SOME_PASSWORD, "someSystemSecret");
+	}
+
+	@Test
+	public void testOnlyForTestGetTextHasher() throws Exception {
+		assertSame(passwordLogin.onlyForTestGetTextHasher(), textHasher);
+	}
+
+	@Test
+	public void testCallGetAuthToken() throws Exception {
+		configureUser(user, true, Optional.of("someSystemSecret"));
+		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
+
+		AuthToken authToken = passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+
+		gatekeeperTokenProvider.MCR.assertParameters("getAuthTokenForUserInfo", 0);
+		UserInfo userInfo = (UserInfo) gatekeeperTokenProvider.MCR
+				.getValueForMethodNameAndCallNumberAndParameterName("getAuthTokenForUserInfo", 0,
+						"userInfo");
+		assertEquals(userInfo.idInUserStorage, user.id);
+		gatekeeperTokenProvider.MCR.assertReturn("getAuthTokenForUserInfo", 0, authToken);
+
+	}
 }

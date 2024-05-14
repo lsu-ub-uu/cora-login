@@ -18,17 +18,29 @@
  */
 package se.uu.ub.cora.login;
 
+import se.uu.ub.cora.password.texthasher.TextHasher;
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
+
 public class LoginFactoryImp implements LoginFactory {
+
+	private TextHasherFactory textHasherFactory;
+
+	public LoginFactoryImp(TextHasherFactory textHasherFactory) {
+		this.textHasherFactory = textHasherFactory;
+	}
 
 	@Override
 	public PasswordLogin factorPasswordLogin() {
-		return new PasswordLoginImp();
+		TextHasher textHasher = textHasherFactory.factor();
+		return new PasswordLoginImp(textHasher);
 	}
 
 	@Override
 	public AppTokenLogin factorAppTokenLogin() {
-		// TODO Auto-generated method stub
 		return new AppTokenLoginImp();
 	}
 
+	public Object onlyForTestGetTextHasherFactory() {
+		return textHasherFactory;
+	}
 }

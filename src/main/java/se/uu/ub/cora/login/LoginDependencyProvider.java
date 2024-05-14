@@ -18,21 +18,22 @@
  */
 package se.uu.ub.cora.login;
 
-public class LoginDependencyProvider {
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
+import se.uu.ub.cora.password.texthasher.TextHasherFactoryImp;
 
-	private static LoginFactory loginFactory = new LoginFactoryImp();
+public class LoginDependencyProvider {
+	private static TextHasherFactory textHasherFactory = new TextHasherFactoryImp();
+	private static LoginFactory loginFactory = new LoginFactoryImp(textHasherFactory);
 
 	public static PasswordLogin getPasswordLogin() {
-
 		return loginFactory.factorPasswordLogin();
-	}
-
-	public static void onlyForTestSetLoginFactory(LoginFactory loginFactory) {
-		LoginDependencyProvider.loginFactory = loginFactory;
 	}
 
 	public static AppTokenLogin getAppTokenLogin() {
 		return loginFactory.factorAppTokenLogin();
 	}
 
+	public static void onlyForTestSetLoginFactory(LoginFactory loginFactory) {
+		LoginDependencyProvider.loginFactory = loginFactory;
+	}
 }

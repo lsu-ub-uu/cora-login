@@ -22,10 +22,20 @@ import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
 import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
+import se.uu.ub.cora.password.texthasher.TextHasher;
 
 public class PasswordLoginImp implements PasswordLogin {
 
-	UserStorageView userStorageView = UserStorageProvider.getStorageView();
+	private UserStorageView userStorageView = UserStorageProvider.getStorageView();
+
+	private TextHasher textHasher;
+
+	public PasswordLoginImp(TextHasher textHasher) {
+		this.textHasher = textHasher;
+	}
 
 	@Override
 	public AuthToken getAuthToken(String idFromLogin, String password) {
@@ -34,10 +44,24 @@ public class PasswordLoginImp implements PasswordLogin {
 			if (!user.active) {
 				throw LoginException.withMessage("Login failed.");
 			}
-			return null;
+			if (!textHasher.matches(password, user.passwordId.get())) {
+				throw LoginException.withMessage("Login failed.");
+			}
+			return getNewAuthTokenFromGatekeeper(user.id);
 		} catch (Exception e) {
 			throw LoginException.withMessage("Login failed.");
 		}
 	}
 
+	public TextHasher onlyForTestGetTextHasher() {
+		return textHasher;
+	}
+
+	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordInfoId) {
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
+				.getGatekeeperTokenProvider();
+
+		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
+		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+	}
 }

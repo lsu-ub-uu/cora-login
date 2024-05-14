@@ -18,23 +18,50 @@
  */
 package se.uu.ub.cora.login;
 
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
+
 public class LoginFactoryTest {
+
+	private LoginFactoryImp loginFactory;
+	private TextHasherFactorySpy textHasherFactory;
+
+	@BeforeMethod
+	public void setup() {
+		textHasherFactory = new TextHasherFactorySpy();
+
+		LoggerFactorySpy loggerFactory = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactory);
+		UserStorageViewInstanceProviderSpy userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
+		UserStorageProvider
+				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
+		loginFactory = new LoginFactoryImp(textHasherFactory);
+	}
+
 	@Test
 	public void testFactorPasswordLogin() throws Exception {
-		LoginFactory loginFactory = new LoginFactoryImp();
-		PasswordLogin passwordLogin = loginFactory.factorPasswordLogin();
+		PasswordLoginImp passwordLogin = (PasswordLoginImp) loginFactory.factorPasswordLogin();
 		assertTrue(passwordLogin instanceof PasswordLoginImp);
+
+		textHasherFactory.MCR.assertReturn("factor", 0, passwordLogin.onlyForTestGetTextHasher());
 	}
 
 	@Test
 	public void testFactorAppTokenLogin() throws Exception {
-		LoginFactory loginFactory = new LoginFactoryImp();
 		AppTokenLogin passwordLogin = loginFactory.factorAppTokenLogin();
 		assertTrue(passwordLogin instanceof AppTokenLoginImp);
 	}
 
+	@Test
+	public void testOnlyForTestGetTextHasherFactory() throws Exception {
+		assertSame(loginFactory.onlyForTestGetTextHasherFactory(), textHasherFactory);
+	}
 }
