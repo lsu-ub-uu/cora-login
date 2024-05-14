@@ -36,4 +36,8 @@ public class LoginDependencyProvider {
 	public static void onlyForTestSetLoginFactory(LoginFactory loginFactory) {
 		LoginDependencyProvider.loginFactory = loginFactory;
 	}
+
+	public static LoginFactory onlyForTestGetLoginFactory() {
+		return loginFactory;
+	}
 }

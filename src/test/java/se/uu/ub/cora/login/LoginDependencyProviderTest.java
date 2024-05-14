@@ -30,6 +30,7 @@ import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.password.texthasher.TextHasher;
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
 
 public class LoginDependencyProviderTest {
 
@@ -43,8 +44,16 @@ public class LoginDependencyProviderTest {
 	}
 
 	@Test
-	public void testLoginFactoryHasTextHaserFactory() throws Exception {
-		LoginDependencyProvider.onlyForTestSetLoginFactory(null);
+	public void testOnlyForTestGetLoginFactory() throws Exception {
+		assertTrue(LoginDependencyProvider.onlyForTestGetLoginFactory() instanceof LoginFactory);
+	}
+
+	@Test
+	public void testLoginFactoryHasTextHasherFactory() throws Exception {
+		LoginFactoryImp loginFactory = (LoginFactoryImp) LoginDependencyProvider
+				.onlyForTestGetLoginFactory();
+
+		assertTrue(loginFactory.onlyForTestGetTextHasherFactory() instanceof TextHasherFactory);
 	}
 
 	@Test

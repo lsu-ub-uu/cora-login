@@ -21,7 +21,19 @@ package se.uu.ub.cora.login;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public interface PasswordLogin {
-
+	/**
+	 * getAuthToken method returns an {@link AuthToken} given a username and a password. This method
+	 * checks if the user is active and if the password matches the already stored one.
+	 * 
+	 * @throws LoginException
+	 *             if any exception while trying to perform the operations inside this method.
+	 * 
+	 * @param idFromLogin
+	 *            A String conatining a username.
+	 * @param password
+	 *            A String containg the password to be matched
+	 * @return If the user is active and the password matches, a valid AuthToken is sent back.
+	 */
 	AuthToken getAuthToken(String idFromLogin, String password);
 
 }

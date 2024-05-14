@@ -104,7 +104,8 @@ public class LoginEndpoint {
 			throws URISyntaxException {
 		User user = getUserAndMakeSureIsActive(userId);
 		ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
-		return getNewAuthTokenFromGatekeeper(userId);
+		AuthToken authToken = getNewAuthTokenFromGatekeeper(userId);
+		return convertAuthTokenToResponse(userId, authToken);
 	}
 
 	User getUserAndMakeSureIsActive(String userId) {
@@ -137,19 +138,25 @@ public class LoginEndpoint {
 		}
 	}
 
-	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
+	private AuthToken getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
-		AuthToken authTokenForUserInfo = gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+	}
+
+	private Response convertAuthTokenToResponse(String userId, AuthToken authTokenForUserInfo)
+			throws URISyntaxException {
 		String json = convertAuthTokenToJson(authTokenForUserInfo, url + userId);
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
 
 	private String convertAuthTokenToJson(AuthToken authTokenForUserInfo, String url) {
-		return new AuthTokenToJsonConverter(authTokenForUserInfo, url).convertAuthTokenToJson();
+		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(
+				authTokenForUserInfo, url);
+		return authTokenToJsonConverter.convertAuthTokenToJson();
 	}
 
 	private Response handleError(Exception error) {
@@ -170,16 +177,21 @@ public class LoginEndpoint {
 	@POST
 	// @Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("password/{userId}")
-	public Response getAuthTokenForPassword(@PathParam("userId") String userId, String password) {
-		User user = getUserAndMakeSureIsActive(userId);
-		try {
-			throwExcpetionIfNoPasswordMatch(password, user);
-			// createNewAuthToken
-			return null;
-		} catch (Exception error) {
-			return handleError(error);
-		}
+	@Path("password/{idFromLogin}")
+	public Response getAuthTokenForPassword(@PathParam("idFromLogin") String idFromLogin,
+			String password) {
+		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
+		AuthToken authToken = passwordLogin.getAuthToken(idFromLogin, password);
+		// return convertAuthTokenToJson(idFromLogin, authToken);
+		return null;
+		// ser user = getUserAndMakeSureIsActive(userId);
+		// try {
+		// throwExcpetionIfNoPasswordMatch(password, user);
+		// // createNewAuthToken
+		// return null;
+		// } catch (Exception error) {
+		// return handleError(error);
+		// }
 	}
 
 	private void throwExcpetionIfNoPasswordMatch(String password, User user) {

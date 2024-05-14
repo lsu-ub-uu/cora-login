@@ -366,41 +366,29 @@ public class LoginEndpointTest {
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
 						"getAuthTokenForPassword", 2);
 
-		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password/{userId}");
+		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password/{idFromLogin}");
 		// annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
 		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
-		annotationHelper.assertPathParamAnnotationByNameAndPosition("userId", 0);
+		annotationHelper.assertPathParamAnnotationByNameAndPosition("idFromLogin", 0);
 	}
 
 	@Test
 	public void testGetAuthTokenWithPassword_PasswordLogin() throws Exception {
 
-		loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+		loginEndpoint.getAuthTokenForPassword("someIdFromLogin", SOME_PASSWORD);
 
 		loginFactory.MCR.assertParameters("factorPasswordLogin", 0);
+		PasswordLoginSpy passwordLogin = (PasswordLoginSpy) loginFactory.MCR
+				.getReturnValue("factorPasswordLogin", 0);
+
+		passwordLogin.MCR.assertParameters("getAuthToken", 0, "someIdFromLogin", SOME_PASSWORD);
+
 	}
 
-	// @Test
-	// public void testGetAuthTokenWithPassword_CallsGetUserAndMakeSureIsActive() throws Exception {
-	// LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
-	//
-	// loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
-	//
-	// loginEndpoint.MCR.assertParameters("getUserAndMakeSureIsActive", 0, SOME_USER_ID);
-	// }
-	//
-	// @Test
-	// public void testGetAuthTokenWithPassword_CallsPasswordMatchesForUser() throws Exception {
-	// LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
-	//
-	// loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
-	//
-	// User user = (User) loginEndpoint.MCR.getReturnValue("getUserAndMakeSureIsActive", 0);
-	// userStorageView.MCR.assertParameters("doesPasswordMatchForUser", 0, user, SOME_PASSWORD);
-	// }
 	//
 	// @Test
 	// public void testGetAuthTokenWithPassword_PasswordDoNotMatch() throws Exception {
+	//
 	//
 	// Response response = loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
 	//
