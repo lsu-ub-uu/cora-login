@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Olov McKie
+ * Copyright 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,19 +16,33 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.spies;
 
-import java.util.HashMap;
-
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+import se.uu.ub.cora.login.rest.LoginFactory;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class MapSpy<K, V> extends HashMap<K, V> {
+public class LoginFactorySpy implements LoginFactory {
+
 	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
+
+	public LoginFactorySpy() {
+		MCR.useMRV(MRV);
+		MRV.setDefaultReturnValuesSupplier("factorPasswordLogin", PasswordLoginSpy::new);
+		MRV.setDefaultReturnValuesSupplier("factorAppTokenLogin", ApptokenLoginSpy::new);
+	}
 
 	@Override
-	public V get(Object key) {
-		MCR.addCall("key", key);
-		return super.get(key);
+	public PasswordLogin factorPasswordLogin() {
+		return (PasswordLogin) MCR.addCallAndReturnFromMRV();
+	}
+
+	@Override
+	public AppTokenLogin factorAppTokenLogin() {
+		return (AppTokenLogin) MCR.addCallAndReturnFromMRV();
 	}
 
 }

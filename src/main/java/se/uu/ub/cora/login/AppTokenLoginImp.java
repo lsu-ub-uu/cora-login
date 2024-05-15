@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.login;
 
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+
 public class AppTokenLoginImp implements AppTokenLogin {
 
 }

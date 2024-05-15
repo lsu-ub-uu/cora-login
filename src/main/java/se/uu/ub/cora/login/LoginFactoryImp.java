@@ -18,15 +18,19 @@
  */
 package se.uu.ub.cora.login;
 
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+import se.uu.ub.cora.login.rest.LoginFactory;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.password.texthasher.TextHasher;
 import se.uu.ub.cora.password.texthasher.TextHasherFactory;
+import se.uu.ub.cora.password.texthasher.TextHasherFactoryImp;
 
 public class LoginFactoryImp implements LoginFactory {
 
 	private TextHasherFactory textHasherFactory;
 
-	public LoginFactoryImp(TextHasherFactory textHasherFactory) {
-		this.textHasherFactory = textHasherFactory;
+	public LoginFactoryImp() {
+		this.textHasherFactory = new TextHasherFactoryImp();
 	}
 
 	@Override
@@ -42,5 +46,9 @@ public class LoginFactoryImp implements LoginFactory {
 
 	public Object onlyForTestGetTextHasherFactory() {
 		return textHasherFactory;
+	}
+
+	public void onlyForTestSetTextHasherFactory(TextHasherFactory textHasherFactory) {
+		this.textHasherFactory = textHasherFactory;
 	}
 }

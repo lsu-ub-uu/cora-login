@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,10 +63,7 @@ public class LoginEndpoint {
 
 	private final String getBaseURLFromURI() {
 		String baseURL = getBaseURLFromRequest();
-
-		baseURL = changeHttpToHttpsIfHeaderSaysSo(baseURL);
-
-		return baseURL;
+		return changeHttpToHttpsIfHeaderSaysSo(baseURL);
 	}
 
 	private String getBaseURLFromRequest() {
@@ -91,25 +88,26 @@ public class LoginEndpoint {
 	@POST
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("apptoken/{userId}")
-	public Response getAuthTokenForAppToken(@PathParam("userId") String userId, String appToken) {
+	@Path("apptoken/{userRecordId}")
+	public Response getAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
+			String appToken) {
 		try {
-			return tryToGetAuthTokenForAppToken(userId, appToken);
+			return tryToGetAuthTokenForAppToken(userRecordId, appToken);
 		} catch (Exception error) {
 			return handleError(error);
 		}
 	}
 
-	private Response tryToGetAuthTokenForAppToken(String userId, String appToken)
+	private Response tryToGetAuthTokenForAppToken(String userRecordId, String appToken)
 			throws URISyntaxException {
-		User user = getUserAndMakeSureIsActive(userId);
+		User user = getUserAndMakeSureIsActive(userRecordId);
 		ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
-		AuthToken authToken = getNewAuthTokenFromGatekeeper(userId);
-		return convertAuthTokenToResponse(userId, authToken);
+		AuthToken authToken = getNewAuthTokenFromGatekeeper(userRecordId);
+		return buildResponseUsingAuthToken(authToken);
 	}
 
-	User getUserAndMakeSureIsActive(String userId) {
-		User user = userStorageView.getUserById(userId);
+	User getUserAndMakeSureIsActive(String userRecordId) {
+		User user = userStorageView.getUserById(userRecordId);
 		ensureUserIsActive(user);
 		return user;
 	}
@@ -138,17 +136,15 @@ public class LoginEndpoint {
 		}
 	}
 
-	private AuthToken getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
+	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordId) {
+		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordId);
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-
-		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}
 
-	private Response convertAuthTokenToResponse(String userId, AuthToken authTokenForUserInfo)
-			throws URISyntaxException {
-		String json = convertAuthTokenToJson(authTokenForUserInfo, url + userId);
+	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
+		String json = convertAuthTokenToJson(authToken, url + authToken.idInUserStorage);
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
@@ -167,7 +163,7 @@ public class LoginEndpoint {
 	}
 
 	private boolean isNotFoundError(Exception error) {
-		return error instanceof UserStorageViewException || error instanceof LoginException;
+		return error instanceof UserStorageViewException || isLoginException(error);
 	}
 
 	private Response buildResponse(Status status) {
@@ -175,47 +171,51 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	// @Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("password/{idFromLogin}")
-	public Response getAuthTokenForPassword(@PathParam("idFromLogin") String idFromLogin,
-			String password) {
-		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
-		AuthToken authToken = passwordLogin.getAuthToken(idFromLogin, password);
-		// return convertAuthTokenToJson(idFromLogin, authToken);
-		return null;
-		// ser user = getUserAndMakeSureIsActive(userId);
-		// try {
-		// throwExcpetionIfNoPasswordMatch(password, user);
-		// // createNewAuthToken
-		// return null;
-		// } catch (Exception error) {
-		// return handleError(error);
-		// }
+	@Path("password/{loginId}")
+	public Response getAuthTokenForPassword(@PathParam("loginId") String loginId, String password) {
+		try {
+			return tryToGetAuthTokenForPassword(loginId, password);
+		} catch (Exception error) {
+			return handleErrorForPasswordLogin(error);
+		}
 	}
 
-	private void throwExcpetionIfNoPasswordMatch(String password, User user) {
-		// if (!userStorageView.doesPasswordMatchForUser(user, password)) {
-		throw LoginException.withMessage("Password do not match");
-		// }
+	private Response tryToGetAuthTokenForPassword(String loginId, String password)
+			throws URISyntaxException {
+		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
+		AuthToken authToken = passwordLogin.getAuthToken(loginId, password);
+		return buildResponseUsingAuthToken(authToken);
+	}
+
+	private Response handleErrorForPasswordLogin(Exception error) {
+		if (isLoginException(error)) {
+			return buildResponse(Response.Status.UNAUTHORIZED);
+		}
+		return buildResponse(Status.INTERNAL_SERVER_ERROR);
+	}
+
+	private boolean isLoginException(Exception error) {
+		return error instanceof LoginException;
 	}
 
 	@DELETE
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
-	@Path("authToken/{userId}")
-	public Response removeAuthTokenForAppToken(@PathParam("userId") String userId,
+	@Path("authToken/{userRecordId}")
+	public Response removeAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
 			String authToken) {
 		try {
-			return tryToRemoveAuthTokenForUser(userId, authToken);
+			return tryToRemoveAuthTokenForUser(userRecordId, authToken);
 		} catch (Exception error) {
 			return buildResponse(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthTokenForUser(String userId, String authToken) {
+	private Response tryToRemoveAuthTokenForUser(String userRecordId, String authToken) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		gatekeeperTokenProvider.removeAuthTokenForUser(userId, authToken);
+		gatekeeperTokenProvider.removeAuthTokenForUser(userRecordId, authToken);
 		return buildResponse(Status.OK);
 	}
 }

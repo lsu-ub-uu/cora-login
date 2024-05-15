@@ -16,30 +16,25 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
-import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
-import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
+public class LoginException extends RuntimeException {
 
-public class LoginFactorySpy implements LoginFactory {
+	private static final long serialVersionUID = 2241064467145940402L;
 
-	public MethodCallRecorder MCR = new MethodCallRecorder();
-	public MethodReturnValues MRV = new MethodReturnValues();
-
-	public LoginFactorySpy() {
-		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("factorPasswordLogin", PasswordLoginSpy::new);
-		MRV.setDefaultReturnValuesSupplier("factorAppTokenLogin", ApptokenLoginSpy::new);
+	public static LoginException withMessage(String message) {
+		return new LoginException(message);
 	}
 
-	@Override
-	public PasswordLogin factorPasswordLogin() {
-		return (PasswordLogin) MCR.addCallAndReturnFromMRV();
+	public static LoginException withMessageAndException(String message, Exception exception) {
+		return new LoginException(message, exception);
 	}
 
-	@Override
-	public AppTokenLogin factorAppTokenLogin() {
-		return (AppTokenLogin) MCR.addCallAndReturnFromMRV();
+	private LoginException(String message) {
+		super(message);
 	}
 
+	private LoginException(String message, Exception exception) {
+		super(message, exception);
+	}
 }

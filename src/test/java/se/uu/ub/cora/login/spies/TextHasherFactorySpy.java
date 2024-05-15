@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Uppsala University Library
+ * Copyright 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,29 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+package se.uu.ub.cora.login.spies;
+
+import se.uu.ub.cora.password.texthasher.TextHasher;
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class PasswordLoginSpy implements PasswordLogin {
+public class TextHasherFactorySpy implements TextHasherFactory {
+
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
 
-	public AuthToken authToken = AuthToken
-			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
-					"someIdInUserStorage", "someIdFromLogin");
-
-	public PasswordLoginSpy() {
+	public TextHasherFactorySpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getAuthToken", () -> authToken);
+		MRV.setDefaultReturnValuesSupplier("factor", TextHasherSpy::new);
 	}
 
 	@Override
-	public AuthToken getAuthToken(String idFromLogin, String password) {
-		return (AuthToken) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin, "password",
-				password);
+	public TextHasher factor() {
+		return (TextHasher) MCR.addCallAndReturnFromMRV();
 	}
-
 }

@@ -27,7 +27,10 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+import se.uu.ub.cora.login.spies.TextHasherFactorySpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
+import se.uu.ub.cora.password.texthasher.TextHasherFactory;
 
 public class LoginFactoryTest {
 
@@ -43,25 +46,43 @@ public class LoginFactoryTest {
 		UserStorageViewInstanceProviderSpy userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
 		UserStorageProvider
 				.onlyForTestSetUserStorageViewInstanceProvider(userStorageInstanceProvider);
-		loginFactory = new LoginFactoryImp(textHasherFactory);
+
+		loginFactory = new LoginFactoryImp();
 	}
 
 	@Test
 	public void testFactorPasswordLogin() throws Exception {
-		PasswordLoginImp passwordLogin = (PasswordLoginImp) loginFactory.factorPasswordLogin();
-		assertTrue(passwordLogin instanceof PasswordLoginImp);
+		loginFactory.onlyForTestSetTextHasherFactory(textHasherFactory);
 
+		PasswordLoginImp passwordLogin = (PasswordLoginImp) loginFactory.factorPasswordLogin();
+
+		assertTrue(passwordLogin instanceof PasswordLoginImp);
 		textHasherFactory.MCR.assertReturn("factor", 0, passwordLogin.onlyForTestGetTextHasher());
 	}
 
 	@Test
 	public void testFactorAppTokenLogin() throws Exception {
+		loginFactory.onlyForTestSetTextHasherFactory(textHasherFactory);
+
 		AppTokenLogin passwordLogin = loginFactory.factorAppTokenLogin();
+
 		assertTrue(passwordLogin instanceof AppTokenLoginImp);
 	}
 
 	@Test
 	public void testOnlyForTestGetTextHasherFactory() throws Exception {
+		loginFactory.onlyForTestSetTextHasherFactory(textHasherFactory);
 		assertSame(loginFactory.onlyForTestGetTextHasherFactory(), textHasherFactory);
+	}
+
+	@Test
+	public void testOnlyForTestSetTextHasherFactory() throws Exception {
+		loginFactory.onlyForTestSetTextHasherFactory(textHasherFactory);
+		assertSame(loginFactory.onlyForTestGetTextHasherFactory(), textHasherFactory);
+	}
+
+	@Test
+	public void testGetImplementingTextHasherFactoryImp() throws Exception {
+		assertTrue(loginFactory.onlyForTestGetTextHasherFactory() instanceof TextHasherFactory);
 	}
 }

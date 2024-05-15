@@ -35,14 +35,17 @@ import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
+import se.uu.ub.cora.login.rest.LoginException;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
+import se.uu.ub.cora.login.spies.TextHasherSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.login.spies.UserStorageViewSpy;
 
 public class PasswordLoginTest {
 
+	private static final String SOME_SYSTEM_SECRET_ID = "someSystemSecretId";
 	private static final String SOME_PASSWORD = "somePassword";
-	private static final String SOME_USER_ID = "someUserId";
+	private static final String SOME_LOGIN_ID = "someLoginId";
 	private PasswordLoginImp passwordLogin;
 	private UserStorageViewInstanceProviderSpy userStorageInstanceProvider;
 	private UserStorageViewSpy userStorageView;
@@ -56,7 +59,7 @@ public class PasswordLoginTest {
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 
 		user = new User("someRecordInfoId");
-		configureUser(user, true, Optional.of("someSystemSecret"), "someAppTokenId1",
+		configureUser(user, true, Optional.of(SOME_SYSTEM_SECRET_ID), "someAppTokenId1",
 				"someAppTokenId2");
 		setupBasicUserInStorage(user);
 		textHasher = new TextHasherSpy();
@@ -100,16 +103,16 @@ public class PasswordLoginTest {
 		userStorageView.MRV.setAlwaysThrowException("getUserByIdFromLogin",
 				UserStorageViewException.usingMessage("someException"));
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 	}
 
 	@Test
 	public void testGetAuthToken_CallsGetUser() throws Exception {
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 
-		userStorageView.MCR.assertParameters("getUserByIdFromLogin", 0, SOME_USER_ID);
+		userStorageView.MCR.assertParameters("getUserByIdFromLogin", 0, SOME_LOGIN_ID);
 	}
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
@@ -117,7 +120,7 @@ public class PasswordLoginTest {
 	public void testUserIsNotActive_ThrowLoginException() throws Exception {
 		configureUser(user, false, Optional.empty());
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 	}
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
@@ -125,7 +128,7 @@ public class PasswordLoginTest {
 	public void testNoSystemSecretInStorage() throws Exception {
 		configureUser(user, true, Optional.empty());
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 	}
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
@@ -133,17 +136,22 @@ public class PasswordLoginTest {
 	public void testNoMatch() throws Exception {
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> false);
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 	}
 
 	@Test
 	public void testPasswordMatches() throws Exception {
-		configureUser(user, true, Optional.of("someSystemSecret"));
+		configureUser(user, true, Optional.of(SOME_SYSTEM_SECRET_ID));
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 
-		passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		userStorageView.MRV.setSpecificReturnValuesSupplier("getSystemSecretById",
+				() -> "someHashedSecret", SOME_SYSTEM_SECRET_ID);
 
-		textHasher.MCR.assertParameters("matches", 0, SOME_PASSWORD, "someSystemSecret");
+		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
+
+		userStorageView.MCR.assertParameters("getSystemSecretById", 0, SOME_SYSTEM_SECRET_ID);
+		textHasher.MCR.assertParameters("matches", 0, SOME_PASSWORD, "someHashedSecret");
+
 	}
 
 	@Test
@@ -153,10 +161,10 @@ public class PasswordLoginTest {
 
 	@Test
 	public void testCallGetAuthToken() throws Exception {
-		configureUser(user, true, Optional.of("someSystemSecret"));
+		configureUser(user, true, Optional.of(SOME_SYSTEM_SECRET_ID));
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 
-		AuthToken authToken = passwordLogin.getAuthToken(SOME_USER_ID, SOME_PASSWORD);
+		AuthToken authToken = passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 
 		gatekeeperTokenProvider.MCR.assertParameters("getAuthTokenForUserInfo", 0);
 		UserInfo userInfo = (UserInfo) gatekeeperTokenProvider.MCR

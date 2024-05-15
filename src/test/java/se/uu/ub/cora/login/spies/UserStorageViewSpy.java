@@ -18,8 +18,6 @@
  */
 package se.uu.ub.cora.login.spies;
 
-import java.util.function.Supplier;
-
 import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
 import se.uu.ub.cora.gatekeeper.user.AppToken;
 import se.uu.ub.cora.gatekeeper.user.User;
@@ -30,15 +28,15 @@ public class UserStorageViewSpy implements UserStorageView {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
 
+	User user = new User("idFromSpy");
+	AppToken apptoken = new AppToken("idFromSpy", "tokenStringFromSpy");
+
 	public UserStorageViewSpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getUserById",
-				(Supplier<User>) () -> new User("idFromSpy"));
-		MRV.setDefaultReturnValuesSupplier("getUserByIdFromLogin",
-				(Supplier<User>) () -> new User("idFromSpy"));
-		MRV.setDefaultReturnValuesSupplier("getAppTokenById",
-				(Supplier<AppToken>) () -> new AppToken("idFromSpy", "tokenStringFromSpy"));
-		MRV.setDefaultReturnValuesSupplier("doesPasswordMatchForUser", () -> false);
+		MRV.setDefaultReturnValuesSupplier("getUserById", () -> user);
+		MRV.setDefaultReturnValuesSupplier("getUserByIdFromLogin", () -> user);
+		MRV.setDefaultReturnValuesSupplier("getAppTokenById", () -> apptoken);
+		MRV.setDefaultReturnValuesSupplier("getSystemSecretById", () -> "someSystemSecret");
 	}
 
 	@Override
@@ -56,9 +54,8 @@ public class UserStorageViewSpy implements UserStorageView {
 		return (AppToken) MCR.addCallAndReturnFromMRV("tokenId", tokenId);
 	}
 
-	// @Override
-	// public boolean doesPasswordMatchForUser(User user, String password) {
-	// return (boolean) MCR.addCallAndReturnFromMRV("user", user, "password", password);
-	// }
-
+	@Override
+	public String getSystemSecretById(String systemSecretId) {
+		return (String) MCR.addCallAndReturnFromMRV("systemSecretId", systemSecretId);
+	}
 }

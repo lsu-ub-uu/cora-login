@@ -1,9 +1,11 @@
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
 import static org.testng.Assert.assertEquals;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import se.uu.ub.cora.login.rest.LoginException;
 
 public class LoginExceptionTest {
 

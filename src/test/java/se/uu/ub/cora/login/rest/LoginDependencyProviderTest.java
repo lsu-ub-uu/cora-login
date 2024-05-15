@@ -16,9 +16,12 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
 import static org.testng.Assert.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -28,6 +31,10 @@ import se.uu.ub.cora.gatekeeper.storage.UserStorageViewInstanceProvider;
 import se.uu.ub.cora.logger.LoggerFactory;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.AppTokenLoginImp;
+import se.uu.ub.cora.login.LoginFactoryImp;
+import se.uu.ub.cora.login.PasswordLoginImp;
+import se.uu.ub.cora.login.spies.LoginFactorySpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.password.texthasher.TextHasher;
 import se.uu.ub.cora.password.texthasher.TextHasherFactory;
@@ -41,6 +48,16 @@ public class LoginDependencyProviderTest {
 
 		UserStorageViewInstanceProvider instanceProvider = new UserStorageViewInstanceProviderSpy();
 		UserStorageProvider.onlyForTestSetUserStorageViewInstanceProvider(instanceProvider);
+
+		LoginDependencyProvider.onlyForTestSetLoginFactory(new LoginFactoryImp());
+	}
+
+	@Test(expectedExceptions = InvocationTargetException.class)
+	public void testPrivateConstructorInvoke() throws Exception {
+		Constructor<LoginDependencyProvider> constructor = LoginDependencyProvider.class
+				.getDeclaredConstructor();
+		constructor.setAccessible(true);
+		constructor.newInstance();
 	}
 
 	@Test

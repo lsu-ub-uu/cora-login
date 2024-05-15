@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Uppsala University Library
+ * Copyright 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,34 +16,30 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.spies;
 
-import java.util.function.Supplier;
-
-import se.uu.ub.cora.password.texthasher.TextHasher;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class TextHasherSpy implements TextHasher {
-
+public class PasswordLoginSpy implements PasswordLogin {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
 
-	public TextHasherSpy() {
+	public AuthToken authToken = AuthToken
+			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
+					"someIdInUserStorage", "someIdFromLogin");
+
+	public PasswordLoginSpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("hashText", String::new);
-		MRV.setDefaultReturnValuesSupplier("matches", (Supplier<Boolean>) () -> false);
+		MRV.setDefaultReturnValuesSupplier("getAuthToken", () -> authToken);
 	}
 
 	@Override
-	public String hashText(String plainText) {
-		return (String) MCR.addCallAndReturnFromMRV("plainText", plainText);
-	}
-
-	@Override
-	public boolean matches(String plainText, String hashedText) {
-		return (boolean) MCR.addCallAndReturnFromMRV("plainText", plainText, "hashedText",
-				hashedText);
+	public AuthToken getAuthToken(String idFromLogin, String password) {
+		return (AuthToken) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin, "password",
+				password);
 	}
 
 }

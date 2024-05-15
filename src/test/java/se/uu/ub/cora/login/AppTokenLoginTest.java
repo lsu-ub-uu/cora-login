@@ -21,6 +21,9 @@ package se.uu.ub.cora.login;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.login.AppTokenLoginImp;
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+
 public class AppTokenLoginTest {
 
 	private AppTokenLogin apptokenLogin;

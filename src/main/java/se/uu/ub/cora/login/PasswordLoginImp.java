@@ -25,9 +25,13 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
+import se.uu.ub.cora.login.rest.LoginException;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.password.texthasher.TextHasher;
 
 public class PasswordLoginImp implements PasswordLogin {
+
+	private static final String ERROR_MESSAGE = "Login failed.";
 
 	private UserStorageView userStorageView = UserStorageProvider.getStorageView();
 
@@ -41,15 +45,24 @@ public class PasswordLoginImp implements PasswordLogin {
 	public AuthToken getAuthToken(String idFromLogin, String password) {
 		try {
 			User user = userStorageView.getUserByIdFromLogin(idFromLogin);
-			if (!user.active) {
-				throw LoginException.withMessage("Login failed.");
-			}
-			if (!textHasher.matches(password, user.passwordId.get())) {
-				throw LoginException.withMessage("Login failed.");
-			}
+			ifUserNotActiveThrowException(user);
+			ifPasswordDoNotMatchThrowException(password, user);
 			return getNewAuthTokenFromGatekeeper(user.id);
 		} catch (Exception e) {
-			throw LoginException.withMessage("Login failed.");
+			throw LoginException.withMessage(ERROR_MESSAGE);
+		}
+	}
+
+	private void ifPasswordDoNotMatchThrowException(String password, User user) {
+		String secret = userStorageView.getSystemSecretById(user.passwordId.get());
+		if (!textHasher.matches(password, secret)) {
+			throw LoginException.withMessage(ERROR_MESSAGE);
+		}
+	}
+
+	private void ifUserNotActiveThrowException(User user) {
+		if (!user.active) {
+			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}
 
@@ -61,6 +74,11 @@ public class PasswordLoginImp implements PasswordLogin {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 
+		return getAUthTokenUsingUserInfo(userRecordInfoId, gatekeeperTokenProvider);
+	}
+
+	private AuthToken getAUthTokenUsingUserInfo(String userRecordInfoId,
+			GatekeeperTokenProvider gatekeeperTokenProvider) {
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}

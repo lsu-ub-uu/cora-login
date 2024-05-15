@@ -16,14 +16,16 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
-import se.uu.ub.cora.password.texthasher.TextHasherFactory;
-import se.uu.ub.cora.password.texthasher.TextHasherFactoryImp;
+import se.uu.ub.cora.login.LoginFactoryImp;
 
 public class LoginDependencyProvider {
-	private static TextHasherFactory textHasherFactory = new TextHasherFactoryImp();
-	private static LoginFactory loginFactory = new LoginFactoryImp(textHasherFactory);
+	private static LoginFactory loginFactory = new LoginFactoryImp();
+
+	private LoginDependencyProvider() {
+		throw new UnsupportedOperationException();
+	}
 
 	public static PasswordLogin getPasswordLogin() {
 		return loginFactory.factorPasswordLogin();

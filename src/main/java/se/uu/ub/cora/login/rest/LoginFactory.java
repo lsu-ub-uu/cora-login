@@ -16,24 +16,21 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+public interface LoginFactory {
 
-public interface PasswordLogin {
 	/**
-	 * getAuthToken method returns an {@link AuthToken} given a username and a password. This method
-	 * checks if the user is active and if the password matches the already stored one.
+	 * factorPasswordLogin is intended to factor new instances of PasswordLogin
 	 * 
-	 * @throws LoginException
-	 *             if any exception while trying to perform the operations inside this method.
-	 * 
-	 * @param idFromLogin
-	 *            A String conatining a username.
-	 * @param password
-	 *            A String containg the password to be matched
-	 * @return If the user is active and the password matches, a valid AuthToken is sent back.
+	 * @return A new PasswordLogin object.
 	 */
-	AuthToken getAuthToken(String idFromLogin, String password);
+	PasswordLogin factorPasswordLogin();
 
+	/**
+	 * factorAppTokenLogin is intended to factor new instances of AppTokenLogin
+	 * 
+	 * @return A new AppTokenLogin object.
+	 */
+	AppTokenLogin factorAppTokenLogin();
 }
