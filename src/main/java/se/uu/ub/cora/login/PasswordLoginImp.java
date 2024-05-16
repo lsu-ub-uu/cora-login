@@ -44,11 +44,21 @@ public class PasswordLoginImp implements PasswordLogin {
 	@Override
 	public AuthToken getAuthToken(String idFromLogin, String password) {
 		try {
-			User user = userStorageView.getUserByIdFromLogin(idFromLogin);
-			ifUserNotActiveThrowException(user);
-			ifPasswordDoNotMatchThrowException(password, user);
-			return getNewAuthTokenFromGatekeeper(user.id);
+			return tryToGetAuthToken(idFromLogin, password);
 		} catch (Exception e) {
+			throw LoginException.withMessage(ERROR_MESSAGE);
+		}
+	}
+
+	private AuthToken tryToGetAuthToken(String idFromLogin, String password) {
+		User user = userStorageView.getUserByIdFromLogin(idFromLogin);
+		ifUserNotActiveThrowException(user);
+		ifPasswordDoNotMatchThrowException(password, user);
+		return getNewAuthTokenFromGatekeeper(user.id);
+	}
+
+	private void ifUserNotActiveThrowException(User user) {
+		if (!user.active) {
 			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}
@@ -56,12 +66,6 @@ public class PasswordLoginImp implements PasswordLogin {
 	private void ifPasswordDoNotMatchThrowException(String password, User user) {
 		String secret = userStorageView.getSystemSecretById(user.passwordId.get());
 		if (!textHasher.matches(password, secret)) {
-			throw LoginException.withMessage(ERROR_MESSAGE);
-		}
-	}
-
-	private void ifUserNotActiveThrowException(User user) {
-		if (!user.active) {
 			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}

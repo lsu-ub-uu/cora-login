@@ -20,6 +20,8 @@ package se.uu.ub.cora.login;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -115,12 +117,17 @@ public class PasswordLoginTest {
 		userStorageView.MCR.assertParameters("getUserByIdFromLogin", 0, SOME_LOGIN_ID);
 	}
 
-	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
-			+ "Login failed.")
+	@Test
 	public void testUserIsNotActive_ThrowLoginException() throws Exception {
-		configureUser(user, false, Optional.empty());
-
-		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
+		configureUser(user, false, Optional.of(SOME_SYSTEM_SECRET_ID));
+		try {
+			passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
+			fail("It should throw an exception");
+		} catch (Exception e) {
+			assertTrue(e instanceof LoginException);
+			assertEquals(e.getMessage(), "Login failed.");
+			userStorageView.MCR.assertMethodNotCalled("getSystemSecretById");
+		}
 	}
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
