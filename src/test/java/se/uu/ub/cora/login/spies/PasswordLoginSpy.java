@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2024 Uppsala University Library
+ * Copyright 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -19,31 +19,27 @@
 package se.uu.ub.cora.login.spies;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+public class PasswordLoginSpy implements PasswordLogin {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
+
 	public AuthToken authToken = AuthToken
 			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
 					"someIdInUserStorage", "someIdFromLogin");
 
-	public GatekeeperTokenProviderSpy() {
+	public PasswordLoginSpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo", () -> authToken);
+		MRV.setDefaultReturnValuesSupplier("getAuthToken", () -> authToken);
 	}
 
 	@Override
-	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return (AuthToken) MCR.addCallAndReturnFromMRV("userInfo", userInfo);
-	}
-
-	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		MCR.addCall("idInUserStorage", idInUserStorage, "authToken", authToken);
+	public AuthToken getAuthToken(String idFromLogin, String password) {
+		return (AuthToken) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin, "password",
+				password);
 	}
 
 }

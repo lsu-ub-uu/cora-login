@@ -16,25 +16,8 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
-public class LoginException extends RuntimeException {
+public interface AppTokenLogin {
 
-	private static final long serialVersionUID = 2241064467145940402L;
-
-	public static LoginException withMessage(String message) {
-		return new LoginException(message);
-	}
-
-	public static LoginException withMessageAndException(String message, Exception exception) {
-		return new LoginException(message, exception);
-	}
-
-	private LoginException(String message) {
-		super(message);
-	}
-
-	private LoginException(String message, Exception exception) {
-		super(message, exception);
-	}
 }

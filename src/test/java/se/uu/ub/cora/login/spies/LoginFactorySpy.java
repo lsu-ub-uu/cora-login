@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2024 Uppsala University Library
+ * Copyright 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,32 +18,31 @@
  */
 package se.uu.ub.cora.login.spies;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.login.rest.AppTokenLogin;
+import se.uu.ub.cora.login.rest.LoginFactory;
+import se.uu.ub.cora.login.rest.PasswordLogin;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
+public class LoginFactorySpy implements LoginFactory {
+
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
-	public AuthToken authToken = AuthToken
-			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
-					"someIdInUserStorage", "someIdFromLogin");
 
-	public GatekeeperTokenProviderSpy() {
+	public LoginFactorySpy() {
 		MCR.useMRV(MRV);
-		MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo", () -> authToken);
+		MRV.setDefaultReturnValuesSupplier("factorPasswordLogin", PasswordLoginSpy::new);
+		MRV.setDefaultReturnValuesSupplier("factorAppTokenLogin", ApptokenLoginSpy::new);
 	}
 
 	@Override
-	public AuthToken getAuthTokenForUserInfo(UserInfo userInfo) {
-		return (AuthToken) MCR.addCallAndReturnFromMRV("userInfo", userInfo);
+	public PasswordLogin factorPasswordLogin() {
+		return (PasswordLogin) MCR.addCallAndReturnFromMRV();
 	}
 
 	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		MCR.addCall("idInUserStorage", idInUserStorage, "authToken", authToken);
+	public AppTokenLogin factorAppTokenLogin() {
+		return (AppTokenLogin) MCR.addCallAndReturnFromMRV();
 	}
 
 }

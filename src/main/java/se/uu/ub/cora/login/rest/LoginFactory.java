@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Olov McKie
+ * Copyright 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,19 +16,21 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
-import java.util.HashMap;
+public interface LoginFactory {
 
-import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+	/**
+	 * factorPasswordLogin is intended to factor new instances of PasswordLogin
+	 * 
+	 * @return A new PasswordLogin object.
+	 */
+	PasswordLogin factorPasswordLogin();
 
-public class MapSpy<K, V> extends HashMap<K, V> {
-	public MethodCallRecorder MCR = new MethodCallRecorder();
-
-	@Override
-	public V get(Object key) {
-		MCR.addCall("key", key);
-		return super.get(key);
-	}
-
+	/**
+	 * factorAppTokenLogin is intended to factor new instances of AppTokenLogin
+	 * 
+	 * @return A new AppTokenLogin object.
+	 */
+	AppTokenLogin factorAppTokenLogin();
 }

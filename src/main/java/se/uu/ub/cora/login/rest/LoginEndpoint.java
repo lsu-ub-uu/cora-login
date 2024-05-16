@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.login;
+package se.uu.ub.cora.login.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,26 +53,23 @@ public class LoginEndpoint {
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
+	private UserStorageView userStorageView;
 
 	public LoginEndpoint(@Context HttpServletRequest request) {
 		this.request = request;
 		url = getBaseURLFromURI();
+		userStorageView = UserStorageProvider.getStorageView();
 	}
 
 	private final String getBaseURLFromURI() {
 		String baseURL = getBaseURLFromRequest();
-
-		baseURL = changeHttpToHttpsIfHeaderSaysSo(baseURL);
-
-		return baseURL;
+		return changeHttpToHttpsIfHeaderSaysSo(baseURL);
 	}
 
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		baseURL += PATH_TO_SYSTEM;
-		baseURL += "authToken/";
-		return baseURL;
+		return baseURL + PATH_TO_SYSTEM + "authToken/";
 	}
 
 	private String changeHttpToHttpsIfHeaderSaysSo(String baseURI) {
@@ -91,42 +88,41 @@ public class LoginEndpoint {
 	@POST
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("apptoken/{userId}")
-	public Response getAuthTokenForAppToken(@PathParam("userId") String userId, String appToken) {
+	@Path("apptoken/{userRecordId}")
+	public Response getAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
+			String appToken) {
 		try {
-			return tryToGetAuthTokenForAppToken(userId, appToken);
+			return tryToGetAuthTokenForAppToken(userRecordId, appToken);
 		} catch (Exception error) {
 			return handleError(error);
 		}
 	}
 
-	private Response tryToGetAuthTokenForAppToken(String userId, String appToken)
+	private Response tryToGetAuthTokenForAppToken(String userRecordId, String appToken)
 			throws URISyntaxException {
-		checkAppTokenIsValid(userId, appToken);
-		return getNewAuthTokenFromGatekeeper(userId);
+		User user = getUserAndMakeSureIsActive(userRecordId);
+		ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
+		AuthToken authToken = getNewAuthTokenFromGatekeeper(userRecordId);
+		return buildResponseUsingAuthToken(authToken);
 	}
 
-	private void checkAppTokenIsValid(String userId, String appToken) {
-		UserStorageView storageView = UserStorageProvider.getStorageView();
-		User user = storageView.getUserById(userId);
+	User getUserAndMakeSureIsActive(String userRecordId) {
+		User user = userStorageView.getUserById(userRecordId);
 		ensureUserIsActive(user);
-		ensureMatchingAppTokenFromStorage(storageView, user.appTokenIds, appToken);
-
+		return user;
 	}
 
-	private void ensureMatchingAppTokenFromStorage(UserStorageView storageView,
-			Set<String> appTokenIds, String userTokenString) {
-		boolean matchingTokenFound = tokenStringExistsInStorage(storageView, appTokenIds,
-				userTokenString);
+	private void ensureMatchingAppTokenFromStorage(Set<String> appTokenIds,
+			String userTokenString) {
+		boolean matchingTokenFound = tokenStringExistsInStorage(appTokenIds, userTokenString);
 		if (!matchingTokenFound) {
 			throw LoginException.withMessage("No matching token found");
 		}
 	}
 
-	private boolean tokenStringExistsInStorage(UserStorageView storageView, Set<String> appTokenIds,
-			String userTokenString) {
+	private boolean tokenStringExistsInStorage(Set<String> appTokenIds, String userTokenString) {
 		for (String appTokenId : appTokenIds) {
-			AppToken appToken = storageView.getAppTokenById(appTokenId);
+			AppToken appToken = userStorageView.getAppTokenById(appTokenId);
 			if (userTokenString.equals(appToken.tokenString)) {
 				return true;
 			}
@@ -140,19 +136,23 @@ public class LoginEndpoint {
 		}
 	}
 
-	private Response getNewAuthTokenFromGatekeeper(String userId) throws URISyntaxException {
+	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordId) {
+		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordId);
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
+		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+	}
 
-		UserInfo userInfo = UserInfo.withIdInUserStorage(userId);
-		AuthToken authTokenForUserInfo = gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
-		String json = convertAuthTokenToJson(authTokenForUserInfo, url + userId);
+	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
+		String json = convertAuthTokenToJson(authToken, url + authToken.idInUserStorage);
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
 
 	private String convertAuthTokenToJson(AuthToken authTokenForUserInfo, String url) {
-		return new AuthTokenToJsonConverter(authTokenForUserInfo, url).convertAuthTokenToJson();
+		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(
+				authTokenForUserInfo, url);
+		return authTokenToJsonConverter.convertAuthTokenToJson();
 	}
 
 	private Response handleError(Exception error) {
@@ -163,29 +163,59 @@ public class LoginEndpoint {
 	}
 
 	private boolean isNotFoundError(Exception error) {
-		return error instanceof UserStorageViewException || error instanceof LoginException;
+		return error instanceof UserStorageViewException || isLoginException(error);
 	}
 
 	private Response buildResponse(Status status) {
 		return Response.status(status).build();
 	}
 
+	@POST
+	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
+	@Path("password/{loginId}")
+	public Response getAuthTokenForPassword(@PathParam("loginId") String loginId, String password) {
+		try {
+			return tryToGetAuthTokenForPassword(loginId, password);
+		} catch (Exception error) {
+			return handleErrorForPasswordLogin(error);
+		}
+	}
+
+	private Response tryToGetAuthTokenForPassword(String loginId, String password)
+			throws URISyntaxException {
+		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
+		AuthToken authToken = passwordLogin.getAuthToken(loginId, password);
+		return buildResponseUsingAuthToken(authToken);
+	}
+
+	private Response handleErrorForPasswordLogin(Exception error) {
+		if (isLoginException(error)) {
+			return buildResponse(Response.Status.UNAUTHORIZED);
+		}
+		return buildResponse(Status.INTERNAL_SERVER_ERROR);
+	}
+
+	private boolean isLoginException(Exception error) {
+		return error instanceof LoginException;
+	}
+
 	@DELETE
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
-	@Path("authToken/{userId}")
-	public Response removeAuthTokenForAppToken(@PathParam("userId") String userId,
+	@Path("authToken/{userRecordId}")
+	public Response removeAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
 			String authToken) {
 		try {
-			return tryToRemoveAuthTokenForUser(userId, authToken);
+			return tryToRemoveAuthTokenForUser(userRecordId, authToken);
 		} catch (Exception error) {
 			return buildResponse(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthTokenForUser(String userId, String authToken) {
+	private Response tryToRemoveAuthTokenForUser(String userRecordId, String authToken) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		gatekeeperTokenProvider.removeAuthTokenForUser(userId, authToken);
+		gatekeeperTokenProvider.removeAuthTokenForUser(userRecordId, authToken);
 		return buildResponse(Status.OK);
 	}
 }
