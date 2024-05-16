@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -40,6 +41,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
+import se.uu.ub.cora.login.LoginFactoryImp;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
@@ -98,6 +100,11 @@ public class LoginEndpointTest {
 		setupBasicUserInStorage(user);
 
 		loginEndpoint = new LoginEndpoint(request);
+	}
+
+	@AfterMethod
+	private void afterMethod() {
+		LoginDependencyProvider.onlyForTestSetLoginFactory(new LoginFactoryImp());
 	}
 
 	private User configureUser(User user, boolean active, Optional<String> passwordId,

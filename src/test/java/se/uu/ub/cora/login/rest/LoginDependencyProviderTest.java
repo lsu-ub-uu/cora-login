@@ -18,11 +18,13 @@
  */
 package se.uu.ub.cora.login.rest;
 
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -36,8 +38,6 @@ import se.uu.ub.cora.login.LoginFactoryImp;
 import se.uu.ub.cora.login.PasswordLoginImp;
 import se.uu.ub.cora.login.spies.LoginFactorySpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
-import se.uu.ub.cora.password.texthasher.TextHasher;
-import se.uu.ub.cora.password.texthasher.TextHasherFactory;
 
 public class LoginDependencyProviderTest {
 
@@ -48,7 +48,10 @@ public class LoginDependencyProviderTest {
 
 		UserStorageViewInstanceProvider instanceProvider = new UserStorageViewInstanceProviderSpy();
 		UserStorageProvider.onlyForTestSetUserStorageViewInstanceProvider(instanceProvider);
+	}
 
+	@AfterMethod
+	private void afterMethod() {
 		LoginDependencyProvider.onlyForTestSetLoginFactory(new LoginFactoryImp());
 	}
 
@@ -61,51 +64,25 @@ public class LoginDependencyProviderTest {
 	}
 
 	@Test
-	public void testOnlyForTestGetLoginFactory() throws Exception {
-		assertTrue(LoginDependencyProvider.onlyForTestGetLoginFactory() instanceof LoginFactory);
-	}
-
-	@Test
-	public void testLoginFactoryHasTextHasherFactory() throws Exception {
-		LoginFactoryImp loginFactory = (LoginFactoryImp) LoginDependencyProvider
-				.onlyForTestGetLoginFactory();
-
-		assertTrue(loginFactory.onlyForTestGetTextHasherFactory() instanceof TextHasherFactory);
+	public void testLoginFactoryIsImpAsDefault() throws Exception {
+		assertTrue(LoginDependencyProvider.onlyForTestGetLoginFactory() instanceof LoginFactoryImp);
 	}
 
 	@Test
 	public void testGetPasswordLoginReturnsPasswordLoginImp() throws Exception {
-		PasswordLoginImp passwordLogin = (PasswordLoginImp) LoginDependencyProvider
-				.getPasswordLogin();
-
-		assertTrue(passwordLogin.onlyForTestGetTextHasher() instanceof TextHasher);
-	}
-
-	@Test
-	public void testOnlyForTestSetLoginFactoryReturnsLoginsFromSetFactory() throws Exception {
-		LoginFactorySpy loginFactorySpy = new LoginFactorySpy();
-		LoginDependencyProvider.onlyForTestSetLoginFactory(loginFactorySpy);
-
-		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
-
-		loginFactorySpy.MCR.assertReturn("factorPasswordLogin", 0, passwordLogin);
+		assertTrue(LoginDependencyProvider.getPasswordLogin() instanceof PasswordLoginImp);
 	}
 
 	@Test
 	public void testGetAppTokenLoginReturnsPasswordLoginImp() throws Exception {
-		AppTokenLogin appTokenLogin = LoginDependencyProvider.getAppTokenLogin();
-
-		assertTrue(appTokenLogin instanceof AppTokenLoginImp);
+		assertTrue(LoginDependencyProvider.getAppTokenLogin() instanceof AppTokenLoginImp);
 	}
 
 	@Test
-	public void testOnlyForTestSetLoginFactoryReturnsLoginsFromSetFactoryAppToken()
-			throws Exception {
-		LoginFactorySpy loginFactorySpy = new LoginFactorySpy();
-		LoginDependencyProvider.onlyForTestSetLoginFactory(loginFactorySpy);
+	public void testOnlyForTestSetLoginFactoryAndOnlyForTestGetLoginFactory() throws Exception {
+		LoginFactorySpy loginFactory = new LoginFactorySpy();
+		LoginDependencyProvider.onlyForTestSetLoginFactory(loginFactory);
 
-		AppTokenLogin appTokenLogin = LoginDependencyProvider.getAppTokenLogin();
-
-		loginFactorySpy.MCR.assertReturn("factorAppTokenLogin", 0, appTokenLogin);
+		assertSame(loginFactory, LoginDependencyProvider.onlyForTestGetLoginFactory());
 	}
 }

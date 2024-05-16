@@ -35,11 +35,11 @@ public class LoginDependencyProvider {
 		return loginFactory.factorAppTokenLogin();
 	}
 
-	public static void onlyForTestSetLoginFactory(LoginFactory loginFactory) {
+	static void onlyForTestSetLoginFactory(LoginFactory loginFactory) {
 		LoginDependencyProvider.loginFactory = loginFactory;
 	}
 
-	public static LoginFactory onlyForTestGetLoginFactory() {
+	static LoginFactory onlyForTestGetLoginFactory() {
 		return loginFactory;
 	}
 }
