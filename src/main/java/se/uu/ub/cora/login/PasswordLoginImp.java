@@ -54,7 +54,7 @@ public class PasswordLoginImp implements PasswordLogin {
 		User user = userStorageView.getUserByIdFromLogin(idFromLogin);
 		ifUserNotActiveThrowException(user);
 		ifPasswordDoNotMatchThrowException(password, user);
-		return getNewAuthTokenFromGatekeeper(user.id);
+		return getNewAuthTokenFromGatekeeper(idFromLogin);
 	}
 
 	private void ifUserNotActiveThrowException(User user) {
@@ -83,7 +83,7 @@ public class PasswordLoginImp implements PasswordLogin {
 
 	private AuthToken getAUthTokenUsingUserInfo(String userRecordInfoId,
 			GatekeeperTokenProvider gatekeeperTokenProvider) {
-		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
+		UserInfo userInfo = UserInfo.withLoginId(userRecordInfoId);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}
 }
