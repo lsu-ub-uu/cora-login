@@ -74,16 +74,16 @@ public class PasswordLoginImp implements PasswordLogin {
 		return textHasher;
 	}
 
-	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordInfoId) {
+	private AuthToken getNewAuthTokenFromGatekeeper(String idFromLogin) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 
-		return getAUthTokenUsingUserInfo(userRecordInfoId, gatekeeperTokenProvider);
+		return getAUthTokenUsingUserInfo(idFromLogin, gatekeeperTokenProvider);
 	}
 
-	private AuthToken getAUthTokenUsingUserInfo(String userRecordInfoId,
+	private AuthToken getAUthTokenUsingUserInfo(String idFromLogin,
 			GatekeeperTokenProvider gatekeeperTokenProvider) {
-		UserInfo userInfo = UserInfo.withLoginId(userRecordInfoId);
+		UserInfo userInfo = UserInfo.withLoginId(idFromLogin);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}
 }
