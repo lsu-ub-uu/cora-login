@@ -18,8 +18,27 @@
  */
 package se.uu.ub.cora.login.spies;
 
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.login.rest.AppTokenLogin;
+import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
+import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
-public class ApptokenLoginSpy implements AppTokenLogin {
+public class AppTokenLoginSpy implements AppTokenLogin {
+	public MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodReturnValues MRV = new MethodReturnValues();
+
+	public AuthToken authToken = AuthToken
+			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
+					"someIdInUserStorage", "someLoginId");
+
+	public AppTokenLoginSpy() {
+		MCR.useMRV(MRV);
+		MRV.setDefaultReturnValuesSupplier("getAuthToken", () -> authToken);
+	}
+
+	@Override
+	public AuthToken getAuthToken(String loginId, String appToken) {
+		return (AuthToken) MCR.addCallAndReturnFromMRV("loginId", loginId, "appToken", appToken);
+	}
 
 }

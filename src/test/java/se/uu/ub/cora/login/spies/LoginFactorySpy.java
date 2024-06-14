@@ -32,7 +32,7 @@ public class LoginFactorySpy implements LoginFactory {
 	public LoginFactorySpy() {
 		MCR.useMRV(MRV);
 		MRV.setDefaultReturnValuesSupplier("factorPasswordLogin", PasswordLoginSpy::new);
-		MRV.setDefaultReturnValuesSupplier("factorAppTokenLogin", ApptokenLoginSpy::new);
+		MRV.setDefaultReturnValuesSupplier("factorAppTokenLogin", AppTokenLoginSpy::new);
 	}
 
 	@Override

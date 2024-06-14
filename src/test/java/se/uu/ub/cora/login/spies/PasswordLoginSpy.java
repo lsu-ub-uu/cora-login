@@ -29,7 +29,7 @@ public class PasswordLoginSpy implements PasswordLogin {
 
 	public AuthToken authToken = AuthToken
 			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
-					"someIdInUserStorage", "someIdFromLogin");
+					"someIdInUserStorage", "someLoginId");
 
 	public PasswordLoginSpy() {
 		MCR.useMRV(MRV);
@@ -37,9 +37,8 @@ public class PasswordLoginSpy implements PasswordLogin {
 	}
 
 	@Override
-	public AuthToken getAuthToken(String idFromLogin, String password) {
-		return (AuthToken) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin, "password",
-				password);
+	public AuthToken getAuthToken(String loginId, String password) {
+		return (AuthToken) MCR.addCallAndReturnFromMRV("loginId", loginId, "password", password);
 	}
 
 }

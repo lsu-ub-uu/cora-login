@@ -32,9 +32,7 @@ import se.uu.ub.cora.password.texthasher.TextHasher;
 public class PasswordLoginImp implements PasswordLogin {
 
 	private static final String ERROR_MESSAGE = "Login failed.";
-
 	private UserStorageView userStorageView = UserStorageProvider.getStorageView();
-
 	private TextHasher textHasher;
 
 	public PasswordLoginImp(TextHasher textHasher) {
@@ -42,16 +40,16 @@ public class PasswordLoginImp implements PasswordLogin {
 	}
 
 	@Override
-	public AuthToken getAuthToken(String idFromLogin, String password) {
+	public AuthToken getAuthToken(String loginId, String password) {
 		try {
-			return tryToGetAuthToken(idFromLogin, password);
+			return tryToGetAuthToken(loginId, password);
 		} catch (Exception e) {
 			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}
 
-	private AuthToken tryToGetAuthToken(String idFromLogin, String password) {
-		User user = userStorageView.getUserByIdFromLogin(idFromLogin);
+	private AuthToken tryToGetAuthToken(String loginId, String password) {
+		User user = userStorageView.getUserByIdFromLogin(loginId);
 		ifUserNotActiveThrowException(user);
 		ifPasswordDoNotMatchThrowException(password, user);
 		return getNewAuthTokenFromGatekeeper(user.id);
@@ -70,10 +68,6 @@ public class PasswordLoginImp implements PasswordLogin {
 		}
 	}
 
-	public TextHasher onlyForTestGetTextHasher() {
-		return textHasher;
-	}
-
 	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordInfoId) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
@@ -85,5 +79,9 @@ public class PasswordLoginImp implements PasswordLogin {
 			GatekeeperTokenProvider gatekeeperTokenProvider) {
 		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+	}
+
+	public TextHasher onlyForTestGetTextHasher() {
+		return textHasher;
 	}
 }

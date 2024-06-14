@@ -28,12 +28,12 @@ public interface PasswordLogin {
 	 * @throws LoginException
 	 *             if any exception while trying to perform the operations inside this method.
 	 * 
-	 * @param idFromLogin
-	 *            A String conatining a username.
+	 * @param loginId
+	 *            A String conatining the loginId.
 	 * @param password
 	 *            A String containg the password to be matched
 	 * @return If the user is active and the password matches, a valid AuthToken is sent back.
 	 */
-	AuthToken getAuthToken(String idFromLogin, String password);
+	AuthToken getAuthToken(String loginId, String password);
 
 }
