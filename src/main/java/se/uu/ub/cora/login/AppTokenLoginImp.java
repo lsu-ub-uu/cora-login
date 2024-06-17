@@ -22,6 +22,9 @@ import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
 import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
+import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.rest.AppTokenLogin;
 import se.uu.ub.cora.login.rest.LoginException;
 import se.uu.ub.cora.password.texthasher.TextHasher;
@@ -30,9 +33,10 @@ public class AppTokenLoginImp implements AppTokenLogin {
 
 	private static final String ERROR_MESSAGE = "Login failed.";
 	private UserStorageView userStorageView = UserStorageProvider.getStorageView();
+	private TextHasher textHasher;
 
 	public AppTokenLoginImp(TextHasher textHasher) {
-		// TODO Auto-generated constructor stub
+		this.textHasher = textHasher;
 	}
 
 	@Override
@@ -47,9 +51,8 @@ public class AppTokenLoginImp implements AppTokenLogin {
 	private AuthToken tryToGetAuthToken(String loginId, String appToken) {
 		User user = userStorageView.getUserByIdFromLogin(loginId);
 		ifUserNotActiveThrowException(user);
-		// ifPasswordDoNotMatchThrowException(password, user);
-		// return getNewAuthTokenFromGatekeeper(user.id);
-		return null;
+		ifAppTokenDoNotMatchAnyThrowException(appToken, user);
+		return getNewAuthTokenFromGatekeeper(user.id);
 	}
 
 	private void ifUserNotActiveThrowException(User user) {
@@ -58,52 +61,36 @@ public class AppTokenLoginImp implements AppTokenLogin {
 		}
 	}
 
-	// ------------------------------------------------------------------------
+	private void ifAppTokenDoNotMatchAnyThrowException(String appToken, User user) {
+		if (!matchAppTokenForUser(appToken, user)) {
+			throw LoginException.withMessage(ERROR_MESSAGE);
+		}
+	}
 
-	// private Response tryToGetAuthTokenForAppToken(String loginId, String appToken)
-	// throws URISyntaxException {
-	//
-	// User user = getUserAndMakeSureIsActive(userRecordId);
-	// ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
-	// AuthToken authToken = getNewAuthTokenFromGatekeeper(userRecordId);
-	// return buildResponseUsingAuthToken(authToken);
-	// }
+	private boolean matchAppTokenForUser(String appToken, User user) {
+		for (String systemSecretId : user.appTokenIds) {
+			String systemSecret = userStorageView.getSystemSecretById(systemSecretId);
+			if (textHasher.matches(appToken, systemSecret)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-	// User getUserAndMakeSureIsActive(String userRecordId) {
-	// User user = userStorageView.getUserById(userRecordId);
-	// ensureUserIsActive(user);
-	// return user;
-	// }
+	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordInfoId) {
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
+				.getGatekeeperTokenProvider();
 
-	// private void ensureMatchingAppTokenFromStorage(Set<String> appTokenIds,
-	// String userTokenString) {
-	// boolean matchingTokenFound = tokenStringExistsInStorage(appTokenIds, userTokenString);
-	// if (!matchingTokenFound) {
-	// throw LoginException.withMessage("No matching token found");
-	// }
-	// }
+		return getAUthTokenUsingUserInfo(userRecordInfoId, gatekeeperTokenProvider);
+	}
 
-	// private boolean tokenStringExistsInStorage(Set<String> appTokenIds, String userTokenString) {
-	// for (String appTokenId : appTokenIds) {
-	// AppToken appToken = userStorageView.getAppTokenById(appTokenId);
-	// if (userTokenString.equals(appToken.tokenString)) {
-	// return true;
-	// }
-	// }
-	// return false;
-	// }
+	private AuthToken getAUthTokenUsingUserInfo(String userRecordInfoId,
+			GatekeeperTokenProvider gatekeeperTokenProvider) {
+		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
+		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
+	}
 
-	// private void ensureUserIsActive(User user) {
-	// if (!user.active) {
-	// throw LoginException.withMessage("User is not active");
-	// }
-	// }
-
-	// private AuthToken getNewAuthTokenFromGatekeeper(String userRecordId) {
-	// UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordId);
-	// GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
-	// .getGatekeeperTokenProvider();
-	// return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
-	// }
-
+	public Object onlyForTestGetTextHasher() {
+		return textHasher;
+	}
 }

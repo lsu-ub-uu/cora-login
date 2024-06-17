@@ -41,7 +41,8 @@ public class LoginFactoryImp implements LoginFactory {
 
 	@Override
 	public AppTokenLogin factorAppTokenLogin() {
-		return new AppTokenLoginImp();
+		TextHasher textHasher = textHasherFactory.factor();
+		return new AppTokenLoginImp(textHasher);
 	}
 
 	public Object onlyForTestGetTextHasherFactory() {

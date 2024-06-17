@@ -18,8 +18,6 @@
  */
 package se.uu.ub.cora.login.spies;
 
-import java.util.function.Supplier;
-
 import se.uu.ub.cora.password.texthasher.TextHasher;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
@@ -32,7 +30,7 @@ public class TextHasherSpy implements TextHasher {
 	public TextHasherSpy() {
 		MCR.useMRV(MRV);
 		MRV.setDefaultReturnValuesSupplier("hashText", String::new);
-		MRV.setDefaultReturnValuesSupplier("matches", (Supplier<Boolean>) () -> false);
+		MRV.setDefaultReturnValuesSupplier("matches", () -> false);
 	}
 
 	@Override

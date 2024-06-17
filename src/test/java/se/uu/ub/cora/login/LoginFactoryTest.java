@@ -27,7 +27,6 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
-import se.uu.ub.cora.login.rest.AppTokenLogin;
 import se.uu.ub.cora.login.spies.TextHasherFactorySpy;
 import se.uu.ub.cora.login.spies.UserStorageViewInstanceProviderSpy;
 import se.uu.ub.cora.password.texthasher.TextHasherFactory;
@@ -56,7 +55,6 @@ public class LoginFactoryTest {
 
 		PasswordLoginImp passwordLogin = (PasswordLoginImp) loginFactory.factorPasswordLogin();
 
-		assertTrue(passwordLogin instanceof PasswordLoginImp);
 		textHasherFactory.MCR.assertReturn("factor", 0, passwordLogin.onlyForTestGetTextHasher());
 	}
 
@@ -64,9 +62,9 @@ public class LoginFactoryTest {
 	public void testFactorAppTokenLogin() throws Exception {
 		loginFactory.onlyForTestSetTextHasherFactory(textHasherFactory);
 
-		AppTokenLogin passwordLogin = loginFactory.factorAppTokenLogin();
+		AppTokenLoginImp appTokenLogin = (AppTokenLoginImp) loginFactory.factorAppTokenLogin();
 
-		assertTrue(passwordLogin instanceof AppTokenLoginImp);
+		textHasherFactory.MCR.assertReturn("factor", 0, appTokenLogin.onlyForTestGetTextHasher());
 	}
 
 	@Test

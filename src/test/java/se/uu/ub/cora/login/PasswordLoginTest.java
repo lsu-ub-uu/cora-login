@@ -19,7 +19,6 @@
 package se.uu.ub.cora.login;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -162,11 +161,6 @@ public class PasswordLoginTest {
 	}
 
 	@Test
-	public void testOnlyForTestGetTextHasher() throws Exception {
-		assertSame(passwordLogin.onlyForTestGetTextHasher(), textHasher);
-	}
-
-	@Test
 	public void testCallGetAuthToken() throws Exception {
 		configureUser(user, true, Optional.of(SOME_SYSTEM_SECRET_ID));
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
@@ -181,4 +175,5 @@ public class PasswordLoginTest {
 		gatekeeperTokenProvider.MCR.assertReturn("getAuthTokenForUserInfo", 0, authToken);
 
 	}
+
 }
