@@ -36,6 +36,7 @@
 		<initialize-spies.version>1.6.0</initialize-spies.version>
 		<servlet-api.version>5.0.0</servlet-api.version>
 		<jersey.version>3.1.6</jersey.version>
+		<testutils.version>1.13.0</testutils.version>
 	</properties>
 
 	<scm>
@@ -87,6 +88,12 @@
 			<artifactId>gatekeepertokenprovider</artifactId>
 			<version>${gatekeepertokenprovider.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>testutils</artifactId>
+			<version>${testutils.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>

@@ -18,6 +18,22 @@
  */
 package se.uu.ub.cora.login.rest;
 
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+
 public interface AppTokenLogin {
+
+	/**
+	 * getAuthToken method returns an {@link AuthToken} given a username and an appToken. This
+	 * method checks if the user is active and if the appToken matches the already stored one.
+	 * 
+	 * @throws LoginException
+	 *             if any exception while trying to perform the operations inside this method.
+	 * @param loginId
+	 *            A String containing the loginId.
+	 * @param password
+	 *            A String containing the password to be matched
+	 * @return If the user is active and the appToken matches, a valid AuthToken is sent back.
+	 */
+	AuthToken getAuthToken(String loginId, String appToken);
 
 }

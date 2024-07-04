@@ -20,7 +20,6 @@ package se.uu.ub.cora.login.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -32,14 +31,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import se.uu.ub.cora.gatekeeper.storage.UserStorageProvider;
-import se.uu.ub.cora.gatekeeper.storage.UserStorageView;
-import se.uu.ub.cora.gatekeeper.storage.UserStorageViewException;
-import se.uu.ub.cora.gatekeeper.user.AppToken;
-import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
@@ -53,12 +46,10 @@ public class LoginEndpoint {
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
-	private UserStorageView userStorageView;
 
 	public LoginEndpoint(@Context HttpServletRequest request) {
 		this.request = request;
 		url = getBaseURLFromURI();
-		userStorageView = UserStorageProvider.getStorageView();
 	}
 
 	private final String getBaseURLFromURI() {
@@ -88,8 +79,8 @@ public class LoginEndpoint {
 	@POST
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("apptoken/{userRecordId}")
-	public Response getAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
+	@Path("apptoken/{loginId}")
+	public Response getAuthTokenForAppToken(@PathParam("loginId") String userRecordId,
 			String appToken) {
 		try {
 			return tryToGetAuthTokenForAppToken(userRecordId, appToken);
@@ -98,49 +89,11 @@ public class LoginEndpoint {
 		}
 	}
 
-	private Response tryToGetAuthTokenForAppToken(String userRecordId, String appToken)
+	private Response tryToGetAuthTokenForAppToken(String loginId, String appToken)
 			throws URISyntaxException {
-		User user = getUserAndMakeSureIsActive(userRecordId);
-		ensureMatchingAppTokenFromStorage(user.appTokenIds, appToken);
-		AuthToken authToken = getNewAuthTokenFromGatekeeper(userRecordId);
+		AppTokenLogin appTokenLogin = LoginDependencyProvider.getAppTokenLogin();
+		AuthToken authToken = appTokenLogin.getAuthToken(loginId, appToken);
 		return buildResponseUsingAuthToken(authToken);
-	}
-
-	User getUserAndMakeSureIsActive(String userRecordId) {
-		User user = userStorageView.getUserById(userRecordId);
-		ensureUserIsActive(user);
-		return user;
-	}
-
-	private void ensureMatchingAppTokenFromStorage(Set<String> appTokenIds,
-			String userTokenString) {
-		boolean matchingTokenFound = tokenStringExistsInStorage(appTokenIds, userTokenString);
-		if (!matchingTokenFound) {
-			throw LoginException.withMessage("No matching token found");
-		}
-	}
-
-	private boolean tokenStringExistsInStorage(Set<String> appTokenIds, String userTokenString) {
-		for (String appTokenId : appTokenIds) {
-			AppToken appToken = userStorageView.getAppTokenById(appTokenId);
-			if (userTokenString.equals(appToken.tokenString)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void ensureUserIsActive(User user) {
-		if (!user.active) {
-			throw LoginException.withMessage("User is not active");
-		}
-	}
-
-	private AuthToken getNewAuthTokenFromGatekeeper(String userRecordId) {
-		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordId);
-		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
-				.getGatekeeperTokenProvider();
-		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
@@ -156,17 +109,17 @@ public class LoginEndpoint {
 	}
 
 	private Response handleError(Exception error) {
-		if (isNotFoundError(error)) {
-			return buildResponse(Response.Status.NOT_FOUND);
+		if (isLoginException(error)) {
+			return buildResponseUsingStatus(Response.Status.UNAUTHORIZED);
 		}
-		return buildResponse(Status.INTERNAL_SERVER_ERROR);
+		return buildResponseUsingStatus(Status.INTERNAL_SERVER_ERROR);
 	}
 
-	private boolean isNotFoundError(Exception error) {
-		return error instanceof UserStorageViewException || isLoginException(error);
+	private boolean isLoginException(Exception error) {
+		return error instanceof LoginException;
 	}
 
-	private Response buildResponse(Status status) {
+	private Response buildResponseUsingStatus(Status status) {
 		return Response.status(status).build();
 	}
 
@@ -178,7 +131,7 @@ public class LoginEndpoint {
 		try {
 			return tryToGetAuthTokenForPassword(loginId, password);
 		} catch (Exception error) {
-			return handleErrorForPasswordLogin(error);
+			return handleError(error);
 		}
 	}
 
@@ -189,17 +142,7 @@ public class LoginEndpoint {
 		return buildResponseUsingAuthToken(authToken);
 	}
 
-	private Response handleErrorForPasswordLogin(Exception error) {
-		if (isLoginException(error)) {
-			return buildResponse(Response.Status.UNAUTHORIZED);
-		}
-		return buildResponse(Status.INTERNAL_SERVER_ERROR);
-	}
-
-	private boolean isLoginException(Exception error) {
-		return error instanceof LoginException;
-	}
-
+	// TODO: Change userRecordId to loginId
 	@DELETE
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
 	@Path("authToken/{userRecordId}")
@@ -208,7 +151,7 @@ public class LoginEndpoint {
 		try {
 			return tryToRemoveAuthTokenForUser(userRecordId, authToken);
 		} catch (Exception error) {
-			return buildResponse(Response.Status.NOT_FOUND);
+			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}
 
@@ -216,6 +159,6 @@ public class LoginEndpoint {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 		gatekeeperTokenProvider.removeAuthTokenForUser(userRecordId, authToken);
-		return buildResponse(Status.OK);
+		return buildResponseUsingStatus(Status.OK);
 	}
 }
