@@ -115,7 +115,8 @@ public class AppTokenLoginTest {
 
 	@Test
 	public void testGetAuthToken_UserIsNotActiveThrowLoginException() throws Exception {
-		configureUser(user, false, Optional.empty());
+		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
+		configureUser(user, false, Optional.empty(), "someAppTokenId1");
 		try {
 			apptokenLogin.getAuthToken(SOME_LOGIN_ID, SOME_APP_TOKEN);
 			fail("It should throw an exception");

@@ -206,17 +206,19 @@ public class LoginEndpointTest {
 		Response response = loginEndpoint.buildResponseUsingAuthToken(authToken);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
-		String expectedJsonToken = "{\"data\":{\"children\":["
-				+ "{\"name\":\"id\",\"value\":\"someAuthToken\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"278\"},"
-				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
-				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
-				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}]"
-				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://localhost:8080/login/rest/authToken/someIdInUserStorage\"}}}";
+		String expectedJsonToken = """
+				{"data":{"children":[\
+				{"name":"id","value":"someAuthToken"},\
+				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"idFromLogin","value":"someIdFromLogin"},\
+				{"name":"firstName","value":"someFirstName"},\
+				{"name":"lastName","value":"someLastName"}]\
+				,"name":"authToken"},\
+				"actionLinks":{"delete":{"requestMethod":"DELETE",\
+				"rel":"delete",\
+				"url":"http://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
 	}
