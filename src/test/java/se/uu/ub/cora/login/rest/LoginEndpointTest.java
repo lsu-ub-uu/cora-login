@@ -226,6 +226,77 @@ public class LoginEndpointTest {
 	}
 
 	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoHttps() {
+		request.headers.put("X-Forwarded-Proto", "https");
+		loginEndpoint = new LoginEndpoint(request);
+
+		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(response, Response.Status.CREATED);
+		String expectedJsonToken = """
+				{"data":{"children":[\
+				{"name":"id","value":"someAuthToken"},\
+				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"idFromLogin","value":"someLoginId"}]\
+				,"name":"authToken"},\
+				"actionLinks":{"delete":{"requestMethod":"DELETE",\
+				"rel":"delete",\
+				"url":"https://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				""";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoHttpsWhenAlreadyHttpsInRequestUrl() {
+		request.headers.put("X-Forwarded-Proto", "https");
+		request.requestURL = new StringBuffer(
+				"https://localhost:8080/apptoken/rest/apptoken/141414");
+		loginEndpoint = new LoginEndpoint(request);
+
+		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(response, Response.Status.CREATED);
+		String expectedJsonToken = """
+				{"data":{"children":[\
+				{"name":"id","value":"someAuthToken"},\
+				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"idFromLogin","value":"someLoginId"}]\
+				,"name":"authToken"},\
+				"actionLinks":{"delete":{"requestMethod":"DELETE",\
+				"rel":"delete",\
+				"url":"https://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				""";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
+	public void testGetAuthTokenForAppTokenXForwardedProtoEmpty() {
+		request.headers.put("X-Forwarded-Proto", "");
+		loginEndpoint = new LoginEndpoint(request);
+
+		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+
+		assertResponseStatusIs(response, Response.Status.CREATED);
+		String expectedJsonToken = """
+				{"data":{"children":[\
+				{"name":"id","value":"someAuthToken"},\
+				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"idFromLogin","value":"someLoginId"}]\
+				,"name":"authToken"},\
+				"actionLinks":{"delete":{"requestMethod":"DELETE",\
+				"rel":"delete",\
+				"url":"http://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				""";
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedJsonToken);
+	}
+
+	@Test
 	public void testGetAuthTokenWithPassword_Annotations() throws Exception {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
