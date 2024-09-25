@@ -35,8 +35,8 @@
 		<initialize.version>1.6.0</initialize.version>
 		<initialize-spies.version>1.6.0</initialize-spies.version>
 		<servlet-api.version>6.1.0</servlet-api.version>
-		<jersey.version>3.1.7</jersey.version>
-		<testutils.version>1.13.0</testutils.version>
+		<jersey.version>3.1.8</jersey.version>
+		<testutils.version>1.14.0</testutils.version>
 	</properties>
 
 	<scm>

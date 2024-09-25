@@ -50,10 +50,10 @@ import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class LoginEndpointTest {
-	private static final String SOME_LOGIN_ID = "someLoginId";
+	private static final String AUTH_TOKEN = "someAuthToken";
+	private static final String LOGIN_ID = "someLoginId";
 	private static final String SOME_PASSWORD = "somePassword";
 	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
-	private static final String SOME_USER_ID = "someUserId";
 	private static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain; charset=utf-8";
 	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private LoginEndpoint loginEndpoint;
@@ -81,7 +81,7 @@ public class LoginEndpointTest {
 
 		request = new HttpServletRequestSpy();
 
-		user = new User(SOME_USER_ID);
+		user = new User("someUserId");
 		configureUser(user, true, Optional.empty(), "someAppTokenId1", "someAppTokenId2");
 
 		loginEndpoint = new LoginEndpoint(request);
@@ -137,10 +137,10 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testGetAuthTokenWithAppToken() throws Exception {
-		loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
 
 		loginFactory.MCR.assertMethodWasCalled("factorAppTokenLogin");
-		appTokenLoginSpy.MCR.assertParameters("getAuthToken", 0, SOME_USER_ID, SOME_APP_TOKEN);
+		appTokenLoginSpy.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, SOME_APP_TOKEN);
 
 	}
 
@@ -148,7 +148,7 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenWithAppToken_BuildResponse() throws Exception {
 		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
 
 		var authToken = appTokenLoginSpy.MCR.getReturnValue("getAuthToken", 0);
 
@@ -162,7 +162,7 @@ public class LoginEndpointTest {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.UNAUTHORIZED);
 	}
@@ -172,7 +172,7 @@ public class LoginEndpointTest {
 			throws Exception {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.INTERNAL_SERVER_ERROR);
 	}
@@ -199,7 +199,7 @@ public class LoginEndpointTest {
 	@Test
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
 		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
-				"someAuthToken", 278, "someIdInUserStorage", "someIdFromLogin");
+				AUTH_TOKEN, 278, "someIdInUserStorage", "someIdFromLogin");
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
 
@@ -232,7 +232,7 @@ public class LoginEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -257,7 +257,7 @@ public class LoginEndpointTest {
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -280,7 +280,7 @@ public class LoginEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(SOME_USER_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -312,13 +312,13 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testGetAuthTokenWithPassword_PasswordLogin() throws Exception {
-		loginEndpoint.getAuthTokenForPassword(SOME_LOGIN_ID, SOME_PASSWORD);
+		loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
 
 		loginFactory.MCR.assertParameters("factorPasswordLogin", 0);
 		PasswordLoginSpy passwordLogin = (PasswordLoginSpy) loginFactory.MCR
 				.getReturnValue("factorPasswordLogin", 0);
 
-		passwordLogin.MCR.assertParameters("getAuthToken", 0, SOME_LOGIN_ID, SOME_PASSWORD);
+		passwordLogin.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, SOME_PASSWORD);
 
 	}
 
@@ -326,7 +326,7 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenWithPassword_BuildResponse() throws Exception {
 		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForPassword(SOME_LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
 
 		var authToken = passwordLoginSpy.MCR.getReturnValue("getAuthToken", 0);
 
@@ -340,7 +340,7 @@ public class LoginEndpointTest {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
-		Response response = loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.UNAUTHORIZED);
 	}
@@ -350,16 +350,18 @@ public class LoginEndpointTest {
 			throws Exception {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
-		Response response = loginEndpoint.getAuthTokenForPassword(SOME_USER_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		Response response = loginEndpoint.removeAuthTokenForAppToken(SOME_USER_ID, "someAuthToken");
+		Response response = loginEndpoint.removeAuthTokenForAppToken(LOGIN_ID, AUTH_TOKEN);
 
 		assertResponseStatusIs(response, Response.Status.OK);
+		gatekeeperTokenProvider.MCR.assertParameters("removeAuthTokenForUser", 0, LOGIN_ID,
+				AUTH_TOKEN);
 	}
 
 	@Test
@@ -367,7 +369,7 @@ public class LoginEndpointTest {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		Response response = loginEndpoint.removeAuthTokenForAppToken(SOME_USER_ID,
+		Response response = loginEndpoint.removeAuthTokenForAppToken(LOGIN_ID,
 				"someAuthTokenNotFound");
 
 		assertResponseStatusIs(response, Response.Status.NOT_FOUND);
@@ -379,9 +381,9 @@ public class LoginEndpointTest {
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
 						"removeAuthTokenForAppToken", 2);
 
-		annotationHelper.assertHttpMethodAndPathAnnotation("DELETE", "authToken/{userRecordId}");
+		annotationHelper.assertHttpMethodAndPathAnnotation("DELETE", "authToken/{loginId}");
 		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
-		annotationHelper.assertPathParamAnnotationByNameAndPosition("userRecordId", 0);
+		annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
 	}
 
 }

@@ -142,23 +142,22 @@ public class LoginEndpoint {
 		return buildResponseUsingAuthToken(authToken);
 	}
 
-	// TODO: Change userRecordId to loginId
 	@DELETE
 	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
-	@Path("authToken/{userRecordId}")
-	public Response removeAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
+	@Path("authToken/{loginId}")
+	public Response removeAuthTokenForAppToken(@PathParam("loginId") String loginId,
 			String authToken) {
 		try {
-			return tryToRemoveAuthTokenForUser(userRecordId, authToken);
+			return tryToRemoveAuthTokenForUser(loginId, authToken);
 		} catch (Exception error) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthTokenForUser(String userRecordId, String authToken) {
+	private Response tryToRemoveAuthTokenForUser(String loginId, String authToken) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		gatekeeperTokenProvider.removeAuthTokenForUser(userRecordId, authToken);
+		gatekeeperTokenProvider.removeAuthTokenForUser(loginId, authToken);
 		return buildResponseUsingStatus(Status.OK);
 	}
 }
