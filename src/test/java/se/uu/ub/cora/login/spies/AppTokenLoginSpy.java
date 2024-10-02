@@ -28,7 +28,7 @@ public class AppTokenLoginSpy implements AppTokenLogin {
 	public MethodReturnValues MRV = new MethodReturnValues();
 
 	public AuthToken authToken = AuthToken
-			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
+			.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId("someAuthToken", 278,
 					"someIdInUserStorage", "someLoginId");
 
 	public AppTokenLoginSpy() {

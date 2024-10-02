@@ -28,7 +28,7 @@ public class PasswordLoginSpy implements PasswordLogin {
 	public MethodReturnValues MRV = new MethodReturnValues();
 
 	public AuthToken authToken = AuthToken
-			.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someAuthToken", 278,
+			.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId("someAuthToken", 278,
 					"someIdInUserStorage", "someLoginId");
 
 	public PasswordLoginSpy() {

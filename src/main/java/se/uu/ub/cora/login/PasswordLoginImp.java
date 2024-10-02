@@ -49,7 +49,7 @@ public class PasswordLoginImp implements PasswordLogin {
 	}
 
 	private AuthToken tryToGetAuthToken(String loginId, String password) {
-		User user = userStorageView.getUserByIdFromLogin(loginId);
+		User user = userStorageView.getUserByLoginId(loginId);
 		ifUserNotActiveThrowException(user);
 		ifPasswordDoNotMatchThrowException(password, user);
 		return getNewAuthTokenFromGatekeeper(user.id);

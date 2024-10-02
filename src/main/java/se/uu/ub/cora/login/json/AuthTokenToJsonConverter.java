@@ -50,12 +50,11 @@ public final class AuthTokenToJsonConverter {
 		everythingBuilder.addKeyJsonObjectBuilder("data", authTokenBuilder);
 		JsonArrayBuilder userChildren = returnAndAddChildrenToBuilder(authTokenBuilder);
 
-		addIdToJson(authToken, userChildren);
-
+		addTokenToJson(authToken, userChildren);
 		addValidForNoSecondsToJson(authToken, userChildren);
 		addIdInUserStorageToJson(userChildren);
-		addIdFromLoginToJson(authToken, userChildren);
-		possiblyAddNameToJson(authToken, userChildren);
+		addLoginIdToJson(authToken, userChildren);
+		possiblyAddFirstnameAndLastnameToJson(authToken, userChildren);
 	}
 
 	private void createActionLinksBuilder(JsonObjectBuilder everythingBuilder) {
@@ -79,8 +78,8 @@ public final class AuthTokenToJsonConverter {
 		return roleBuilder;
 	}
 
-	private void addIdToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
-		JsonObjectBuilder id = createObjectBuilderWithName("id");
+	private void addTokenToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+		JsonObjectBuilder id = createObjectBuilderWithName("token");
 		id.addKeyString(VALUE, authToken.token);
 		userChildren.addJsonObjectBuilder(id);
 	}
@@ -103,13 +102,14 @@ public final class AuthTokenToJsonConverter {
 		userChildren.addJsonObjectBuilder(idInUserStorage);
 	}
 
-	private void addIdFromLoginToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
-		JsonObjectBuilder idFromLogin = createObjectBuilderWithName("idFromLogin");
-		idFromLogin.addKeyString(VALUE, String.valueOf(authToken.idFromLogin));
-		userChildren.addJsonObjectBuilder(idFromLogin);
+	private void addLoginIdToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+		JsonObjectBuilder loginId = createObjectBuilderWithName("loginId");
+		loginId.addKeyString(VALUE, String.valueOf(authToken.loginId));
+		userChildren.addJsonObjectBuilder(loginId);
 	}
 
-	private void possiblyAddNameToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+	private void possiblyAddFirstnameAndLastnameToJson(AuthToken authToken,
+			JsonArrayBuilder userChildren) {
 		possiblyAddFirstNameToJson(authToken, userChildren);
 		possiblyAddLastNameToJson(authToken, userChildren);
 	}

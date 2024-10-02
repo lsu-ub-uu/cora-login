@@ -74,7 +74,7 @@ public class PasswordLoginTest {
 	private void setupBasicUserInStorage(User user) {
 		userStorageView = new UserStorageViewSpy();
 		userStorageInstanceProvider = new UserStorageViewInstanceProviderSpy();
-		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserByIdFromLogin", () -> user);
+		userStorageView.MRV.setDefaultReturnValuesSupplier("getUserByLoginId", () -> user);
 		userStorageInstanceProvider.MRV.setDefaultReturnValuesSupplier("getStorageView",
 				() -> userStorageView);
 
@@ -101,7 +101,7 @@ public class PasswordLoginTest {
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
 			+ "Login failed.")
 	public void testGetAuthToken_ExceptionWhileGettingAuthToken() throws Exception {
-		userStorageView.MRV.setAlwaysThrowException("getUserByIdFromLogin",
+		userStorageView.MRV.setAlwaysThrowException("getUserByLoginId",
 				UserStorageViewException.usingMessage("someException"));
 
 		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
@@ -113,7 +113,7 @@ public class PasswordLoginTest {
 
 		passwordLogin.getAuthToken(SOME_LOGIN_ID, SOME_PASSWORD);
 
-		userStorageView.MCR.assertParameters("getUserByIdFromLogin", 0, SOME_LOGIN_ID);
+		userStorageView.MCR.assertParameters("getUserByLoginId", 0, SOME_LOGIN_ID);
 	}
 
 	@Test

@@ -49,7 +49,7 @@ public class AppTokenLoginImp implements AppTokenLogin {
 	}
 
 	private AuthToken tryToGetAuthToken(String loginId, String appToken) {
-		User user = userStorageView.getUserByIdFromLogin(loginId);
+		User user = userStorageView.getUserByLoginId(loginId);
 		ifUserNotActiveThrowException(user);
 		ifAppTokenDoNotMatchAnyThrowException(appToken, user);
 		return getNewAuthTokenFromGatekeeper(user.id);

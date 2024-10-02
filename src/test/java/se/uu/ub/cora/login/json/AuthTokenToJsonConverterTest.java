@@ -32,9 +32,9 @@ public class AuthTokenToJsonConverterTest {
 
 	@BeforeMethod
 	public void beforeMethod() {
-		url = "http://epc.ub.uu.se/login/rest/authToken/131313";
-		authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin("someId",
-				599, "someIdInUserStorage", "someIdFromLogin");
+		url = "http://epc.ub.uu.se/login/rest/authToken/someLoginId";
+		authToken = AuthToken.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId("someToken",
+				599, "someIdInUserStorage", "someLoginId");
 
 	}
 
@@ -42,15 +42,43 @@ public class AuthTokenToJsonConverterTest {
 	public void testAuthTokenToJsonConverter() {
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 		String json = converter.convertAuthTokenToJson();
-		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"},"
-				+ "{\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"}" + "]"
-				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://epc.ub.uu.se/login/rest/authToken/131313\"}}}";
-		assertEquals(json, expected);
+		String expected = """
+				{
+				  "data": {
+				    "children": [
+				      {
+				        "name": "token",
+				        "value": "someToken"
+				      },
+				      {
+				        "name": "validForNoSeconds",
+				        "value": "599"
+				      },
+				      {
+				        "name": "idInUserStorage",
+				        "value": "someIdInUserStorage"
+				      },
+				      {
+				        "name": "loginId",
+				        "value": "someLoginId"
+				      }
+				    ],
+				    "name": "authToken"
+				  },
+				  "actionLinks": {
+				    "delete": {
+				      "requestMethod": "DELETE",
+				      "rel": "delete",
+				      "url": "http://epc.ub.uu.se/login/rest/authToken/someLoginId"
+				    }
+				  }
+				}""";
+		;
+		assertEquals(json, compactString(expected));
+	}
+
+	private String compactString(String string) {
+		return string.trim().replace("\n", "").replace("\s", "");
 	}
 
 	@Test
@@ -59,16 +87,46 @@ public class AuthTokenToJsonConverterTest {
 		authToken.lastName = "someLastName";
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 		String json = converter.convertAuthTokenToJson();
-		String expected = "{\"data\":{\"children\":[" + "{\"name\":\"id\",\"value\":\"someId\"},"
-				+ "{\"name\":\"validForNoSeconds\",\"value\":\"599\"}," + "{"
-				+ "\"name\":\"idInUserStorage\",\"value\":\"someIdInUserStorage\"},"
-				+ "{\"name\":\"idFromLogin\",\"value\":\"someIdFromLogin\"},"
-				+ "{\"name\":\"firstName\",\"value\":\"someFirstName\"},"
-				+ "{\"name\":\"lastName\",\"value\":\"someLastName\"}" + "]"
-				+ ",\"name\":\"authToken\"},"
-				+ "\"actionLinks\":{\"delete\":{\"requestMethod\":\"DELETE\","
-				+ "\"rel\":\"delete\","
-				+ "\"url\":\"http://epc.ub.uu.se/login/rest/authToken/131313\"}}}";
-		assertEquals(json, expected);
+		String expected = """
+								{
+				  "data": {
+				    "children": [
+				      {
+				        "name": "token",
+				        "value": "someToken"
+				      },
+				      {
+				        "name": "validForNoSeconds",
+				        "value": "599"
+				      },
+				      {
+				        "name": "idInUserStorage",
+				        "value": "someIdInUserStorage"
+				      },
+				      {
+				        "name": "loginId",
+				        "value": "someLoginId"
+				      },
+				      {
+				        "name": "firstName",
+				        "value": "someFirstName"
+				      },
+				      {
+				        "name": "lastName",
+				        "value": "someLastName"
+				      }
+				    ],
+				    "name": "authToken"
+				  },
+				  "actionLinks": {
+				    "delete": {
+				      "requestMethod": "DELETE",
+				      "rel": "delete",
+				      "url": "http://epc.ub.uu.se/login/rest/authToken/someLoginId"
+				    }
+				  }
+				}
+				""";
+		assertEquals(json, compactString(expected));
 	}
 }

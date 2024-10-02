@@ -198,8 +198,8 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
-		AuthToken authToken = AuthToken.withIdAndValidForNoSecondsAndIdInUserStorageAndIdFromLogin(
-				AUTH_TOKEN, 278, "someIdInUserStorage", "someIdFromLogin");
+		AuthToken authToken = AuthToken.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId(
+				AUTH_TOKEN, 278, "someIdInUserStorage", "someLoginId");
 		authToken.firstName = "someFirstName";
 		authToken.lastName = "someLastName";
 
@@ -208,10 +208,10 @@ public class LoginEndpointTest {
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
 				{"data":{"children":[\
-				{"name":"id","value":"someAuthToken"},\
+				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
 				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
-				{"name":"idFromLogin","value":"someIdFromLogin"},\
+				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
 				{"name":"lastName","value":"someLastName"}]\
 				,"name":"authToken"},\
@@ -237,10 +237,10 @@ public class LoginEndpointTest {
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
 				{"data":{"children":[\
-				{"name":"id","value":"someAuthToken"},\
+				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
 				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
-				{"name":"idFromLogin","value":"someLoginId"}]\
+				{"name":"loginId","value":"someLoginId"}]\
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
@@ -262,10 +262,10 @@ public class LoginEndpointTest {
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
 				{"data":{"children":[\
-				{"name":"id","value":"someAuthToken"},\
+				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
 				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
-				{"name":"idFromLogin","value":"someLoginId"}]\
+				{"name":"loginId","value":"someLoginId"}]\
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
@@ -285,10 +285,10 @@ public class LoginEndpointTest {
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
 				{"data":{"children":[\
-				{"name":"id","value":"someAuthToken"},\
+				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
 				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
-				{"name":"idFromLogin","value":"someLoginId"}]\
+				{"name":"loginId","value":"someLoginId"}]\
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
