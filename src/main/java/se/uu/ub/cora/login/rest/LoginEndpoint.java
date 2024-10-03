@@ -97,7 +97,7 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
-		String json = convertAuthTokenToJson(authToken, url + authToken.idInUserStorage);
+		String json = convertAuthTokenToJson(authToken, url + authToken.loginId);
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}

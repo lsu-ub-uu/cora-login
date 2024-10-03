@@ -217,7 +217,7 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				"url":"http://localhost:8080/login/rest/authToken/someLoginId"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -244,7 +244,7 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				"url":"https://localhost:8080/login/rest/authToken/someLoginId"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -269,7 +269,7 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				"url":"https://localhost:8080/login/rest/authToken/someLoginId"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -292,7 +292,7 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someIdInUserStorage"}}}\
+				"url":"http://localhost:8080/login/rest/authToken/someLoginId"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
