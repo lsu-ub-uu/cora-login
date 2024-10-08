@@ -20,6 +20,7 @@
 package se.uu.ub.cora.login.rest;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.net.URISyntaxException;
 import java.util.LinkedHashSet;
@@ -33,8 +34,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.gatekeeper.user.User;
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.initialize.SettingsProvider;
+import se.uu.ub.cora.jsonconverter.converter.AuthToken;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.login.LoginFactoryImp;
@@ -50,11 +51,7 @@ import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class LoginEndpointTest {
-	private static final String AUTH_TOKEN = "someAuthToken";
 	private static final String LOGIN_ID = "someLoginId";
-	private static final String SOME_PASSWORD = "somePassword";
-	private static final String SOME_APP_TOKEN = "tokenStringFromSpy";
-	private static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain; charset=utf-8";
 	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private LoginEndpoint loginEndpoint;
 	private HttpServletRequestSpy request;
@@ -64,6 +61,18 @@ public class LoginEndpointTest {
 	private LoginFactorySpy loginFactory;
 	private PasswordLoginSpy passwordLoginSpy;
 	private AppTokenLoginSpy appTokenLoginSpy;
+	private static final String CREDENTIALS_WITH_PASSWORD = """
+			someLoginId
+			somePassword
+			""";
+	private static final String CREDENTIALS_WITH_APPTOKEN = """
+			someLoginId
+			someAppToken
+			""";
+	private static final String CREDENTIALS_WITH_AUTHTOKEN = """
+			someLoginId
+			someAuthToken
+			""";
 
 	@BeforeMethod
 	public void setup() {
@@ -127,20 +136,20 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenForAppToken_Annotations() throws Exception {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
-						"getAuthTokenForAppToken", 2);
+						"getAuthTokenForAppToken", 1);
 
-		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken/{loginId}");
-		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
+		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
+		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
 		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
-		annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
+		// annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
 	}
 
 	@Test
 	public void testGetAuthTokenWithAppToken() throws Exception {
-		loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
+		loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		loginFactory.MCR.assertMethodWasCalled("factorAppTokenLogin");
-		appTokenLoginSpy.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, SOME_APP_TOKEN);
+		appTokenLoginSpy.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, "someAppToken");
 
 	}
 
@@ -148,12 +157,28 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenWithAppToken_BuildResponse() throws Exception {
 		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
 
-		var authToken = appTokenLoginSpy.MCR.getReturnValue("getAuthToken", 0);
-
-		loginEndpoint.MCR.assertParameters("buildResponseUsingAuthToken", 0, authToken);
+		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) appTokenLoginSpy.MCR
+				.getReturnValue("getAuthToken", 0);
+		var authTokenFromConverter = (AuthToken) loginEndpoint.MCR
+				.getParameterForMethodAndCallNumberAndParameter("buildResponseUsingAuthToken", 0,
+						"authToken");
+		assertConvertionOfAuthToken(authTokenFromGatekeeper, authTokenFromConverter);
 		loginEndpoint.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
+	}
+
+	private void assertConvertionOfAuthToken(
+			se.uu.ub.cora.gatekeepertokenprovider.AuthToken authTokenFromGatekeeper,
+			AuthToken authTokenFromConverter) {
+		assertEquals(authTokenFromConverter.token(), authTokenFromGatekeeper.token);
+		assertEquals(authTokenFromConverter.validForNoSeconds(),
+				authTokenFromGatekeeper.validForNoSeconds);
+		assertEquals(authTokenFromConverter.idInUserStorage(),
+				authTokenFromGatekeeper.idInUserStorage);
+		assertEquals(authTokenFromConverter.loginId(), authTokenFromGatekeeper.loginId);
+		assertTrue(authTokenFromConverter.firstname().isEmpty());
+		assertTrue(authTokenFromConverter.lastname().isEmpty());
 	}
 
 	@Test
@@ -162,7 +187,7 @@ public class LoginEndpointTest {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.UNAUTHORIZED);
 	}
@@ -172,7 +197,7 @@ public class LoginEndpointTest {
 			throws Exception {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.INTERNAL_SERVER_ERROR);
 	}
@@ -198,10 +223,8 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
-		AuthToken authToken = AuthToken.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId(
-				AUTH_TOKEN, 278, "someIdInUserStorage", "someLoginId");
-		authToken.firstName = "someFirstName";
-		authToken.lastName = "someLastName";
+		AuthToken authToken = new AuthToken("someAuthToken", 278, "someIdInUserStorage",
+				"someLoginId", Optional.of("someFirstName"), Optional.of("someLastName"));
 
 		Response response = loginEndpoint.buildResponseUsingAuthToken(authToken);
 
@@ -217,7 +240,8 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someLoginId"}}}\
+				"contentType":"application/vnd.uub.logout",\
+				"url":"http://localhost:8080/login/rest/authToken"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -232,7 +256,7 @@ public class LoginEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "https");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -244,7 +268,8 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someLoginId"}}}\
+				"contentType":"application/vnd.uub.logout",\
+				"url":"https://localhost:8080/login/rest/authToken"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -257,7 +282,7 @@ public class LoginEndpointTest {
 				"https://localhost:8080/apptoken/rest/apptoken/141414");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -269,7 +294,8 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someLoginId"}}}\
+				"contentType":"application/vnd.uub.logout",\
+				"url":"https://localhost:8080/login/rest/authToken"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -280,7 +306,7 @@ public class LoginEndpointTest {
 		request.headers.put("X-Forwarded-Proto", "");
 		loginEndpoint = new LoginEndpoint(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(LOGIN_ID, SOME_APP_TOKEN);
+		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String expectedJsonToken = """
@@ -292,7 +318,8 @@ public class LoginEndpointTest {
 				,"name":"authToken"},\
 				"actionLinks":{"delete":{"requestMethod":"DELETE",\
 				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someLoginId"}}}\
+				"contentType":"application/vnd.uub.logout",\
+				"url":"http://localhost:8080/login/rest/authToken"}}}\
 				""";
 		String entity = (String) response.getEntity();
 		assertEquals(entity, expectedJsonToken);
@@ -302,23 +329,22 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenWithPassword_Annotations() throws Exception {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
-						"getAuthTokenForPassword", 2);
+						"getAuthTokenForPassword", 1);
 
-		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password/{loginId}");
-		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
+		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password");
+		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
 		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
-		annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
 	}
 
 	@Test
 	public void testGetAuthTokenWithPassword_PasswordLogin() throws Exception {
-		loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
+		loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
 		loginFactory.MCR.assertParameters("factorPasswordLogin", 0);
 		PasswordLoginSpy passwordLogin = (PasswordLoginSpy) loginFactory.MCR
 				.getReturnValue("factorPasswordLogin", 0);
 
-		passwordLogin.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, SOME_PASSWORD);
+		passwordLogin.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, "somePassword");
 
 	}
 
@@ -326,11 +352,14 @@ public class LoginEndpointTest {
 	public void testGetAuthTokenWithPassword_BuildResponse() throws Exception {
 		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
-		var authToken = passwordLoginSpy.MCR.getReturnValue("getAuthToken", 0);
-
-		loginEndpoint.MCR.assertParameters("buildResponseUsingAuthToken", 0, authToken);
+		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) passwordLoginSpy.MCR
+				.getReturnValue("getAuthToken", 0);
+		var authTokenFromConverter = (AuthToken) loginEndpoint.MCR
+				.getParameterForMethodAndCallNumberAndParameter("buildResponseUsingAuthToken", 0,
+						"authToken");
+		assertConvertionOfAuthToken(authTokenFromGatekeeper, authTokenFromConverter);
 		loginEndpoint.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
 	}
 
@@ -340,7 +369,7 @@ public class LoginEndpointTest {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
-		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.UNAUTHORIZED);
 	}
@@ -350,18 +379,18 @@ public class LoginEndpointTest {
 			throws Exception {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
-		Response response = loginEndpoint.getAuthTokenForPassword(LOGIN_ID, SOME_PASSWORD);
+		Response response = loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
 		assertResponseStatusIs(response, Response.Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testRemoveAuthTokenForUser() {
-		Response response = loginEndpoint.removeAuthTokenForAppToken(LOGIN_ID, AUTH_TOKEN);
+		Response response = loginEndpoint.removeAuthTokenForAppToken(CREDENTIALS_WITH_AUTHTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.OK);
 		gatekeeperTokenProvider.MCR.assertParameters("removeAuthTokenForUser", 0, LOGIN_ID,
-				AUTH_TOKEN);
+				"someAuthToken");
 	}
 
 	@Test
@@ -369,8 +398,10 @@ public class LoginEndpointTest {
 		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
 		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
 
-		Response response = loginEndpoint.removeAuthTokenForAppToken(LOGIN_ID,
-				"someAuthTokenNotFound");
+		Response response = loginEndpoint.removeAuthTokenForAppToken("""
+				loginId
+				someAuthTokenNotFound
+				""");
 
 		assertResponseStatusIs(response, Response.Status.NOT_FOUND);
 	}
@@ -379,11 +410,10 @@ public class LoginEndpointTest {
 	public void testRemoveAuthTokenForAppToken_Annotations() throws Exception {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
 				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
-						"removeAuthTokenForAppToken", 2);
+						"removeAuthTokenForAppToken", 1);
 
-		annotationHelper.assertHttpMethodAndPathAnnotation("DELETE", "authToken/{loginId}");
-		annotationHelper.assertConsumesAnnotation(TEXT_PLAIN_CHARSET_UTF_8);
-		annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
+		annotationHelper.assertHttpMethodAndPathAnnotation("DELETE", "authToken");
+		annotationHelper.assertConsumesAnnotation("application/vnd.uub.logout");
 	}
 
 }
