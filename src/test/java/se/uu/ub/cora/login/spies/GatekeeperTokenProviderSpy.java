@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.login.spies;
 
+import java.util.Optional;
+
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.gatekeepertokenprovider.UserInfo;
@@ -27,9 +29,8 @@ import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
-	public AuthToken authToken = AuthToken
-			.withTokenAndValidForNoSecondsAndIdInUserStorageAndLoginId("someAuthToken", 278,
-					"someIdInUserStorage", "someLoginId");
+	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 278,
+			"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
 
 	public GatekeeperTokenProviderSpy() {
 		MCR.useMRV(MRV);
@@ -42,8 +43,8 @@ public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 	}
 
 	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
-		MCR.addCall("idInUserStorage", idInUserStorage, "authToken", authToken);
+	public void removeAuthToken(String tokenId, String authToken) {
+		MCR.addCall("idInUserStorage", tokenId, "authToken", authToken);
 	}
 
 }

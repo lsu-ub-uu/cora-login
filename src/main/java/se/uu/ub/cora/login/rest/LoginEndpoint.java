@@ -20,22 +20,23 @@ package se.uu.ub.cora.login.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.initialize.SettingsProvider;
-import se.uu.ub.cora.jsonconverter.converter.AuthToken;
-import se.uu.ub.cora.jsonconverter.converter.AuthTokenToJsonConverter;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
+import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 @Path("/")
 public class LoginEndpoint {
@@ -59,7 +60,7 @@ public class LoginEndpoint {
 	private String getBaseURLFromRequest() {
 		String tempUrl = request.getRequestURL().toString();
 		String baseURL = tempUrl.substring(0, tempUrl.indexOf('/', AFTERHTTP));
-		return baseURL + PATH_TO_SYSTEM + "authToken";
+		return baseURL + PATH_TO_SYSTEM + "authToken/";
 	}
 
 	private String changeHttpToHttpsIfHeaderSaysSo(String baseURI) {
@@ -97,17 +98,7 @@ public class LoginEndpoint {
 
 	private AuthToken getAuthTokenForAppToken(AppTokenLogin appTokenLogin,
 			Credentials credentials) {
-		se.uu.ub.cora.gatekeepertokenprovider.AuthToken authToken = appTokenLogin
-				.getAuthToken(credentials.loginId(), credentials.secret());
-		return parseToAuthTokenFromConverter(authToken);
-	}
-
-	private AuthToken parseToAuthTokenFromConverter(
-			se.uu.ub.cora.gatekeepertokenprovider.AuthToken authToken) {
-
-		return new AuthToken(authToken.token, authToken.validForNoSeconds,
-				authToken.idInUserStorage, authToken.loginId,
-				Optional.ofNullable(authToken.firstName), Optional.ofNullable(authToken.lastName));
+		return appTokenLogin.getAuthToken(credentials.loginId(), credentials.secret());
 	}
 
 	private Credentials credentialsAsRecord(String credentials) {
@@ -119,7 +110,7 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
-		String json = convertAuthTokenToJson(authToken, url);
+		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
@@ -168,27 +159,24 @@ public class LoginEndpoint {
 
 	private AuthToken getAuthTokenForPassword(PasswordLogin passwordLogin,
 			Credentials credentials) {
-		se.uu.ub.cora.gatekeepertokenprovider.AuthToken authToken = passwordLogin
-				.getAuthToken(credentials.loginId(), credentials.secret());
-		return parseToAuthTokenFromConverter(authToken);
+		return passwordLogin.getAuthToken(credentials.loginId(), credentials.secret());
 	}
 
 	@DELETE
-	@Consumes("application/vnd.uub.logout")
-	@Path("authToken")
-	public Response removeAuthTokenForAppToken(String authToken) {
+	@Path("authToken/{tokenId}")
+	public Response removeAuthTokenForAppToken(@HeaderParam("authToken") String authToken,
+			@PathParam("tokenId") String tokenId) {
 		try {
-			return tryToRemoveAuthTokenForUser(authToken);
+			return tryToRemoveAuthToken(tokenId, authToken);
 		} catch (Exception error) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthTokenForUser(String credentialsAsString) {
+	private Response tryToRemoveAuthToken(String tokenId, String authToken) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		Credentials credentials = credentialsAsRecord(credentialsAsString);
-		gatekeeperTokenProvider.removeAuthTokenForUser(credentials.loginId(), credentials.secret());
+		gatekeeperTokenProvider.removeAuthToken(tokenId, authToken);
 		return buildResponseUsingStatus(Status.OK);
 	}
 }

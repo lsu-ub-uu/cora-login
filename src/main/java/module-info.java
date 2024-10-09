@@ -10,7 +10,6 @@ module se.uu.ub.cora.login {
 	requires transitive jakarta.ws.rs;
 	requires transitive se.uu.ub.cora.initialize;
 	requires jersey.media.multipart;
-	requires se.uu.ub.cora.jsonconverter;
 
 	exports se.uu.ub.cora.login.rest;
 }

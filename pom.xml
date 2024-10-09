@@ -34,7 +34,6 @@
 		<gatekeepertokenprovider.version>2.15-SNAPSHOT</gatekeepertokenprovider.version>
 		<initialize.version>1.6.0</initialize.version>
 		<initialize-spies.version>1.6.0</initialize-spies.version>
-		<jsonconverter.version>1.0-SNAPSHOT</jsonconverter.version>
 		<servlet-api.version>6.1.0</servlet-api.version>
 		<jersey.version>3.1.8</jersey.version>
 		<testutils.version>1.14.0</testutils.version>
@@ -95,12 +94,6 @@
 			<artifactId>testutils</artifactId>
 			<version>${testutils.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>se.uu.ub.cora</groupId>
-			<artifactId>jsonconverter</artifactId>
-			<version>${jsonconverter.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
