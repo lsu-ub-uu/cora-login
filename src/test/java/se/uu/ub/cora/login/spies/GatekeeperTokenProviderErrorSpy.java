@@ -32,7 +32,7 @@ public class GatekeeperTokenProviderErrorSpy implements GatekeeperTokenProvider 
 	}
 
 	@Override
-	public void removeAuthTokenForUser(String idInUserStorage, String authToken) {
+	public void removeAuthToken(String tokenId, String authToken) {
 		throw new AuthenticationException("authToken could not be removed");
 	}
 

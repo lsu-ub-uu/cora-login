@@ -34,7 +34,7 @@ public class UserStorageViewSpy implements UserStorageView {
 	public UserStorageViewSpy() {
 		MCR.useMRV(MRV);
 		MRV.setDefaultReturnValuesSupplier("getUserById", () -> user);
-		MRV.setDefaultReturnValuesSupplier("getUserByIdFromLogin", () -> user);
+		MRV.setDefaultReturnValuesSupplier("getUserByLoginId", () -> user);
 		MRV.setDefaultReturnValuesSupplier("getAppTokenById", () -> apptoken);
 		MRV.setDefaultReturnValuesSupplier("getSystemSecretById", () -> "someSystemSecret");
 	}
@@ -45,8 +45,8 @@ public class UserStorageViewSpy implements UserStorageView {
 	}
 
 	@Override
-	public User getUserByIdFromLogin(String idFromLogin) {
-		return (User) MCR.addCallAndReturnFromMRV("idFromLogin", idFromLogin);
+	public User getUserByLoginId(String loginId) {
+		return (User) MCR.addCallAndReturnFromMRV("loginId", loginId);
 	}
 
 	@Override

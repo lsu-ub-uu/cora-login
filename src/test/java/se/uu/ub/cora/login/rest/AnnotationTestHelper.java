@@ -136,6 +136,11 @@ public class AnnotationTestHelper {
 		assertEquals(parameter.value(), name);
 	}
 
+	public void assertAuthTokenHeaderAnnotationForPosition(int startPosition) {
+		HeaderParam headerAuthTokenParameter = (HeaderParam) parameterAnnotations[startPosition][0];
+		assertEquals(headerAuthTokenParameter.value(), "authToken");
+	}
+
 	public void assertContextAnnotationForPosition(int startPosition) {
 		var parameter = parameterAnnotations[startPosition][0];
 		assertEquals(parameter.annotationType(), Context.class);

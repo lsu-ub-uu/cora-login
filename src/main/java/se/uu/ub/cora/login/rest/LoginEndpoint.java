@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -41,7 +42,6 @@ import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 public class LoginEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
 			.getSetting("loginPublicPathToSystem");
-	private static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain; charset=utf-8";
 	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private static final int AFTERHTTP = 10;
 	private String url;
@@ -77,34 +77,48 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Consumes("application/vnd.uub.login")
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("apptoken/{loginId}")
-	public Response getAuthTokenForAppToken(@PathParam("loginId") String userRecordId,
-			String appToken) {
+	@Path("apptoken")
+	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
-			return tryToGetAuthTokenForAppToken(userRecordId, appToken);
+			return tryToGetAuthTokenForAppToken(credentialsAsString);
 		} catch (Exception error) {
 			return handleError(error);
 		}
 	}
 
-	private Response tryToGetAuthTokenForAppToken(String loginId, String appToken)
+	private Response tryToGetAuthTokenForAppToken(String credentialsAsString)
 			throws URISyntaxException {
 		AppTokenLogin appTokenLogin = LoginDependencyProvider.getAppTokenLogin();
-		AuthToken authToken = appTokenLogin.getAuthToken(loginId, appToken);
+		Credentials credentials = credentialsAsRecord(credentialsAsString);
+		AuthToken authToken = getAuthTokenForAppToken(appTokenLogin, credentials);
 		return buildResponseUsingAuthToken(authToken);
 	}
 
+	private AuthToken getAuthTokenForAppToken(AppTokenLogin appTokenLogin,
+			Credentials credentials) {
+		return appTokenLogin.getAuthToken(credentials.loginId(), credentials.secret());
+	}
+
+	private Credentials credentialsAsRecord(String credentials) {
+		String[] credentialsArray = credentials.split("\n");
+		return new Credentials(credentialsArray[0], credentialsArray[1]);
+	}
+
+	private record Credentials(String loginId, String secret) {
+	}
+
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
-		String json = convertAuthTokenToJson(authToken, url + authToken.idInUserStorage);
+		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
 		URI uri = new URI("authToken/");
 		return Response.created(uri).entity(json).build();
 	}
 
-	private String convertAuthTokenToJson(AuthToken authTokenForUserInfo, String url) {
-		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(
-				authTokenForUserInfo, url);
+	private String convertAuthTokenToJson(AuthToken authToken, String url) {
+
+		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(authToken,
+				url);
 		return authTokenToJsonConverter.convertAuthTokenToJson();
 	}
 
@@ -124,41 +138,45 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
+	@Consumes("application/vnd.uub.login")
 	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
-	@Path("password/{loginId}")
-	public Response getAuthTokenForPassword(@PathParam("loginId") String loginId, String password) {
+	@Path("password")
+	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {
-			return tryToGetAuthTokenForPassword(loginId, password);
+			return tryToGetAuthTokenForPassword(credentialsAsString);
 		} catch (Exception error) {
 			return handleError(error);
 		}
 	}
 
-	private Response tryToGetAuthTokenForPassword(String loginId, String password)
+	private Response tryToGetAuthTokenForPassword(String credentialsAsString)
 			throws URISyntaxException {
 		PasswordLogin passwordLogin = LoginDependencyProvider.getPasswordLogin();
-		AuthToken authToken = passwordLogin.getAuthToken(loginId, password);
+		Credentials credentials = credentialsAsRecord(credentialsAsString);
+		AuthToken authToken = getAuthTokenForPassword(passwordLogin, credentials);
 		return buildResponseUsingAuthToken(authToken);
 	}
 
-	// TODO: Change userRecordId to loginId
+	private AuthToken getAuthTokenForPassword(PasswordLogin passwordLogin,
+			Credentials credentials) {
+		return passwordLogin.getAuthToken(credentials.loginId(), credentials.secret());
+	}
+
 	@DELETE
-	@Consumes(TEXT_PLAIN_CHARSET_UTF_8)
-	@Path("authToken/{userRecordId}")
-	public Response removeAuthTokenForAppToken(@PathParam("userRecordId") String userRecordId,
-			String authToken) {
+	@Path("authToken/{tokenId}")
+	public Response removeAuthTokenForAppToken(@HeaderParam("authToken") String authToken,
+			@PathParam("tokenId") String tokenId) {
 		try {
-			return tryToRemoveAuthTokenForUser(userRecordId, authToken);
+			return tryToRemoveAuthToken(tokenId, authToken);
 		} catch (Exception error) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthTokenForUser(String userRecordId, String authToken) {
+	private Response tryToRemoveAuthToken(String tokenId, String authToken) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		gatekeeperTokenProvider.removeAuthTokenForUser(userRecordId, authToken);
+		gatekeeperTokenProvider.removeAuthToken(tokenId, authToken);
 		return buildResponseUsingStatus(Status.OK);
 	}
 }
