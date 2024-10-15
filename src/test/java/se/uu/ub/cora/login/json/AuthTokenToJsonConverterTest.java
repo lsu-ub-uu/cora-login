@@ -57,7 +57,7 @@ public class AuthTokenToJsonConverterTest {
 				        "value": "599"
 				      },
 				      {
-				        "name": "idInUserStorage",
+				        "name": "userId",
 				        "value": "someIdInUserStorage"
 				      },
 				      {
@@ -105,7 +105,7 @@ public class AuthTokenToJsonConverterTest {
 				        "value": "599"
 				      },
 				      {
-				        "name": "idInUserStorage",
+				        "name": "userId",
 				        "value": "someIdInUserStorage"
 				      },
 				      {
