@@ -52,7 +52,7 @@ public final class AuthTokenToJsonConverter {
 
 		addTokenToJson(authToken, userChildren);
 		addValidForNoSecondsToJson(authToken, userChildren);
-		addIdInUserStorageToJson(userChildren);
+		addUserIdToJson(userChildren);
 		addLoginIdToJson(authToken, userChildren);
 		possiblyAddFirstnameAndLastnameToJson(authToken, userChildren);
 	}
@@ -96,10 +96,10 @@ public final class AuthTokenToJsonConverter {
 		return userChildren;
 	}
 
-	private void addIdInUserStorageToJson(JsonArrayBuilder userChildren) {
-		JsonObjectBuilder idInUserStorage = createObjectBuilderWithName("userId");
-		idInUserStorage.addKeyString(VALUE, String.valueOf(authToken.idInUserStorage()));
-		userChildren.addJsonObjectBuilder(idInUserStorage);
+	private void addUserIdToJson(JsonArrayBuilder userChildren) {
+		JsonObjectBuilder userId = createObjectBuilderWithName("userId");
+		userId.addKeyString(VALUE, String.valueOf(authToken.idInUserStorage()));
+		userChildren.addJsonObjectBuilder(userId);
 	}
 
 	private void addLoginIdToJson(AuthToken authToken, JsonArrayBuilder userChildren) {

@@ -218,7 +218,7 @@ public class LoginEndpointTest {
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
 				{"name":"lastName","value":"someLastName"}]\
@@ -247,7 +247,7 @@ public class LoginEndpointTest {
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
 				{"name":"lastName","value":"someLastName"}]\
@@ -274,7 +274,7 @@ public class LoginEndpointTest {
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
 				{"name":"lastName","value":"someLastName"}]\
@@ -299,7 +299,7 @@ public class LoginEndpointTest {
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
 				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"idInUserStorage","value":"someIdInUserStorage"},\
+				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
 				{"name":"lastName","value":"someLastName"}]\

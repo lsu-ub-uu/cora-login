@@ -171,7 +171,7 @@ public class PasswordLoginTest {
 		UserInfo userInfo = (UserInfo) gatekeeperTokenProvider.MCR
 				.getValueForMethodNameAndCallNumberAndParameterName("getAuthTokenForUserInfo", 0,
 						"userInfo");
-		assertEquals(userInfo.idInUserStorage, user.id);
+		assertEquals(userInfo.userId, user.id);
 		gatekeeperTokenProvider.MCR.assertReturn("getAuthTokenForUserInfo", 0, authToken);
 
 	}

@@ -86,7 +86,7 @@ public class AppTokenLoginImp implements AppTokenLogin {
 
 	private AuthToken getAUthTokenUsingUserInfo(String userRecordInfoId,
 			GatekeeperTokenProvider gatekeeperTokenProvider) {
-		UserInfo userInfo = UserInfo.withIdInUserStorage(userRecordInfoId);
+		UserInfo userInfo = UserInfo.withUserId(userRecordInfoId);
 		return gatekeeperTokenProvider.getAuthTokenForUserInfo(userInfo);
 	}
 
