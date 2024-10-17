@@ -27,15 +27,15 @@
 	</build>
 
 	<properties>
-		<gatekeeper.version>5.0-SNAPSHOT</gatekeeper.version>
+		<gatekeeper.version>5.0.0</gatekeeper.version>
 		<password.version>1.8.0</password.version>
 		<logger.version>2.10.0</logger.version>
 		<loggerspies.version>1.5.0</loggerspies.version>
-		<gatekeepertokenprovider.version>2.15-SNAPSHOT</gatekeepertokenprovider.version>
+		<gatekeepertokenprovider.version>2.15.0</gatekeepertokenprovider.version>
 		<initialize.version>1.6.0</initialize.version>
 		<initialize-spies.version>1.6.0</initialize-spies.version>
 		<servlet-api.version>6.1.0</servlet-api.version>
-		<jersey.version>3.1.8</jersey.version>
+		<jersey.version>3.1.9</jersey.version>
 		<testutils.version>1.14.0</testutils.version>
 	</properties>
 
