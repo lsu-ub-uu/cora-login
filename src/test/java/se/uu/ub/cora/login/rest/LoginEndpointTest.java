@@ -207,7 +207,7 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
-		AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 278,
+		AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 				Optional.of("someLastName"));
 
@@ -217,7 +217,8 @@ public class LoginEndpointTest {
 		String expectedJsonToken = """
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"validUntil","value":"100"},\
+				{"name":"renewUntil","value":"200"},\
 				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
@@ -246,7 +247,8 @@ public class LoginEndpointTest {
 		String expectedJsonToken = """
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"validUntil","value":"100"},\
+				{"name":"renewUntil","value":"200"},\
 				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
@@ -273,7 +275,8 @@ public class LoginEndpointTest {
 		String expectedJsonToken = """
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"validUntil","value":"100"},\
+				{"name":"renewUntil","value":"200"},\
 				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\
@@ -298,7 +301,8 @@ public class LoginEndpointTest {
 		String expectedJsonToken = """
 				{"data":{"children":[\
 				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
+				{"name":"validUntil","value":"100"},\
+				{"name":"renewUntil","value":"200"},\
 				{"name":"userId","value":"someIdInUserStorage"},\
 				{"name":"loginId","value":"someLoginId"},\
 				{"name":"firstName","value":"someFirstName"},\

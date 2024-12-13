@@ -29,7 +29,7 @@ import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
-	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 278,
+	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 			"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
 
 	public GatekeeperTokenProviderSpy() {

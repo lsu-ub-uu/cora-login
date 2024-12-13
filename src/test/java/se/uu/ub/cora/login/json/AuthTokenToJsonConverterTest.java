@@ -38,8 +38,8 @@ public class AuthTokenToJsonConverterTest {
 
 	@Test
 	public void testAuthTokenToJsonConverter() {
-		AuthToken authToken = new AuthToken("someToken", "someTokenId", 599, "someIdInUserStorage",
-				"someLoginId", Optional.empty(), Optional.empty());
+		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
+				"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 
 		String json = converter.convertAuthTokenToJson();
@@ -53,8 +53,12 @@ public class AuthTokenToJsonConverterTest {
 				        "value": "someToken"
 				      },
 				      {
-				        "name": "validForNoSeconds",
-				        "value": "599"
+				        "name": "validUntil",
+				        "value": "100"
+				      },
+				      {
+				        "name": "renewUntil",
+				        "value": "200"
 				      },
 				      {
 				        "name": "userId",
@@ -86,8 +90,9 @@ public class AuthTokenToJsonConverterTest {
 	@Test
 	public void testAuthTokenToJsonConverterWithName() {
 
-		AuthToken authToken = new AuthToken("someToken", "someTokenId", 599, "someIdInUserStorage",
-				"someLoginId", Optional.of("someFirstName"), Optional.of("someLastName"));
+		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
+				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
+				Optional.of("someLastName"));
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 
 		String json = converter.convertAuthTokenToJson();
@@ -101,8 +106,12 @@ public class AuthTokenToJsonConverterTest {
 				        "value": "someToken"
 				      },
 				      {
-				        "name": "validForNoSeconds",
-				        "value": "599"
+				        "name": "validUntil",
+				        "value": "100"
+				      },
+				      {
+				        "name": "renewUntil",
+				        "value": "200"
 				      },
 				      {
 				        "name": "userId",

@@ -31,7 +31,7 @@
 		<password.version>1.8.0</password.version>
 		<logger.version>2.10.0</logger.version>
 		<loggerspies.version>1.5.0</loggerspies.version>
-		<gatekeepertokenprovider.version>2.15.0</gatekeepertokenprovider.version>
+		<gatekeepertokenprovider.version>2.16-SNAPSHOT</gatekeepertokenprovider.version>
 		<initialize.version>1.6.0</initialize.version>
 		<initialize-spies.version>1.6.0</initialize-spies.version>
 		<servlet-api.version>6.1.0</servlet-api.version>

@@ -51,7 +51,8 @@ public final class AuthTokenToJsonConverter {
 		JsonArrayBuilder userChildren = returnAndAddChildrenToBuilder(authTokenBuilder);
 
 		addTokenToJson(authToken, userChildren);
-		addValidForNoSecondsToJson(authToken, userChildren);
+		addValidUntilToJson(authToken, userChildren);
+		addRenewUntilToJson(authToken, userChildren);
 		addUserIdToJson(userChildren);
 		addLoginIdToJson(authToken, userChildren);
 		possiblyAddFirstnameAndLastnameToJson(authToken, userChildren);
@@ -84,9 +85,15 @@ public final class AuthTokenToJsonConverter {
 		userChildren.addJsonObjectBuilder(id);
 	}
 
-	private void addValidForNoSecondsToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
-		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("validForNoSeconds");
-		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.validForNoSeconds()));
+	private void addValidUntilToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("validUntil");
+		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.validUntil()));
+		userChildren.addJsonObjectBuilder(validForNoSeconds);
+	}
+
+	private void addRenewUntilToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("renewUntil");
+		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.renewUntil()));
 		userChildren.addJsonObjectBuilder(validForNoSeconds);
 	}
 
