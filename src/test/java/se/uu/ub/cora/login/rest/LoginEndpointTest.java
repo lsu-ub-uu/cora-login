@@ -68,10 +68,6 @@ public class LoginEndpointTest {
 			someLoginId
 			someAppToken
 			""";
-	private static final String CREDENTIALS_WITH_AUTHTOKEN = """
-			someLoginId
-			someAuthToken
-			""";
 
 	@BeforeMethod
 	public void setup() {
@@ -140,7 +136,6 @@ public class LoginEndpointTest {
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
 		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
-		// annotationHelper.assertPathParamAnnotationByNameAndPosition("loginId", 0);
 	}
 
 	@Test
