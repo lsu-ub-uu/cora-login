@@ -72,6 +72,12 @@ public class AuthTokenToJsonConverterTest {
 				    "name": "authToken"
 				  },
 				  "actionLinks": {
+				    "renew": {
+				      "requestMethod": "POST",
+				      "rel": "renew",
+				      "url": "someUrl",
+				      "accept": "application/vnd.uub.authToken+json"
+				    },
 				    "delete": {
 				      "requestMethod": "DELETE",
 				      "rel": "delete",
@@ -133,6 +139,12 @@ public class AuthTokenToJsonConverterTest {
 				    "name": "authToken"
 				  },
 				  "actionLinks": {
+				    "renew": {
+				      "requestMethod": "POST",
+				      "rel": "renew",
+				      "url": "someUrl",
+				      "accept": "application/vnd.uub.authToken+json"
+				    },
 				    "delete": {
 				      "requestMethod": "DELETE",
 				      "rel": "delete",

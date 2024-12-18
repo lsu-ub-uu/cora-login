@@ -62,7 +62,17 @@ public final class AuthTokenToJsonConverter {
 		JsonObjectBuilder actionLinksBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
 		everythingBuilder.addKeyJsonObjectBuilder("actionLinks", actionLinksBuilder);
 
+		createRenewBuilder(actionLinksBuilder);
 		createDeleteBuilder(actionLinksBuilder);
+	}
+
+	private void createRenewBuilder(JsonObjectBuilder actionLinksBuilder) {
+		JsonObjectBuilder builder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		actionLinksBuilder.addKeyJsonObjectBuilder("renew", builder);
+		builder.addKeyString("requestMethod", "POST");
+		builder.addKeyString("accept", "application/vnd.uub.authToken+json");
+		builder.addKeyString("rel", "renew");
+		builder.addKeyString("url", url);
 	}
 
 	private void createDeleteBuilder(JsonObjectBuilder actionLinksBuilder) {

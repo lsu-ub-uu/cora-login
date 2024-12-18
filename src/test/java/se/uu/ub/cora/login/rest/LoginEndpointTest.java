@@ -220,19 +220,25 @@ public class LoginEndpointTest {
 
 	private String expectedAutToken(String protocol) {
 		return """
-				{"data":{"children":[\
-				{"name":"token","value":"someAuthToken"},\
-				{"name":"validUntil","value":"100"},\
-				{"name":"renewUntil","value":"200"},\
-				{"name":"userId","value":"someIdInUserStorage"},\
-				{"name":"loginId","value":"someLoginId"},\
-				{"name":"firstName","value":"someFirstName"},\
-				{"name":"lastName","value":"someLastName"}]\
-				,"name":"authToken"},\
-				"actionLinks":{"delete":{"requestMethod":"DELETE",\
-				"rel":"delete",\
-				"url":"{protocol}://localhost:8080/login/rest/authToken/someTokenId"}}}\
-				""".replace("{protocol}", protocol);
+				{"data":{"children":[
+				{"name":"token","value":"someAuthToken"},
+				{"name":"validUntil","value":"100"},
+				{"name":"renewUntil","value":"200"},
+				{"name":"userId","value":"someIdInUserStorage"},
+				{"name":"loginId","value":"someLoginId"},
+				{"name":"firstName","value":"someFirstName"},
+				{"name":"lastName","value":"someLastName"}]
+				,"name":"authToken"},
+				"actionLinks":{
+				"renew":{
+				"requestMethod":"POST",
+				"rel":"renew",
+				"url":"{protocol}://localhost:8080/login/rest/authToken/someTokenId",
+				"accept":"application/vnd.uub.authToken+json"},
+				"delete":{"requestMethod":"DELETE",
+				"rel":"delete",
+				"url":"{protocol}://localhost:8080/login/rest/authToken/someTokenId"}
+				}}""".replace("\n", "").replace("{protocol}", protocol);
 	}
 
 	@Test
