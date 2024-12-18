@@ -29,12 +29,17 @@ import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
+
 	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
-			"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
+			"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
+			Optional.of("someLastName"));
+	// public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
+	// "someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
 
 	public GatekeeperTokenProviderSpy() {
 		MCR.useMRV(MRV);
 		MRV.setDefaultReturnValuesSupplier("getAuthTokenForUserInfo", () -> authToken);
+		MRV.setDefaultReturnValuesSupplier("renewAuthToken", () -> authToken);
 	}
 
 	@Override
@@ -43,8 +48,13 @@ public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 	}
 
 	@Override
-	public void removeAuthToken(String tokenId, String authToken) {
-		MCR.addCall("idInUserStorage", tokenId, "authToken", authToken);
+	public void removeAuthToken(String tokenId, String token) {
+		MCR.addCall("tokenId", tokenId, "token", token);
+	}
+
+	@Override
+	public AuthToken renewAuthToken(String tokenId, String token) {
+		return (AuthToken) MCR.addCallAndReturnFromMRV("tokenId", tokenId, "token", token);
 	}
 
 }
