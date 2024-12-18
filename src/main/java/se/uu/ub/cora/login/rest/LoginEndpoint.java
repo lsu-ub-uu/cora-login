@@ -42,7 +42,6 @@ import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 public class LoginEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
 			.getSetting("loginPublicPathToSystem");
-	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
@@ -78,7 +77,7 @@ public class LoginEndpoint {
 
 	@POST
 	@Consumes("application/vnd.uub.login")
-	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
+	@Produces("application/vnd.uub.authToken+json")
 	@Path("apptoken")
 	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
@@ -139,7 +138,7 @@ public class LoginEndpoint {
 
 	@POST
 	@Consumes("application/vnd.uub.login")
-	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
+	@Produces("application/vnd.uub.authToken+json")
 	@Path("password")
 	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {

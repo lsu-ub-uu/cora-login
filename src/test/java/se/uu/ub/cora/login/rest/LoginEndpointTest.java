@@ -51,7 +51,6 @@ import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class LoginEndpointTest {
 	private static final String LOGIN_ID = "someLoginId";
-	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private LoginEndpoint loginEndpoint;
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
@@ -135,7 +134,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authToken+json");
 	}
 
 	@Test
@@ -287,7 +286,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authToken+json");
 	}
 
 	@Test
