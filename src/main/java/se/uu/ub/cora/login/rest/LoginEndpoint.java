@@ -76,9 +76,9 @@ public class LoginEndpoint {
 	}
 
 	@POST
+	@Path("apptoken")
 	@Consumes("application/vnd.uub.login")
 	@Produces("application/vnd.uub.authToken+json")
-	@Path("apptoken")
 	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForAppToken(credentialsAsString);
@@ -137,9 +137,9 @@ public class LoginEndpoint {
 	}
 
 	@POST
+	@Path("password")
 	@Consumes("application/vnd.uub.login")
 	@Produces("application/vnd.uub.authToken+json")
-	@Path("password")
 	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForPassword(credentialsAsString);
