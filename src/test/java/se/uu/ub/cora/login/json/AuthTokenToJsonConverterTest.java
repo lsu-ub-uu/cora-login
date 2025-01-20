@@ -44,6 +44,7 @@ public class AuthTokenToJsonConverterTest {
 
 		String json = converter.convertAuthTokenToJson();
 
+		// "workorder/record/authentication/datalist": {//vilket data flyttar vi
 		String expected = """
 				{
 				  "data": {
@@ -85,7 +86,8 @@ public class AuthTokenToJsonConverterTest {
 				    }
 				  }
 				}""";
-		;
+		// }
+
 		assertEquals(json, compactString(expected));
 	}
 
@@ -103,8 +105,9 @@ public class AuthTokenToJsonConverterTest {
 
 		String json = converter.convertAuthTokenToJson();
 
+		// "authToken": {
 		String expected = """
-								{
+				{
 				  "data": {
 				    "children": [
 				      {
@@ -151,8 +154,8 @@ public class AuthTokenToJsonConverterTest {
 				      "url": "someUrl"
 				    }
 				  }
-				}
-				""";
+				}""";
+		// }
 		assertEquals(json, compactString(expected));
 	}
 }
