@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -78,7 +78,7 @@ public class LoginEndpoint {
 	@POST
 	@Path("apptoken")
 	@Consumes("application/vnd.uub.login")
-	@Produces("application/vnd.uub.authToken+json")
+	@Produces("application/vnd.uub.authentication+json")
 	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForAppToken(credentialsAsString);
@@ -139,7 +139,7 @@ public class LoginEndpoint {
 	@POST
 	@Path("password")
 	@Consumes("application/vnd.uub.login")
-	@Produces("application/vnd.uub.authToken+json")
+	@Produces("application/vnd.uub.authentication+json")
 	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForPassword(credentialsAsString);
@@ -163,7 +163,7 @@ public class LoginEndpoint {
 
 	@POST
 	@Path("authToken/{tokenId}")
-	@Produces("application/vnd.uub.authToken+json")
+	@Produces("application/vnd.uub.authentication+json")
 	public Response renewAuthToken(@HeaderParam("authToken") String token,
 			@PathParam("tokenId") String tokenId) {
 		try {

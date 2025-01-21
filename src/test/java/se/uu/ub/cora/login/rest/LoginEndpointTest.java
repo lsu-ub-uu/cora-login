@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -134,7 +134,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authToken+json");
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
 	}
 
 	@Test
@@ -218,26 +218,41 @@ public class LoginEndpointTest {
 	}
 
 	private String expectedAutToken(String protocol) {
-		return """
-				{"data":{"children":[
-				{"name":"token","value":"someAuthToken"},
-				{"name":"validUntil","value":"100"},
-				{"name":"renewUntil","value":"200"},
-				{"name":"userId","value":"someIdInUserStorage"},
-				{"name":"loginId","value":"someLoginId"},
-				{"name":"firstName","value":"someFirstName"},
-				{"name":"lastName","value":"someLastName"}]
-				,"name":"authToken"},
-				"actionLinks":{
-				"renew":{
-				"requestMethod":"POST",
-				"rel":"renew",
-				"url":"{protocol}://localhost:8080/login/rest/authToken/someTokenId",
-				"accept":"application/vnd.uub.authToken+json"},
-				"delete":{"requestMethod":"DELETE",
-				"rel":"delete",
-				"url":"{protocol}://localhost:8080/login/rest/authToken/someTokenId"}
-				}}""".replace("\n", "").replace("{protocol}", protocol);
+		String authenticationAnswer = """
+				{
+				  "authentication": {
+				    "data": {
+				      "children": [
+				        {"name": "token"     , "value": "someAuthToken"      },
+				        {"name": "validUntil", "value": "100"                },
+				        {"name": "renewUntil", "value": "200"                },
+				        {"name": "userId"    , "value": "someIdInUserStorage"},
+				        {"name": "loginId"   , "value": "someLoginId"        },
+				        {"name": "firstName" , "value": "someFirstName"      },
+				        {"name": "lastName"  , "value": "someLastName"       }
+				      ],
+				      "name": "authToken"
+				    },
+				    "actionLinks": {
+				      "renew": {
+				        "requestMethod": "POST",
+				        "rel": "renew",
+				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId",
+				        "accept": "application/vnd.uub.authentication+json"
+				      },
+				      "delete": {
+				        "requestMethod": "DELETE",
+				        "rel": "delete",
+				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId"
+				      }
+				    }
+				  }
+				}""".replace("{protocol}", protocol);
+		return compactString(authenticationAnswer);
+	}
+
+	private String compactString(String stringIn) {
+		return stringIn.replace("\s", "").replace("\n", "");
 	}
 
 	@Test
@@ -286,7 +301,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authToken+json");
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
 	}
 
 	@Test
@@ -344,7 +359,7 @@ public class LoginEndpointTest {
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "authToken/{tokenId}");
 		annotationHelper.assertPathParamAnnotationByNameAndPosition("tokenId", 1);
 		annotationHelper.assertAuthTokenHeaderAnnotationForPosition(0);
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authToken+json");
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
 	}
 
 	@Test

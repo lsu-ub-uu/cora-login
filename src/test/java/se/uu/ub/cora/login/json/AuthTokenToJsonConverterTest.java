@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Uppsala University Library
+ * Copyright 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -44,51 +44,36 @@ public class AuthTokenToJsonConverterTest {
 
 		String json = converter.convertAuthTokenToJson();
 
-		// "workorder/record/authentication/datalist": {//vilket data flyttar vi
-		String expected = """
+		String expectedJson = """
 				{
-				  "data": {
-				    "children": [
-				      {
-				        "name": "token",
-				        "value": "someToken"
-				      },
-				      {
-				        "name": "validUntil",
-				        "value": "100"
-				      },
-				      {
-				        "name": "renewUntil",
-				        "value": "200"
-				      },
-				      {
-				        "name": "userId",
-				        "value": "someIdInUserStorage"
-				      },
-				      {
-				        "name": "loginId",
-				        "value": "someLoginId"
-				      }
-				    ],
-				    "name": "authToken"
-				  },
-				  "actionLinks": {
-				    "renew": {
-				      "requestMethod": "POST",
-				      "rel": "renew",
-				      "url": "someUrl",
-				      "accept": "application/vnd.uub.authToken+json"
+				  "authentication": {
+				    "data": {
+				      "children": [
+				        {"name": "token"     , "value": "someToken"          },
+				        {"name": "validUntil", "value": "100"                },
+				        {"name": "renewUntil", "value": "200"                },
+				        {"name": "userId"    , "value": "someIdInUserStorage"},
+				        {"name": "loginId"   , "value": "someLoginId"        }
+				      ],
+				      "name": "authToken"
 				    },
-				    "delete": {
-				      "requestMethod": "DELETE",
-				      "rel": "delete",
-				      "url": "someUrl"
+				    "actionLinks": {
+				      "renew": {
+				        "requestMethod": "POST"                              ,
+				        "rel"          : "renew"                             ,
+				        "url"          : "someUrl"                           ,
+				        "accept"       : "application/vnd.uub.authentication+json"
+				      },
+				      "delete": {
+				        "requestMethod": "DELETE",
+				        "rel": "delete",
+				        "url": "someUrl"}
 				    }
 				  }
-				}""";
-		// }
+				}
+				""";
 
-		assertEquals(json, compactString(expected));
+		assertEquals(json, compactString(expectedJson));
 	}
 
 	private String compactString(String string) {
@@ -97,7 +82,6 @@ public class AuthTokenToJsonConverterTest {
 
 	@Test
 	public void testAuthTokenToJsonConverterWithName() {
-
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 				Optional.of("someLastName"));
@@ -105,57 +89,37 @@ public class AuthTokenToJsonConverterTest {
 
 		String json = converter.convertAuthTokenToJson();
 
-		// "authToken": {
-		String expected = """
+		String expectedJson = """
 				{
-				  "data": {
-				    "children": [
-				      {
-				        "name": "token",
-				        "value": "someToken"
-				      },
-				      {
-				        "name": "validUntil",
-				        "value": "100"
-				      },
-				      {
-				        "name": "renewUntil",
-				        "value": "200"
-				      },
-				      {
-				        "name": "userId",
-				        "value": "someIdInUserStorage"
-				      },
-				      {
-				        "name": "loginId",
-				        "value": "someLoginId"
-				      },
-				      {
-				        "name": "firstName",
-				        "value": "someFirstName"
-				      },
-				      {
-				        "name": "lastName",
-				        "value": "someLastName"
-				      }
-				    ],
-				    "name": "authToken"
-				  },
-				  "actionLinks": {
-				    "renew": {
-				      "requestMethod": "POST",
-				      "rel": "renew",
-				      "url": "someUrl",
-				      "accept": "application/vnd.uub.authToken+json"
+				  "authentication": {
+				    "data": {
+				      "children": [
+				        {"name": "token"     , "value": "someToken"          },
+				        {"name": "validUntil", "value": "100"                },
+				        {"name": "renewUntil", "value": "200"                },
+				        {"name": "userId"    , "value": "someIdInUserStorage"},
+				        {"name": "loginId"   , "value": "someLoginId"        },
+				        {"name": "firstName" , "value": "someFirstName"      },
+				        {"name": "lastName"  , "value": "someLastName"       }
+				      ],
+				      "name": "authToken"
 				    },
-				    "delete": {
-				      "requestMethod": "DELETE",
-				      "rel": "delete",
-				      "url": "someUrl"
+				    "actionLinks": {
+				      "renew": {
+				        "requestMethod": "POST"                              ,
+				        "rel"          : "renew"                             ,
+				        "url"          : "someUrl"                           ,
+				        "accept"       : "application/vnd.uub.authentication+json"
+				      },
+				      "delete": {
+				        "requestMethod": "DELETE",
+				        "rel": "delete",
+				        "url": "someUrl"}
 				    }
 				  }
-				}""";
+				}
+				""";
 		// }
-		assertEquals(json, compactString(expected));
+		assertEquals(json, compactString(expectedJson));
 	}
 }
