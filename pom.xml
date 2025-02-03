@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>2.6.0</version>
+		<version>2.7.0</version>
 	</parent>
 
 	<artifactId>login</artifactId>
@@ -31,11 +31,11 @@
 		<password.version>1.8.0</password.version>
 		<logger.version>2.10.0</logger.version>
 		<loggerspies.version>1.5.0</loggerspies.version>
-		<gatekeepertokenprovider.version>2.16-SNAPSHOT</gatekeepertokenprovider.version>
+		<gatekeepertokenprovider.version>2.16.0</gatekeepertokenprovider.version>
 		<initialize.version>1.6.0</initialize.version>
 		<initialize-spies.version>1.6.0</initialize-spies.version>
 		<servlet-api.version>6.1.0</servlet-api.version>
-		<jersey.version>3.1.9</jersey.version>
+		<jersey.version>3.1.10</jersey.version>
 		<testutils.version>1.14.0</testutils.version>
 	</properties>
 
