@@ -29,7 +29,7 @@ public class PasswordLoginSpy implements PasswordLogin {
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 	public MethodReturnValues MRV = new MethodReturnValues();
 
-	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 278,
+	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 			"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 			Optional.of("someLastName"));
 

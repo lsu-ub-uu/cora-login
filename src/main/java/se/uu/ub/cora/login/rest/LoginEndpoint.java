@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -42,7 +42,6 @@ import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 public class LoginEndpoint {
 	public static final String PATH_TO_SYSTEM = SettingsProvider
 			.getSetting("loginPublicPathToSystem");
-	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private static final int AFTERHTTP = 10;
 	private String url;
 	private HttpServletRequest request;
@@ -77,9 +76,9 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	@Consumes("application/vnd.uub.login")
-	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
 	@Path("apptoken")
+	@Consumes("application/vnd.uub.login")
+	@Produces("application/vnd.uub.authentication+json")
 	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForAppToken(credentialsAsString);
@@ -111,7 +110,7 @@ public class LoginEndpoint {
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
 		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
-		URI uri = new URI("authToken/");
+		URI uri = new URI("authToken/" + authToken.tokenId());
 		return Response.created(uri).entity(json).build();
 	}
 
@@ -138,9 +137,9 @@ public class LoginEndpoint {
 	}
 
 	@POST
-	@Consumes("application/vnd.uub.login")
-	@Produces(APPLICATION_VND_UUB_RECORD_JSON)
 	@Path("password")
+	@Consumes("application/vnd.uub.login")
+	@Produces("application/vnd.uub.authentication+json")
 	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForPassword(credentialsAsString);
@@ -162,21 +161,45 @@ public class LoginEndpoint {
 		return passwordLogin.getAuthToken(credentials.loginId(), credentials.secret());
 	}
 
-	@DELETE
+	@POST
 	@Path("authToken/{tokenId}")
-	public Response removeAuthTokenForAppToken(@HeaderParam("authToken") String authToken,
+	@Produces("application/vnd.uub.authentication+json")
+	public Response renewAuthToken(@HeaderParam("authToken") String token,
 			@PathParam("tokenId") String tokenId) {
 		try {
-			return tryToRemoveAuthToken(tokenId, authToken);
+			return tryToRenewAuthToken(tokenId, token);
+		} catch (Exception error) {
+			return buildResponseUsingStatus(Response.Status.UNAUTHORIZED);
+		}
+	}
+
+	private Response tryToRenewAuthToken(String tokenId, String token) {
+		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
+				.getGatekeeperTokenProvider();
+		AuthToken renewedAuthToken = gatekeeperTokenProvider.renewAuthToken(tokenId, token);
+		return buildResponseOKUsingAuthToken(renewedAuthToken);
+	}
+
+	Response buildResponseOKUsingAuthToken(AuthToken authToken) {
+		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
+		return Response.ok().entity(json).build();
+	}
+
+	@DELETE
+	@Path("authToken/{tokenId}")
+	public Response removeAuthTokenForAppToken(@HeaderParam("authToken") String token,
+			@PathParam("tokenId") String tokenId) {
+		try {
+			return tryToRemoveAuthToken(tokenId, token);
 		} catch (Exception error) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}
 
-	private Response tryToRemoveAuthToken(String tokenId, String authToken) {
+	private Response tryToRemoveAuthToken(String tokenId, String token) {
 		GatekeeperTokenProvider gatekeeperTokenProvider = GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
-		gatekeeperTokenProvider.removeAuthToken(tokenId, authToken);
+		gatekeeperTokenProvider.removeAuthToken(tokenId, token);
 		return buildResponseUsingStatus(Status.OK);
 	}
 }

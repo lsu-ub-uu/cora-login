@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Uppsala University Library
+ * Copyright 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -39,29 +39,56 @@ public final class AuthTokenToJsonConverter {
 	}
 
 	public String convertAuthTokenToJson() {
-		JsonObjectBuilder everythingBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
-		createAuthTokenBuilder(everythingBuilder);
-		createActionLinksBuilder(everythingBuilder);
-		return everythingBuilder.toJsonFormattedString();
+		JsonObjectBuilder everyThingBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		createAuthetication(everyThingBuilder);
+		return everyThingBuilder.toJsonFormattedString();
 	}
 
-	private void createAuthTokenBuilder(JsonObjectBuilder everythingBuilder) {
-		JsonObjectBuilder authTokenBuilder = createObjectBuilderWithName("authToken");
-		everythingBuilder.addKeyJsonObjectBuilder("data", authTokenBuilder);
-		JsonArrayBuilder userChildren = returnAndAddChildrenToBuilder(authTokenBuilder);
+	private void createAuthetication(JsonObjectBuilder everyThingBuilder) {
+		JsonObjectBuilder authenticationBuilder = orgJsonBuilderFactoryAdapter
+				.createObjectBuilder();
 
-		addTokenToJson(authToken, userChildren);
-		addValidForNoSecondsToJson(authToken, userChildren);
+		createData(authenticationBuilder);
+		createActionLinksBuilder(authenticationBuilder);
+		everyThingBuilder.addKeyJsonObjectBuilder("authentication", authenticationBuilder);
+	}
+
+	private void createData(JsonObjectBuilder everythingBuilder) {
+		JsonObjectBuilder authTokenBuilder = createAuthToken();
+		everythingBuilder.addKeyJsonObjectBuilder("data", authTokenBuilder);
+	}
+
+	private JsonObjectBuilder createAuthToken() {
+		JsonObjectBuilder authTokenBuilder = createObjectBuilderWithName("authToken");
+		JsonArrayBuilder userChildren = createChildrenArrayBuilder(authTokenBuilder);
+		addChildren(userChildren);
+		return authTokenBuilder;
+	}
+
+	private void addChildren(JsonArrayBuilder userChildren) {
+		addTokenToJson(userChildren);
+		addValidUntilToJson(userChildren);
+		addRenewUntilToJson(userChildren);
 		addUserIdToJson(userChildren);
-		addLoginIdToJson(authToken, userChildren);
-		possiblyAddFirstnameAndLastnameToJson(authToken, userChildren);
+		addLoginIdToJson(userChildren);
+		possiblyAddFirstnameAndLastnameToJson(userChildren);
 	}
 
 	private void createActionLinksBuilder(JsonObjectBuilder everythingBuilder) {
 		JsonObjectBuilder actionLinksBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
 		everythingBuilder.addKeyJsonObjectBuilder("actionLinks", actionLinksBuilder);
 
+		createRenewBuilder(actionLinksBuilder);
 		createDeleteBuilder(actionLinksBuilder);
+	}
+
+	private void createRenewBuilder(JsonObjectBuilder actionLinksBuilder) {
+		JsonObjectBuilder builder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
+		actionLinksBuilder.addKeyJsonObjectBuilder("renew", builder);
+		builder.addKeyString("requestMethod", "POST");
+		builder.addKeyString("accept", "application/vnd.uub.authentication+json");
+		builder.addKeyString("rel", "renew");
+		builder.addKeyString("url", url);
 	}
 
 	private void createDeleteBuilder(JsonObjectBuilder actionLinksBuilder) {
@@ -78,21 +105,27 @@ public final class AuthTokenToJsonConverter {
 		return roleBuilder;
 	}
 
-	private void addTokenToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+	private void addTokenToJson(JsonArrayBuilder userChildren) {
 		JsonObjectBuilder id = createObjectBuilderWithName("token");
 		id.addKeyString(VALUE, authToken.token());
 		userChildren.addJsonObjectBuilder(id);
 	}
 
-	private void addValidForNoSecondsToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
-		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("validForNoSeconds");
-		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.validForNoSeconds()));
+	private void addValidUntilToJson(JsonArrayBuilder userChildren) {
+		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("validUntil");
+		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.validUntil()));
 		userChildren.addJsonObjectBuilder(validForNoSeconds);
 	}
 
-	private JsonArrayBuilder returnAndAddChildrenToBuilder(JsonObjectBuilder userBuilder) {
+	private void addRenewUntilToJson(JsonArrayBuilder userChildren) {
+		JsonObjectBuilder validForNoSeconds = createObjectBuilderWithName("renewUntil");
+		validForNoSeconds.addKeyString(VALUE, String.valueOf(authToken.renewUntil()));
+		userChildren.addJsonObjectBuilder(validForNoSeconds);
+	}
+
+	private JsonArrayBuilder createChildrenArrayBuilder(JsonObjectBuilder authTokenBuilder) {
 		JsonArrayBuilder userChildren = orgJsonBuilderFactoryAdapter.createArrayBuilder();
-		userBuilder.addKeyJsonArrayBuilder(CHILDREN, userChildren);
+		authTokenBuilder.addKeyJsonArrayBuilder(CHILDREN, userChildren);
 		return userChildren;
 	}
 
@@ -102,19 +135,18 @@ public final class AuthTokenToJsonConverter {
 		userChildren.addJsonObjectBuilder(userId);
 	}
 
-	private void addLoginIdToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+	private void addLoginIdToJson(JsonArrayBuilder userChildren) {
 		JsonObjectBuilder loginId = createObjectBuilderWithName("loginId");
 		loginId.addKeyString(VALUE, String.valueOf(authToken.loginId()));
 		userChildren.addJsonObjectBuilder(loginId);
 	}
 
-	private void possiblyAddFirstnameAndLastnameToJson(AuthToken authToken,
-			JsonArrayBuilder userChildren) {
-		possiblyAddFirstNameToJson(authToken, userChildren);
-		possiblyAddLastNameToJson(authToken, userChildren);
+	private void possiblyAddFirstnameAndLastnameToJson(JsonArrayBuilder userChildren) {
+		possiblyAddFirstNameToJson(userChildren);
+		possiblyAddLastNameToJson(userChildren);
 	}
 
-	private void possiblyAddFirstNameToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+	private void possiblyAddFirstNameToJson(JsonArrayBuilder userChildren) {
 		if (authToken.firstName().isPresent()) {
 			JsonObjectBuilder firstName = createObjectBuilderWithName("firstName");
 			firstName.addKeyString(VALUE, String.valueOf(authToken.firstName().get()));
@@ -122,7 +154,7 @@ public final class AuthTokenToJsonConverter {
 		}
 	}
 
-	private void possiblyAddLastNameToJson(AuthToken authToken, JsonArrayBuilder userChildren) {
+	private void possiblyAddLastNameToJson(JsonArrayBuilder userChildren) {
 		if (authToken.lastName().isPresent()) {
 			JsonObjectBuilder lastName = createObjectBuilderWithName("lastName");
 			lastName.addKeyString(VALUE, String.valueOf(authToken.lastName().get()));

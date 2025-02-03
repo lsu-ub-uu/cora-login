@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018, 2021, 2022, 2024 Uppsala University Library
+ * Copyright 2017, 2018, 2021, 2022, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -34,13 +34,13 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
 import se.uu.ub.cora.login.LoginFactoryImp;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.spies.AppTokenLoginSpy;
-import se.uu.ub.cora.login.spies.GatekeeperTokenProviderErrorSpy;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 import se.uu.ub.cora.login.spies.HttpServletRequestSpy;
 import se.uu.ub.cora.login.spies.LoginFactorySpy;
@@ -51,7 +51,6 @@ import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class LoginEndpointTest {
 	private static final String LOGIN_ID = "someLoginId";
-	private static final String APPLICATION_VND_UUB_RECORD_JSON = "application/vnd.uub.record+json";
 	private LoginEndpoint loginEndpoint;
 	private HttpServletRequestSpy request;
 	private GatekeeperTokenProviderSpy gatekeeperTokenProvider;
@@ -135,7 +134,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
 	}
 
 	@Test
@@ -202,32 +201,58 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
-		AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 278,
+		AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 				Optional.of("someLastName"));
 
 		Response response = loginEndpoint.buildResponseUsingAuthToken(authToken);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
-		String expectedJsonToken = """
-				{"data":{"children":[\
-				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"userId","value":"someIdInUserStorage"},\
-				{"name":"loginId","value":"someLoginId"},\
-				{"name":"firstName","value":"someFirstName"},\
-				{"name":"lastName","value":"someLastName"}]\
-				,"name":"authToken"},\
-				"actionLinks":{"delete":{"requestMethod":"DELETE",\
-				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someTokenId"}}}\
-				""";
+		assertEquals(response.getLocation().toString(), "authToken/someTokenId");
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedJsonToken);
+		assertEquals(entity, expectedAutToken("http"));
 	}
 
 	private void assertResponseStatusIs(Response response, Status excpectedResponseStatus) {
 		assertEquals(response.getStatusInfo(), excpectedResponseStatus);
+	}
+
+	private String expectedAutToken(String protocol) {
+		String authenticationAnswer = """
+				{
+				  "authentication": {
+				    "data": {
+				      "children": [
+				        {"name": "token"     , "value": "someAuthToken"      },
+				        {"name": "validUntil", "value": "100"                },
+				        {"name": "renewUntil", "value": "200"                },
+				        {"name": "userId"    , "value": "someIdInUserStorage"},
+				        {"name": "loginId"   , "value": "someLoginId"        },
+				        {"name": "firstName" , "value": "someFirstName"      },
+				        {"name": "lastName"  , "value": "someLastName"       }
+				      ],
+				      "name": "authToken"
+				    },
+				    "actionLinks": {
+				      "renew": {
+				        "requestMethod": "POST",
+				        "rel": "renew",
+				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId",
+				        "accept": "application/vnd.uub.authentication+json"
+				      },
+				      "delete": {
+				        "requestMethod": "DELETE",
+				        "rel": "delete",
+				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId"
+				      }
+				    }
+				  }
+				}""".replace("{protocol}", protocol);
+		return compactString(authenticationAnswer);
+	}
+
+	private String compactString(String stringIn) {
+		return stringIn.replace("\s", "").replace("\n", "");
 	}
 
 	@Test
@@ -238,21 +263,8 @@ public class LoginEndpointTest {
 		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
-		String expectedJsonToken = """
-				{"data":{"children":[\
-				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"userId","value":"someIdInUserStorage"},\
-				{"name":"loginId","value":"someLoginId"},\
-				{"name":"firstName","value":"someFirstName"},\
-				{"name":"lastName","value":"someLastName"}]\
-				,"name":"authToken"},\
-				"actionLinks":{"delete":{"requestMethod":"DELETE",\
-				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someTokenId"}}}\
-				""";
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedJsonToken);
+		assertEquals(entity, expectedAutToken("https"));
 	}
 
 	@Test
@@ -265,21 +277,8 @@ public class LoginEndpointTest {
 		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
-		String expectedJsonToken = """
-				{"data":{"children":[\
-				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"userId","value":"someIdInUserStorage"},\
-				{"name":"loginId","value":"someLoginId"},\
-				{"name":"firstName","value":"someFirstName"},\
-				{"name":"lastName","value":"someLastName"}]\
-				,"name":"authToken"},\
-				"actionLinks":{"delete":{"requestMethod":"DELETE",\
-				"rel":"delete",\
-				"url":"https://localhost:8080/login/rest/authToken/someTokenId"}}}\
-				""";
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedJsonToken);
+		assertEquals(entity, expectedAutToken("https"));
 	}
 
 	@Test
@@ -290,21 +289,8 @@ public class LoginEndpointTest {
 		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
-		String expectedJsonToken = """
-				{"data":{"children":[\
-				{"name":"token","value":"someAuthToken"},\
-				{"name":"validForNoSeconds","value":"278"},\
-				{"name":"userId","value":"someIdInUserStorage"},\
-				{"name":"loginId","value":"someLoginId"},\
-				{"name":"firstName","value":"someFirstName"},\
-				{"name":"lastName","value":"someLastName"}]\
-				,"name":"authToken"},\
-				"actionLinks":{"delete":{"requestMethod":"DELETE",\
-				"rel":"delete",\
-				"url":"http://localhost:8080/login/rest/authToken/someTokenId"}}}\
-				""";
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedJsonToken);
+		assertEquals(entity, expectedAutToken("http"));
 	}
 
 	@Test
@@ -315,7 +301,7 @@ public class LoginEndpointTest {
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password");
 		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation(APPLICATION_VND_UUB_RECORD_JSON);
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
 	}
 
 	@Test
@@ -365,6 +351,39 @@ public class LoginEndpointTest {
 	}
 
 	@Test
+	public void testRenewAuthToken_Annotations() throws Exception {
+		AnnotationTestHelper annotationHelper = AnnotationTestHelper
+				.createAnnotationTestHelperForClassMethodNameAndNumOfParameters(LoginEndpoint.class,
+						"renewAuthToken", 2);
+
+		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "authToken/{tokenId}");
+		annotationHelper.assertPathParamAnnotationByNameAndPosition("tokenId", 1);
+		annotationHelper.assertAuthTokenHeaderAnnotationForPosition(0);
+		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
+	}
+
+	@Test
+	public void testRenewAuthTokenUnauthorized() throws Exception {
+		gatekeeperTokenProvider.MRV.setAlwaysThrowException("renewAuthToken",
+				new AuthenticationException("someError"));
+
+		Response response = loginEndpoint.renewAuthToken("someToken", "someTokenId");
+
+		assertResponseStatusIs(response, Response.Status.UNAUTHORIZED);
+	}
+
+	@Test
+	public void testRenewAuthTokenOK() throws Exception {
+		Response response = loginEndpoint.renewAuthToken("someToken", "someTokenId");
+
+		gatekeeperTokenProvider.MCR.assertParameters("renewAuthToken", 0, "someTokenId",
+				"someToken");
+		assertResponseStatusIs(response, Response.Status.OK);
+		String entity = (String) response.getEntity();
+		assertEquals(entity, expectedAutToken("http"));
+	}
+
+	@Test
 	public void testRemoveAuthTokenForUser() {
 		Response response = loginEndpoint.removeAuthTokenForAppToken("someAuthToken",
 				"someTokenId");
@@ -376,11 +395,10 @@ public class LoginEndpointTest {
 
 	@Test
 	public void testRemoveAuthTokenForUserWrongToken() {
-		GatekeeperTokenProviderErrorSpy gatekeeperTokenProvider = new GatekeeperTokenProviderErrorSpy();
-		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		gatekeeperTokenProvider.MRV.setAlwaysThrowException("removeAuthToken",
+				new AuthenticationException("someError"));
 
-		Response response = loginEndpoint.removeAuthTokenForAppToken("someTokenId",
-				"someAuthTokenNotFound");
+		Response response = loginEndpoint.removeAuthTokenForAppToken("someToken", "someTokenId");
 
 		assertResponseStatusIs(response, Response.Status.NOT_FOUND);
 	}

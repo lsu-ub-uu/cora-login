@@ -107,10 +107,10 @@ public class LoginModuleInitializerTest {
 		GatekeeperTokenProviderImp gatekeeperTokenProvider = (GatekeeperTokenProviderImp) GatekeeperInstanceProvider
 				.getGatekeeperTokenProvider();
 		assertTrue(gatekeeperTokenProvider instanceof GatekeeperTokenProviderImp);
-		String gatekeeperUrl = gatekeeperTokenProvider.getGatekeeperUrl();
+		String gatekeeperUrl = gatekeeperTokenProvider.onlyForTestGetGatekeeperUrl();
 		assertEquals(gatekeeperUrl, SettingsProvider.getSetting("gatekeeperURL"));
 
-		HttpHandlerFactory httpHandlerFactory = gatekeeperTokenProvider.getHttpHandlerFactory();
+		HttpHandlerFactory httpHandlerFactory = gatekeeperTokenProvider.onlyForTersGetHttpHandlerFactory();
 		assertTrue(httpHandlerFactory instanceof HttpHandlerFactoryImp);
 	}
 }
