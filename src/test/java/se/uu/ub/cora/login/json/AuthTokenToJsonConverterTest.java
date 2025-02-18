@@ -21,7 +21,10 @@ package se.uu.ub.cora.login.json;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -37,9 +40,10 @@ public class AuthTokenToJsonConverterTest {
 	}
 
 	@Test
-	public void testAuthTokenToJsonConverter() {
+	public void testAuthTokenToJsonConverterWithOutNamesAndWithoutPermissionUnits() {
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
-				"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
+				"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty(),
+				Collections.emptySet());
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 
 		String json = converter.convertAuthTokenToJson();
@@ -81,10 +85,10 @@ public class AuthTokenToJsonConverterTest {
 	}
 
 	@Test
-	public void testAuthTokenToJsonConverterWithName() {
+	public void testAuthTokenToJsonConverterWithNameAndOnePermissionUnit() {
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
-				Optional.of("someLastName"));
+				Optional.of("someLastName"), Set.of("001"));
 		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
 
 		String json = converter.convertAuthTokenToJson();
@@ -94,32 +98,101 @@ public class AuthTokenToJsonConverterTest {
 				  "authentication": {
 				    "data": {
 				      "children": [
-				        {"name": "token"     , "value": "someToken"          },
-				        {"name": "validUntil", "value": "100"                },
-				        {"name": "renewUntil", "value": "200"                },
-				        {"name": "userId"    , "value": "someIdInUserStorage"},
-				        {"name": "loginId"   , "value": "someLoginId"        },
-				        {"name": "firstName" , "value": "someFirstName"      },
-				        {"name": "lastName"  , "value": "someLastName"       }
+				        {"name": "token", "value": "someToken"},
+				        {"name": "validUntil", "value": "100"},
+				        {"name": "renewUntil", "value": "200"},
+				        {"name": "userId", "value": "someIdInUserStorage"},
+				        {"name": "loginId", "value": "someLoginId"},
+				        {"name": "firstName", "value": "someFirstName"},
+				        {"name": "lastName", "value": "someLastName"},
+				        {
+				          "repeatid": "1",
+				          "children": [
+				            {"name": "linkedRecordType", "value": "permissionUnit"},
+				            {"name": "linkedRecordId", "value": "001"}
+				          ],
+				          "name": "permissionUnit"
+				        }
 				      ],
 				      "name": "authToken"
 				    },
 				    "actionLinks": {
 				      "renew": {
-				        "requestMethod": "POST"                              ,
-				        "rel"          : "renew"                             ,
-				        "url"          : "someUrl"                           ,
-				        "accept"       : "application/vnd.uub.authentication+json"
+				        "requestMethod": "POST",
+				        "rel": "renew",
+				        "url": "someUrl",
+				        "accept": "application/vnd.uub.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
 				        "rel": "delete",
-				        "url": "someUrl"}
+				        "url": "someUrl"
+				      }
 				    }
 				  }
-				}
-				""";
-		// }
+				}""";
+		assertEquals(json, compactString(expectedJson));
+	}
+
+	@Test
+	public void testAuthTokenToJsonConverterWithNameAndTwoPermissionUnits() {
+		Set<String> permissionUnits = new LinkedHashSet<>();
+		permissionUnits.add("001");
+		permissionUnits.add("002");
+
+		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
+				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
+				Optional.of("someLastName"), permissionUnits);
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
+
+		String json = converter.convertAuthTokenToJson();
+
+		String expectedJson = """
+				{
+				  "authentication": {
+				    "data": {
+				      "children": [
+				        {"name": "token", "value": "someToken"},
+				        {"name": "validUntil", "value": "100"},
+				        {"name": "renewUntil", "value": "200"},
+				        {"name": "userId", "value": "someIdInUserStorage"},
+				        {"name": "loginId", "value": "someLoginId"},
+				        {"name": "firstName", "value": "someFirstName"},
+				        {"name": "lastName", "value": "someLastName"},
+				        {
+				          "repeatid": "1",
+				          "children": [
+				            {"name": "linkedRecordType", "value": "permissionUnit"},
+				            {"name": "linkedRecordId", "value": "001"}
+				          ],
+				          "name": "permissionUnit"
+				        },
+				        {
+				          "repeatid": "2",
+				          "children": [
+				            {"name": "linkedRecordType", "value": "permissionUnit"},
+				            {"name": "linkedRecordId", "value": "002"}
+				          ],
+				          "name": "permissionUnit"
+				        }
+				      ],
+				      "name": "authToken"
+				    },
+				    "actionLinks": {
+				      "renew": {
+				        "requestMethod": "POST",
+				        "rel": "renew",
+				        "url": "someUrl",
+				        "accept": "application/vnd.uub.authentication+json"
+				      },
+				      "delete": {
+				        "requestMethod": "DELETE",
+				        "rel": "delete",
+				        "url": "someUrl"
+				      }
+				    }
+				  }
+				}""";
 		assertEquals(json, compactString(expectedJson));
 	}
 }
