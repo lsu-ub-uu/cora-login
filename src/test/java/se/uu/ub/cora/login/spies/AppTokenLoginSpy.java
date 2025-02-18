@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.login.spies;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
@@ -31,7 +32,7 @@ public class AppTokenLoginSpy implements AppTokenLogin {
 
 	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 			"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
-			Optional.of("someLastName"));
+			Optional.of("someLastName"), Collections.emptySet());
 
 	public AppTokenLoginSpy() {
 		MCR.useMRV(MRV);

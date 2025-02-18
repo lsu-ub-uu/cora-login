@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.login.spies;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
@@ -32,9 +33,7 @@ public class GatekeeperTokenProviderSpy implements GatekeeperTokenProvider {
 
 	public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 			"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
-			Optional.of("someLastName"));
-	// public AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
-	// "someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty());
+			Optional.of("someLastName"), Collections.emptySet());
 
 	public GatekeeperTokenProviderSpy() {
 		MCR.useMRV(MRV);

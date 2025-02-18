@@ -72,6 +72,7 @@ public final class AuthTokenToJsonConverter {
 		addUserIdToJson(userChildren);
 		addLoginIdToJson(userChildren);
 		possiblyAddFirstnameAndLastnameToJson(userChildren);
+		possiblyAddPermissionUnitsToJson(userChildren);
 	}
 
 	private void createActionLinksBuilder(JsonObjectBuilder everythingBuilder) {
@@ -160,5 +161,33 @@ public final class AuthTokenToJsonConverter {
 			lastName.addKeyString(VALUE, String.valueOf(authToken.lastName().get()));
 			userChildren.addJsonObjectBuilder(lastName);
 		}
+	}
+
+	private void possiblyAddPermissionUnitsToJson(JsonArrayBuilder userChildren) {
+		if (!authToken.permissionUnits().isEmpty()) {
+			int repeatId = 0;
+			for (String permissionUnit : authToken.permissionUnits()) {
+				repeatId++;
+				addPermissionUnitToJson(userChildren, permissionUnit, String.valueOf(repeatId));
+			}
+		}
+	}
+
+	private void addPermissionUnitToJson(JsonArrayBuilder userChildren, String linkedRecordId,
+			String repeatId) {
+		JsonObjectBuilder permissionUnit = createObjectBuilderWithName("permissionUnit");
+		JsonArrayBuilder permissionUnitChildren = orgJsonBuilderFactoryAdapter.createArrayBuilder();
+		permissionUnit.addKeyJsonArrayBuilder(CHILDREN, permissionUnitChildren);
+		permissionUnit.addKeyString("repeatid", repeatId);
+
+		JsonObjectBuilder type = createObjectBuilderWithName("linkedRecordType");
+		type.addKeyString(VALUE, "permissionUnit");
+		permissionUnitChildren.addJsonObjectBuilder(type);
+
+		JsonObjectBuilder id = createObjectBuilderWithName("linkedRecordId");
+		id.addKeyString(VALUE, linkedRecordId);
+		permissionUnitChildren.addJsonObjectBuilder(id);
+
+		userChildren.addJsonObjectBuilder(permissionUnit);
 	}
 }

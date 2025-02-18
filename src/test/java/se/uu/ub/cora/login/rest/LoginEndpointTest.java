@@ -22,6 +22,7 @@ package se.uu.ub.cora.login.rest;
 import static org.testng.Assert.assertEquals;
 
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
@@ -138,7 +139,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithAppToken() throws Exception {
+	public void testGetAuthTokenWithAppToken() {
 		loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_APPTOKEN);
 
 		loginFactory.MCR.assertMethodWasCalled("factorAppTokenLogin");
@@ -147,21 +148,20 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithAppToken_BuildResponse() throws Exception {
-		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
+	public void testGetAuthTokenWithAppToken_BuildResponse() {
+		LoginEndpointOnlyForTest loginEndpointOFT = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
+		Response response = loginEndpointOFT.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
 
 		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) appTokenLoginSpy.MCR
 				.getReturnValue("getAuthToken", 0);
-		loginEndpoint.MCR.assertParameters("buildResponseUsingAuthToken", 0,
+		loginEndpointOFT.MCR.assertParameters("buildResponseUsingAuthToken", 0,
 				authTokenFromGatekeeper);
-		loginEndpoint.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
+		loginEndpointOFT.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
 	}
 
 	@Test
-	public void testGetAuthTokenWithAppToken_LoginException_ResponseWithUnauthorized()
-			throws Exception {
+	public void testGetAuthTokenWithAppToken_LoginException_ResponseWithUnauthorized() {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
@@ -171,8 +171,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithAppToken_AnyException_ResponseWithInternalServerError()
-			throws Exception {
+	public void testGetAuthTokenWithAppToken_AnyException_ResponseWithInternalServerError() {
 		appTokenLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
 		Response response = loginEndpoint.getAuthTokenForAppToken(CREDENTIALS_WITH_PASSWORD);
@@ -203,7 +202,7 @@ public class LoginEndpointTest {
 	public void testBuildResponseUsingAuthToken_WithName() throws Exception {
 		AuthToken authToken = new AuthToken("someAuthToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
-				Optional.of("someLastName"));
+				Optional.of("someLastName"), Collections.emptySet());
 
 		Response response = loginEndpoint.buildResponseUsingAuthToken(authToken);
 
@@ -305,7 +304,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithPassword_PasswordLogin() throws Exception {
+	public void testGetAuthTokenWithPassword_PasswordLogin() {
 		loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
 		loginFactory.MCR.assertParameters("factorPasswordLogin", 0);
@@ -317,21 +316,20 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithPassword_BuildResponse() throws Exception {
-		LoginEndpointOnlyForTest loginEndpoint = new LoginEndpointOnlyForTest(request);
+	public void testGetAuthTokenWithPassword_BuildResponse() {
+		LoginEndpointOnlyForTest loginEndpointOFT = new LoginEndpointOnlyForTest(request);
 
-		Response response = loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
+		Response response = loginEndpointOFT.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
 
 		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) passwordLoginSpy.MCR
 				.getReturnValue("getAuthToken", 0);
-		loginEndpoint.MCR.assertParameters("buildResponseUsingAuthToken", 0,
+		loginEndpointOFT.MCR.assertParameters("buildResponseUsingAuthToken", 0,
 				authTokenFromGatekeeper);
-		loginEndpoint.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
+		loginEndpointOFT.MCR.assertReturn("buildResponseUsingAuthToken", 0, response);
 	}
 
 	@Test
-	public void testGetAuthTokenWithPassword_LoginException_ResponseWithUnauthorized()
-			throws Exception {
+	public void testGetAuthTokenWithPassword_LoginException_ResponseWithUnauthorized() {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken",
 				LoginException.withMessage("aSpyException"));
 
@@ -341,8 +339,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testGetAuthTokenWithPassword_AnyException_ResponseWithInternalServerError()
-			throws Exception {
+	public void testGetAuthTokenWithPassword_AnyException_ResponseWithInternalServerError() {
 		passwordLoginSpy.MRV.setAlwaysThrowException("getAuthToken", new RuntimeException());
 
 		Response response = loginEndpoint.getAuthTokenForPassword(CREDENTIALS_WITH_PASSWORD);
@@ -363,7 +360,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testRenewAuthTokenUnauthorized() throws Exception {
+	public void testRenewAuthTokenUnauthorized() {
 		gatekeeperTokenProvider.MRV.setAlwaysThrowException("renewAuthToken",
 				new AuthenticationException("someError"));
 
@@ -373,7 +370,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testRenewAuthTokenOK() throws Exception {
+	public void testRenewAuthTokenOK() {
 		Response response = loginEndpoint.renewAuthToken("someToken", "someTokenId");
 
 		gatekeeperTokenProvider.MCR.assertParameters("renewAuthToken", 0, "someTokenId",
