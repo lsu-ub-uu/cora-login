@@ -27,8 +27,8 @@
 	</build>
 
 	<properties>
-		<gatekeeper.version>5.1.0</gatekeeper.version>
-		<password.version>1.8.0</password.version>
+		<gatekeeper.version>5.2.0</gatekeeper.version>
+		<password.version>1.9.0</password.version>
 		<logger.version>2.10.0</logger.version>
 		<loggerspies.version>1.5.0</loggerspies.version>
 		<gatekeepertokenprovider.version>2.17.0</gatekeepertokenprovider.version>
