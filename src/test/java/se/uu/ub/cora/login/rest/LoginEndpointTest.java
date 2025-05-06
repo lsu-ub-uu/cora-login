@@ -134,8 +134,8 @@ public class LoginEndpointTest {
 						"getAuthTokenForAppToken", 1);
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "apptoken");
-		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
+		annotationHelper.assertConsumesAnnotation("application/vnd.cora.login");
+		annotationHelper.assertProducesAnnotation("application/vnd.cora.authentication+json");
 	}
 
 	@Test
@@ -237,7 +237,7 @@ public class LoginEndpointTest {
 				        "requestMethod": "POST",
 				        "rel": "renew",
 				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId",
-				        "accept": "application/vnd.uub.authentication+json"
+				        "accept": "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
@@ -299,8 +299,8 @@ public class LoginEndpointTest {
 						"getAuthTokenForPassword", 1);
 
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "password");
-		annotationHelper.assertConsumesAnnotation("application/vnd.uub.login");
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
+		annotationHelper.assertConsumesAnnotation("application/vnd.cora.login");
+		annotationHelper.assertProducesAnnotation("application/vnd.cora.authentication+json");
 	}
 
 	@Test
@@ -356,7 +356,7 @@ public class LoginEndpointTest {
 		annotationHelper.assertHttpMethodAndPathAnnotation("POST", "authToken/{tokenId}");
 		annotationHelper.assertPathParamAnnotationByNameAndPosition("tokenId", 1);
 		annotationHelper.assertAuthTokenHeaderAnnotationForPosition(0);
-		annotationHelper.assertProducesAnnotation("application/vnd.uub.authentication+json");
+		annotationHelper.assertProducesAnnotation("application/vnd.cora.authentication+json");
 	}
 
 	@Test

@@ -77,8 +77,8 @@ public class LoginEndpoint {
 
 	@POST
 	@Path("apptoken")
-	@Consumes("application/vnd.uub.login")
-	@Produces("application/vnd.uub.authentication+json")
+	@Consumes("application/vnd.cora.login")
+	@Produces("application/vnd.cora.authentication+json")
 	public Response getAuthTokenForAppToken(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForAppToken(credentialsAsString);
@@ -138,8 +138,8 @@ public class LoginEndpoint {
 
 	@POST
 	@Path("password")
-	@Consumes("application/vnd.uub.login")
-	@Produces("application/vnd.uub.authentication+json")
+	@Consumes("application/vnd.cora.login")
+	@Produces("application/vnd.cora.authentication+json")
 	public Response getAuthTokenForPassword(String credentialsAsString) {
 		try {
 			return tryToGetAuthTokenForPassword(credentialsAsString);
@@ -163,7 +163,7 @@ public class LoginEndpoint {
 
 	@POST
 	@Path("authToken/{tokenId}")
-	@Produces("application/vnd.uub.authentication+json")
+	@Produces("application/vnd.cora.authentication+json")
 	public Response renewAuthToken(@HeaderParam("authToken") String token,
 			@PathParam("tokenId") String tokenId) {
 		try {

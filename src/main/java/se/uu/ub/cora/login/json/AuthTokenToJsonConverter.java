@@ -87,7 +87,7 @@ public final class AuthTokenToJsonConverter {
 		JsonObjectBuilder builder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
 		actionLinksBuilder.addKeyJsonObjectBuilder("renew", builder);
 		builder.addKeyString("requestMethod", "POST");
-		builder.addKeyString("accept", "application/vnd.uub.authentication+json");
+		builder.addKeyString("accept", "application/vnd.cora.authentication+json");
 		builder.addKeyString("rel", "renew");
 		builder.addKeyString("url", url);
 	}

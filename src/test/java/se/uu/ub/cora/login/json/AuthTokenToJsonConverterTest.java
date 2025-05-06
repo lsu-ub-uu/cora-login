@@ -66,7 +66,7 @@ public class AuthTokenToJsonConverterTest {
 				        "requestMethod": "POST"                              ,
 				        "rel"          : "renew"                             ,
 				        "url"          : "someUrl"                           ,
-				        "accept"       : "application/vnd.uub.authentication+json"
+				        "accept"       : "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
@@ -121,7 +121,7 @@ public class AuthTokenToJsonConverterTest {
 				        "requestMethod": "POST",
 				        "rel": "renew",
 				        "url": "someUrl",
-				        "accept": "application/vnd.uub.authentication+json"
+				        "accept": "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
@@ -183,7 +183,7 @@ public class AuthTokenToJsonConverterTest {
 				        "requestMethod": "POST",
 				        "rel": "renew",
 				        "url": "someUrl",
-				        "accept": "application/vnd.uub.authentication+json"
+				        "accept": "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
