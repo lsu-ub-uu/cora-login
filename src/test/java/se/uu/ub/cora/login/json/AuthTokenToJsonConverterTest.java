@@ -44,9 +44,9 @@ public class AuthTokenToJsonConverterTest {
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.empty(), Optional.empty(),
 				Collections.emptySet());
-		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverterImp();
 
-		String json = converter.convertAuthTokenToJson();
+		String json = converter.convertAuthTokenToJson(authToken, url);
 
 		String expectedJson = """
 				{
@@ -89,9 +89,9 @@ public class AuthTokenToJsonConverterTest {
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 				Optional.of("someLastName"), Set.of("001"));
-		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverterImp();
 
-		String json = converter.convertAuthTokenToJson();
+		String json = converter.convertAuthTokenToJson(authToken, url);
 
 		String expectedJson = """
 				{
@@ -143,9 +143,9 @@ public class AuthTokenToJsonConverterTest {
 		AuthToken authToken = new AuthToken("someToken", "someTokenId", 100L, 200L,
 				"someIdInUserStorage", "someLoginId", Optional.of("someFirstName"),
 				Optional.of("someLastName"), permissionUnits);
-		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverter(authToken, url);
+		AuthTokenToJsonConverter converter = new AuthTokenToJsonConverterImp();
 
-		String json = converter.convertAuthTokenToJson();
+		String json = converter.convertAuthTokenToJson(authToken, url);
 
 		String expectedJson = """
 				{

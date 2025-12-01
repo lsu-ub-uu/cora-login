@@ -97,7 +97,7 @@ public class AppTokenLoginTest {
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
 			+ "Login failed.")
-	public void testGetAuthToken_ExceptionWhileGettingAuthToken() throws Exception {
+	public void testGetAuthToken_ExceptionWhileGettingAuthToken() {
 		userStorageView.MRV.setAlwaysThrowException("getUserByLoginId",
 				UserStorageViewException.usingMessage("someException"));
 
@@ -105,7 +105,7 @@ public class AppTokenLoginTest {
 	}
 
 	@Test
-	public void testGetAuthToken_CallsGetUser() throws Exception {
+	public void testGetAuthToken_CallsGetUser() {
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 
 		apptokenLogin.getAuthToken(SOME_LOGIN_ID, SOME_APP_TOKEN);
@@ -114,7 +114,7 @@ public class AppTokenLoginTest {
 	}
 
 	@Test
-	public void testGetAuthToken_UserIsNotActiveThrowLoginException() throws Exception {
+	public void testGetAuthToken_UserIsNotActiveThrowLoginException() {
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> true);
 		configureUser(user, false, Optional.empty(), "someAppTokenId1");
 		try {
@@ -127,10 +127,9 @@ public class AppTokenLoginTest {
 		}
 	}
 
-	// TODO: make sure we have set up correct data for appToken in configureUser()
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
 			+ "Login failed.")
-	public void testAnyAppTokenStoredStorage() throws Exception {
+	public void testAnyAppTokenStoredStorage() {
 		configureUser(user, true, Optional.empty());
 
 		apptokenLogin.getAuthToken(SOME_LOGIN_ID, SOME_APP_TOKEN);
@@ -138,14 +137,14 @@ public class AppTokenLoginTest {
 
 	@Test(expectedExceptions = LoginException.class, expectedExceptionsMessageRegExp = ""
 			+ "Login failed.")
-	public void testNoMatch() throws Exception {
+	public void testNoMatch() {
 		textHasher.MRV.setDefaultReturnValuesSupplier("matches", () -> false);
 
 		apptokenLogin.getAuthToken(SOME_LOGIN_ID, SOME_APP_TOKEN);
 	}
 
 	@Test
-	public void testSecondAppTokenMatches() throws Exception {
+	public void testSecondAppTokenMatches() {
 		textHasher.MRV.setSpecificReturnValuesSupplier("matches", () -> true, SOME_APP_TOKEN,
 				"someHashedAppToken2");
 		userStorageView.MRV.setSpecificReturnValuesSupplier("getSystemSecretById",
@@ -162,7 +161,7 @@ public class AppTokenLoginTest {
 	}
 
 	@Test
-	public void testCallGetAuthToken() throws Exception {
+	public void testCallGetAuthToken() {
 		textHasher.MRV.setSpecificReturnValuesSupplier("matches", () -> true, SOME_APP_TOKEN,
 				"someHashedAppToken2");
 		userStorageView.MRV.setSpecificReturnValuesSupplier("getSystemSecretById",
@@ -174,7 +173,7 @@ public class AppTokenLoginTest {
 
 		gatekeeperTokenProvider.MCR.assertParameters("getAuthTokenForUserInfo", 0);
 		UserInfo userInfo = (UserInfo) gatekeeperTokenProvider.MCR
-				.getValueForMethodNameAndCallNumberAndParameterName("getAuthTokenForUserInfo", 0,
+				.getParameterForMethodAndCallNumberAndParameter("getAuthTokenForUserInfo", 0,
 						"userInfo");
 		assertEquals(userInfo.userId, user.id);
 		gatekeeperTokenProvider.MCR.assertReturn("getAuthTokenForUserInfo", 0, authToken);
@@ -182,7 +181,7 @@ public class AppTokenLoginTest {
 	}
 
 	@Test
-	public void testOnlyForTestGetTextHasher() throws Exception {
+	public void testOnlyForTestGetTextHasher() {
 		assertSame(((AppTokenLoginImp) apptokenLogin).onlyForTestGetTextHasher(), textHasher);
 	}
 }

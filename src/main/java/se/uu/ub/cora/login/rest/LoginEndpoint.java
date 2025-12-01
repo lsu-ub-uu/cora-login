@@ -37,6 +37,7 @@ import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
+import se.uu.ub.cora.login.json.AuthTokenToJsonConverterProvider;
 
 @Path("/")
 public class LoginEndpoint {
@@ -115,10 +116,9 @@ public class LoginEndpoint {
 	}
 
 	private String convertAuthTokenToJson(AuthToken authToken, String url) {
-
-		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(authToken,
-				url);
-		return authTokenToJsonConverter.convertAuthTokenToJson();
+		AuthTokenToJsonConverter authTokenToJsonConverter = AuthTokenToJsonConverterProvider
+				.getConverter();
+		return authTokenToJsonConverter.convertAuthTokenToJson(authToken, url);
 	}
 
 	private Response handleError(Exception error) {
@@ -168,7 +168,7 @@ public class LoginEndpoint {
 			@PathParam("tokenId") String tokenId) {
 		try {
 			return tryToRenewAuthToken(tokenId, token);
-		} catch (Exception error) {
+		} catch (Exception _) {
 			return buildResponseUsingStatus(Response.Status.UNAUTHORIZED);
 		}
 	}
@@ -191,7 +191,7 @@ public class LoginEndpoint {
 			@PathParam("tokenId") String tokenId) {
 		try {
 			return tryToRemoveAuthToken(tokenId, token);
-		} catch (Exception error) {
+		} catch (Exception _) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, 2018 Uppsala University Library
+ * Copyright 2025 Olov McKie
  *
  * This file is part of Cora.
  *
@@ -16,10 +16,9 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
+package se.uu.ub.cora.login.json;
 
-package se.uu.ub.cora.login.initialize;
-
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -28,20 +27,18 @@ import java.lang.reflect.Modifier;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
-
-public class GatekeeperInstanceProviderTest {
+public class AuthTokenToJsonConverterProviderTest {
 	@Test
 	public void testPrivateConstructor() throws Exception {
-		Constructor<GatekeeperInstanceProvider> constructor = GatekeeperInstanceProvider.class
+		Constructor<AuthTokenToJsonConverterProvider> constructor = AuthTokenToJsonConverterProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+
 	}
 
 	@Test(expectedExceptions = InvocationTargetException.class)
 	public void testPrivateConstructorInvoke() throws Exception {
-		Constructor<GatekeeperInstanceProvider> constructor = GatekeeperInstanceProvider.class
+		Constructor<AuthTokenToJsonConverterProvider> constructor = AuthTokenToJsonConverterProvider.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 		constructor.setAccessible(true);
@@ -49,10 +46,22 @@ public class GatekeeperInstanceProviderTest {
 	}
 
 	@Test
-	public void testGatekeeperTokenProvider() {
-		GatekeeperTokenProvider gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
-		assertEquals(GatekeeperInstanceProvider.getGatekeeperTokenProvider(),
-				gatekeeperTokenProvider);
+	public void testGetStandardConverter() {
+		AuthTokenToJsonConverter converter = AuthTokenToJsonConverterProvider.getConverter();
+		assertTrue(converter instanceof AuthTokenToJsonConverterImp);
+	}
+
+	@Test
+	public void testOnlyForTestSetConverterSupplier() {
+		AuthTokenToJsonConverter authTokenToJsonConverter = (_, _) -> "{ \"fake\": \"json\" }";
+		AuthTokenToJsonConverterProvider.onlyForTestSetConverterSupplier(() -> {
+			return authTokenToJsonConverter;
+		});
+
+		assertSame(AuthTokenToJsonConverterProvider.getConverter(), authTokenToJsonConverter);
+		AuthTokenToJsonConverterProvider.resetSupplier();
+		assertTrue(AuthTokenToJsonConverterProvider
+				.getConverter() instanceof AuthTokenToJsonConverterImp);
+
 	}
 }

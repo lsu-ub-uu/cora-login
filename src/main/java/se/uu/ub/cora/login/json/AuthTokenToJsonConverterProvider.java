@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Uppsala University Library
+ * Copyright 2025 Olov McKie
  *
  * This file is part of Cora.
  *
@@ -18,10 +18,27 @@
  */
 package se.uu.ub.cora.login.json;
 
-import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
+import java.util.function.Supplier;
 
-public interface AuthTokenToJsonConverter {
+public class AuthTokenToJsonConverterProvider {
+	private static final Supplier<AuthTokenToJsonConverter> DEFAULT_SUPPLIER = AuthTokenToJsonConverterImp::new;
+	private static Supplier<AuthTokenToJsonConverter> supplier = DEFAULT_SUPPLIER;
 
-	String convertAuthTokenToJson(AuthToken authToken, String url);
+	private AuthTokenToJsonConverterProvider() {
+		// not called
+		throw new UnsupportedOperationException();
+	}
 
+	public static AuthTokenToJsonConverter getConverter() {
+		return supplier.get();
+	}
+
+	public static void onlyForTestSetConverterSupplier(
+			Supplier<AuthTokenToJsonConverter> otherSupplier) {
+		supplier = otherSupplier;
+	}
+
+	public static void resetSupplier() {
+		supplier = DEFAULT_SUPPLIER;
+	}
 }

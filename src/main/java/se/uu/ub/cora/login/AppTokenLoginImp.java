@@ -43,7 +43,7 @@ public class AppTokenLoginImp implements AppTokenLogin {
 	public AuthToken getAuthToken(String loginId, String appToken) {
 		try {
 			return tryToGetAuthToken(loginId, appToken);
-		} catch (Exception e) {
+		} catch (Exception _) {
 			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}

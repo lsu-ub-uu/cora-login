@@ -41,8 +41,7 @@ public class AnnotationTestHelper {
 	private Annotation[][] parameterAnnotations;
 	private Annotation[] classAnnotations;
 
-	public static AnnotationTestHelper createAnnotationTestHelperForClass(Class<?> endpointClass)
-			throws NoSuchMethodException {
+	public static AnnotationTestHelper createAnnotationTestHelperForClass(Class<?> endpointClass) {
 		return new AnnotationTestHelper(endpointClass);
 	}
 
@@ -110,7 +109,7 @@ public class AnnotationTestHelper {
 
 	public void assertAnnotationForAuthTokensAndTypeParameters() {
 		assertAnnotationForAuthTokenParameters();
-		assertTypeAnnotation(parameterAnnotations, 2);
+		assertTypeAnnotation(2);
 	}
 
 	public void assertAnnotationForAuthTokensAndTypeAndIdParameters() {
@@ -127,7 +126,7 @@ public class AnnotationTestHelper {
 		assertEquals(queryAuthTokenParameter.value(), "authToken");
 	}
 
-	private void assertTypeAnnotation(Annotation[][] parameterAnnotations, int startPosition) {
+	private void assertTypeAnnotation(int startPosition) {
 		assertPathParamAnnotationByNameAndPosition("type", startPosition);
 	}
 
