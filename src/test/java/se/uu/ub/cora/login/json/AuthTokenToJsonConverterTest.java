@@ -36,7 +36,7 @@ public class AuthTokenToJsonConverterTest {
 
 	@BeforeMethod
 	public void beforeMethod() {
-		url = "someUrl";
+		url = "someUrl/";
 	}
 
 	@Test
@@ -65,13 +65,13 @@ public class AuthTokenToJsonConverterTest {
 				      "renew": {
 				        "requestMethod": "POST"                              ,
 				        "rel"          : "renew"                             ,
-				        "url"          : "someUrl"                           ,
+				        "url"          : "someUrl/someTokenId"                           ,
 				        "accept"       : "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
 				        "rel": "delete",
-				        "url": "someUrl"}
+				        "url": "someUrl/someTokenId"}
 				    }
 				  }
 				}
@@ -120,13 +120,13 @@ public class AuthTokenToJsonConverterTest {
 				      "renew": {
 				        "requestMethod": "POST",
 				        "rel": "renew",
-				        "url": "someUrl",
+				        "url": "someUrl/someTokenId",
 				        "accept": "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
 				        "rel": "delete",
-				        "url": "someUrl"
+				        "url": "someUrl/someTokenId"
 				      }
 				    }
 				  }
@@ -182,13 +182,13 @@ public class AuthTokenToJsonConverterTest {
 				      "renew": {
 				        "requestMethod": "POST",
 				        "rel": "renew",
-				        "url": "someUrl",
+				        "url": "someUrl/someTokenId",
 				        "accept": "application/vnd.cora.authentication+json"
 				      },
 				      "delete": {
 				        "requestMethod": "DELETE",
 				        "rel": "delete",
-				        "url": "someUrl"
+				        "url": "someUrl/someTokenId"
 				      }
 				    }
 				  }

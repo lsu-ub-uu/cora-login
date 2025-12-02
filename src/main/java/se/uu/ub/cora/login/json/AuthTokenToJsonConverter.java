@@ -22,6 +22,16 @@ import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 
 public interface AuthTokenToJsonConverter {
 
+	/**
+	 * convertAuthTokenToJson converts an AuthToken to a json representation of it
+	 * 
+	 * @param authToken
+	 *            An {@link AuthToken} to convert
+	 * @param url
+	 *            A {@link String} with the externally accessible logoutUrl (url to login module)
+	 *            ending in slash
+	 * @return A {@link String} representation of the AuthToken
+	 */
 	String convertAuthTokenToJson(AuthToken authToken, String url);
 
 }

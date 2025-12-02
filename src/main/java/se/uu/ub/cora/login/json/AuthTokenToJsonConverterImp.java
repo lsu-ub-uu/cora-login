@@ -38,7 +38,7 @@ public final class AuthTokenToJsonConverterImp implements AuthTokenToJsonConvert
 	@Override
 	public String convertAuthTokenToJson(AuthToken authToken, String url) {
 		this.authToken = authToken;
-		this.url = url;
+		this.url = url + authToken.tokenId();
 		JsonObjectBuilder everyThingBuilder = orgJsonBuilderFactoryAdapter.createObjectBuilder();
 		createAuthetication(everyThingBuilder);
 		return everyThingBuilder.toJsonFormattedString();

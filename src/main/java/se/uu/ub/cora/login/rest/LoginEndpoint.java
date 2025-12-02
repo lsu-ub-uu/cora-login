@@ -110,7 +110,7 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
-		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
+		String json = convertAuthTokenToJson(authToken, url);
 		URI uri = new URI("authToken/" + authToken.tokenId());
 		return Response.created(uri).entity(json).build();
 	}
@@ -181,7 +181,7 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseOKUsingAuthToken(AuthToken authToken) {
-		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
+		String json = convertAuthTokenToJson(authToken, url);
 		return Response.ok().entity(json).build();
 	}
 
