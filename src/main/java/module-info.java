@@ -11,6 +11,5 @@ module se.uu.ub.cora.login {
 	requires transitive se.uu.ub.cora.initialize;
 	requires org.glassfish.jersey.media.multipart;
 
-	exports se.uu.ub.cora.login.json;
 	exports se.uu.ub.cora.login.rest;
 }

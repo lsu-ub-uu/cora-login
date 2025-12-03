@@ -34,10 +34,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.json.AuthTokenToJsonConverter;
+import se.uu.ub.cora.gatekeepertokenprovider.json.AuthTokenToJsonConverterProvider;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
-import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
-import se.uu.ub.cora.login.json.AuthTokenToJsonConverterProvider;
 
 @Path("/")
 public class LoginEndpoint {
