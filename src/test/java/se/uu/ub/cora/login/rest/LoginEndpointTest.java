@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -36,6 +37,7 @@ import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.gatekeeper.user.User;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.authentication.AuthenticationException;
+import se.uu.ub.cora.gatekeepertokenprovider.json.AuthTokenToJsonConverterProvider;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.logger.spies.LoggerFactorySpy;
@@ -51,6 +53,7 @@ import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 import se.uu.ub.cora.testutils.mrv.MethodReturnValues;
 
 public class LoginEndpointTest {
+	private static final String FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY = "fake json 'authtoken' from AuthTokenToJsonConverterSpy";
 	private static final String LOGIN_ID = "someLoginId";
 	private LoginEndpoint loginEndpoint;
 	private HttpServletRequestSpy request;
@@ -60,6 +63,8 @@ public class LoginEndpointTest {
 	private LoginFactorySpy loginFactory;
 	private PasswordLoginSpy passwordLoginSpy;
 	private AppTokenLoginSpy appTokenLoginSpy;
+	private AuthTokenToJsonConverterSpy tokenConverterSpy;
+	private AuthToken renewAuthToken;
 	private static final String CREDENTIALS_WITH_PASSWORD = """
 			someLoginId
 			somePassword
@@ -68,6 +73,8 @@ public class LoginEndpointTest {
 			someLoginId
 			someAppToken
 			""";
+	private static final String TOKEN_LOGOUT_URL = "http://localhost:8080/login/rest/authToken/";
+	private static final String TOKEN_LOGOUT_URL_HTTPS = "https://localhost:8080/login/rest/authToken/";
 
 	@BeforeMethod
 	public void setup() {
@@ -78,8 +85,9 @@ public class LoginEndpointTest {
 		settingsMapSpy.put("loginPublicPathToSystem", "/login/rest/");
 		SettingsProvider.setSettings(settingsMapSpy);
 
-		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
-		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		setupGatekeeperTokenProviderSpy();
+
+		setupAuthTokenConverterSpy();
 
 		setUpLoginDependencyProvider();
 
@@ -89,6 +97,24 @@ public class LoginEndpointTest {
 		configureUser(user, true, Optional.empty(), "someAppTokenId1", "someAppTokenId2");
 
 		loginEndpoint = new LoginEndpoint(request);
+	}
+
+	private void setupGatekeeperTokenProviderSpy() {
+		gatekeeperTokenProvider = new GatekeeperTokenProviderSpy();
+		GatekeeperInstanceProvider.setGatekeeperTokenProvider(gatekeeperTokenProvider);
+		Set<String> permissionUnits = new LinkedHashSet<>();
+		permissionUnits.add("001");
+		permissionUnits.add("002");
+		renewAuthToken = new AuthToken("someAuth'Token", "someTokenId", 100L, 200L,
+				"someIdInUser'Storage", "loginId", Optional.empty(), Optional.empty(),
+				permissionUnits);
+		gatekeeperTokenProvider.MRV.setDefaultReturnValuesSupplier("renewAuthToken",
+				() -> renewAuthToken);
+	}
+
+	private void setupAuthTokenConverterSpy() {
+		tokenConverterSpy = new AuthTokenToJsonConverterSpy();
+		AuthTokenToJsonConverterProvider.onlyForTestSetConverterSupplier(() -> tokenConverterSpy);
 	}
 
 	private void setUpLoginDependencyProvider() {
@@ -107,6 +133,7 @@ public class LoginEndpointTest {
 	@AfterMethod
 	private void afterMethod() {
 		LoginDependencyProvider.onlyForTestSetLoginFactory(new LoginFactoryImp());
+		AuthTokenToJsonConverterProvider.resetSupplier();
 	}
 
 	private User configureUser(User user, boolean active, Optional<String> passwordId,
@@ -121,7 +148,7 @@ public class LoginEndpointTest {
 	}
 
 	@Test
-	public void testLoginEndpointPathAnnotation() throws Exception {
+	public void testLoginEndpointPathAnnotation() {
 		AnnotationTestHelper annotationHelper = AnnotationTestHelper
 				.createAnnotationTestHelperForClass(LoginEndpoint.class);
 		annotationHelper.assertPathAnnotationForClass("/");
@@ -209,49 +236,11 @@ public class LoginEndpointTest {
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		assertEquals(response.getLocation().toString(), "authToken/someTokenId");
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedAutToken("http"));
+		assertEquals(entity, FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY);
 	}
 
 	private void assertResponseStatusIs(Response response, Status excpectedResponseStatus) {
 		assertEquals(response.getStatusInfo(), excpectedResponseStatus);
-	}
-
-	private String expectedAutToken(String protocol) {
-		String authenticationAnswer = """
-				{
-				  "authentication": {
-				    "data": {
-				      "children": [
-				        {"name": "token"     , "value": "someAuthToken"      },
-				        {"name": "validUntil", "value": "100"                },
-				        {"name": "renewUntil", "value": "200"                },
-				        {"name": "userId"    , "value": "someIdInUserStorage"},
-				        {"name": "loginId"   , "value": "someLoginId"        },
-				        {"name": "firstName" , "value": "someFirstName"      },
-				        {"name": "lastName"  , "value": "someLastName"       }
-				      ],
-				      "name": "authToken"
-				    },
-				    "actionLinks": {
-				      "renew": {
-				        "requestMethod": "POST",
-				        "rel": "renew",
-				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId",
-				        "accept": "application/vnd.cora.authentication+json"
-				      },
-				      "delete": {
-				        "requestMethod": "DELETE",
-				        "rel": "delete",
-				        "url": "{protocol}://localhost:8080/login/rest/authToken/someTokenId"
-				      }
-				    }
-				  }
-				}""".replace("{protocol}", protocol);
-		return compactString(authenticationAnswer);
-	}
-
-	private String compactString(String stringIn) {
-		return stringIn.replace("\s", "").replace("\n", "");
 	}
 
 	@Test
@@ -263,7 +252,12 @@ public class LoginEndpointTest {
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedAutToken("https"));
+		assertEquals(entity, FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY);
+
+		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) appTokenLoginSpy.MCR
+				.getReturnValue("getAuthToken", 0);
+		tokenConverterSpy.MCR.assertCalledParameters("convertAuthTokenToJson",
+				authTokenFromGatekeeper, TOKEN_LOGOUT_URL_HTTPS);
 	}
 
 	@Test
@@ -277,7 +271,7 @@ public class LoginEndpointTest {
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedAutToken("https"));
+		assertEquals(entity, FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY);
 	}
 
 	@Test
@@ -289,7 +283,12 @@ public class LoginEndpointTest {
 
 		assertResponseStatusIs(response, Response.Status.CREATED);
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedAutToken("http"));
+		assertEquals(entity, FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY);
+
+		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) appTokenLoginSpy.MCR
+				.getReturnValue("getAuthToken", 0);
+		tokenConverterSpy.MCR.assertCalledParameters("convertAuthTokenToJson",
+				authTokenFromGatekeeper, TOKEN_LOGOUT_URL);
 	}
 
 	@Test
@@ -312,6 +311,11 @@ public class LoginEndpointTest {
 				.getReturnValue("factorPasswordLogin", 0);
 
 		passwordLogin.MCR.assertParameters("getAuthToken", 0, LOGIN_ID, "somePassword");
+
+		var authTokenFromGatekeeper = (se.uu.ub.cora.gatekeepertokenprovider.AuthToken) passwordLogin.MCR
+				.getReturnValue("getAuthToken", 0);
+		tokenConverterSpy.MCR.assertCalledParameters("convertAuthTokenToJson",
+				authTokenFromGatekeeper, TOKEN_LOGOUT_URL);
 
 	}
 
@@ -377,7 +381,10 @@ public class LoginEndpointTest {
 				"someToken");
 		assertResponseStatusIs(response, Response.Status.OK);
 		String entity = (String) response.getEntity();
-		assertEquals(entity, expectedAutToken("http"));
+		assertEquals(entity, FAKE_JSON_AUTHTOKEN_FROM_CONVERTER_SPY);
+
+		tokenConverterSpy.MCR.assertCalledParameters("convertAuthTokenToJson", renewAuthToken,
+				TOKEN_LOGOUT_URL);
 	}
 
 	@Test

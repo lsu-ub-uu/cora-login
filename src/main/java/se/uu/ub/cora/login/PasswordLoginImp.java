@@ -43,7 +43,7 @@ public class PasswordLoginImp implements PasswordLogin {
 	public AuthToken getAuthToken(String loginId, String password) {
 		try {
 			return tryToGetAuthToken(loginId, password);
-		} catch (Exception e) {
+		} catch (Exception _) {
 			throw LoginException.withMessage(ERROR_MESSAGE);
 		}
 	}

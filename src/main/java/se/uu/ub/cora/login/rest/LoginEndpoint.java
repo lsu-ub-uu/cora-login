@@ -34,9 +34,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import se.uu.ub.cora.gatekeepertokenprovider.AuthToken;
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
+import se.uu.ub.cora.gatekeepertokenprovider.json.AuthTokenToJsonConverter;
+import se.uu.ub.cora.gatekeepertokenprovider.json.AuthTokenToJsonConverterProvider;
 import se.uu.ub.cora.initialize.SettingsProvider;
 import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
-import se.uu.ub.cora.login.json.AuthTokenToJsonConverter;
 
 @Path("/")
 public class LoginEndpoint {
@@ -109,16 +110,15 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseUsingAuthToken(AuthToken authToken) throws URISyntaxException {
-		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
+		String json = convertAuthTokenToJson(authToken, url);
 		URI uri = new URI("authToken/" + authToken.tokenId());
 		return Response.created(uri).entity(json).build();
 	}
 
 	private String convertAuthTokenToJson(AuthToken authToken, String url) {
-
-		AuthTokenToJsonConverter authTokenToJsonConverter = new AuthTokenToJsonConverter(authToken,
-				url);
-		return authTokenToJsonConverter.convertAuthTokenToJson();
+		AuthTokenToJsonConverter authTokenToJsonConverter = AuthTokenToJsonConverterProvider
+				.getConverter();
+		return authTokenToJsonConverter.convertAuthTokenToJson(authToken, url);
 	}
 
 	private Response handleError(Exception error) {
@@ -168,7 +168,7 @@ public class LoginEndpoint {
 			@PathParam("tokenId") String tokenId) {
 		try {
 			return tryToRenewAuthToken(tokenId, token);
-		} catch (Exception error) {
+		} catch (Exception _) {
 			return buildResponseUsingStatus(Response.Status.UNAUTHORIZED);
 		}
 	}
@@ -181,7 +181,7 @@ public class LoginEndpoint {
 	}
 
 	Response buildResponseOKUsingAuthToken(AuthToken authToken) {
-		String json = convertAuthTokenToJson(authToken, url + authToken.tokenId());
+		String json = convertAuthTokenToJson(authToken, url);
 		return Response.ok().entity(json).build();
 	}
 
@@ -191,7 +191,7 @@ public class LoginEndpoint {
 			@PathParam("tokenId") String tokenId) {
 		try {
 			return tryToRemoveAuthToken(tokenId, token);
-		} catch (Exception error) {
+		} catch (Exception _) {
 			return buildResponseUsingStatus(Response.Status.NOT_FOUND);
 		}
 	}

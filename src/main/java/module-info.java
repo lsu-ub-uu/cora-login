@@ -9,7 +9,7 @@ module se.uu.ub.cora.login {
 	requires transitive jakarta.servlet;
 	requires transitive jakarta.ws.rs;
 	requires transitive se.uu.ub.cora.initialize;
-	requires jersey.media.multipart;
+	requires org.glassfish.jersey.media.multipart;
 
 	exports se.uu.ub.cora.login.rest;
 }

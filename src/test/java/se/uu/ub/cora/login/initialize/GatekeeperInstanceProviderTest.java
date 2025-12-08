@@ -29,7 +29,6 @@ import java.lang.reflect.Modifier;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.gatekeepertokenprovider.GatekeeperTokenProvider;
-import se.uu.ub.cora.login.initialize.GatekeeperInstanceProvider;
 import se.uu.ub.cora.login.spies.GatekeeperTokenProviderSpy;
 
 public class GatekeeperInstanceProviderTest {
